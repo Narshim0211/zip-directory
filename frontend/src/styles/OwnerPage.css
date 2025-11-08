@@ -1,0 +1,137 @@
+/* 🌈 Hero Section */
+.owner-hero-premium {
+  position: relative;
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  color: white;
+  text-align: center;
+  padding: 120px 20px 80px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.owner-hero-premium .overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(600px 300px at 20% 0%, rgba(255,255,255,0.10), transparent),
+              radial-gradient(700px 350px at 80% 100%, rgba(255,255,255,0.06), transparent);
+  pointer-events: none;
+}
+
+.owner-hero-premium .hero-content h2 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.owner-hero-premium .hero-content p {
+  font-size: 1.2rem;
+  color: rgba(255,255,255,0.98);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+  margin-top: 10px;
+}
+
+/* ✨ Form Section */
+.owner-form-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(180deg, #F5F7FF 0%, #F0FAFF 40%, #FAFBFF 100%);
+  padding: 100px 20px;
+}
+
+.owner-form-card {
+  /* Subtle colorful glass gradient over white for depth */
+  background: linear-gradient(135deg,
+              rgba(106, 17, 203, 0.06) 0%,
+              rgba(37, 117, 252, 0.06) 45%,
+              rgba(0, 196, 255, 0.06) 100%),
+              #ffffff;
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 40px 50px;
+  width: 100%;
+  max-width: 500px;
+  border: 1px solid rgba(90, 96, 248, 0.18);
+  box-shadow: 0 12px 28px rgba(32, 54, 96, 0.14);
+  transition: all 0.3s ease;
+}
+
+.owner-form-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+}
+
+.owner-form-card h3 {
+  font-size: 1.8rem;
+  color: #1b1b1b;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.owner-form-card .subtitle {
+  text-align: center;
+  color: #485568;
+  font-size: 0.95rem;
+  margin-bottom: 30px;
+}
+
+/* 🧾 Inputs */
+.owner-form-card input,
+.owner-form-card select,
+.owner-form-card textarea {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 18px;
+  border: 1px solid #dcdcdc;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.12s ease;
+}
+
+.owner-form-card input:focus,
+.owner-form-card textarea:focus,
+.owner-form-card select:focus {
+  outline: none;
+  border-color: #6a11cb;
+  box-shadow: 0 0 0 4px rgba(106, 17, 203, 0.12), 0 6px 18px rgba(37, 117, 252, 0.18);
+  transform: translateY(-1px);
+}
+
+/* 🚀 Button */
+.primary-btn {
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 0;
+  width: 100%;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.primary-btn:hover {
+  background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+  box-shadow: 0 5px 20px rgba(37, 117, 252, 0.5);
+  transform: translateY(-2px);
+}
+
+/* ✅ Success Message */
+.success-message {
+  text-align: center;
+  margin-top: 15px;
+  color: #2ecc71;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* ⚠️ Footer */
+footer {
+  background: #0d1117;
+  color: #aaa;
+  text-align: center;
+  padding: 25px;
+  font-size: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}

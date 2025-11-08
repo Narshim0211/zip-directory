@@ -1,0 +1,25 @@
+/* HomePage styles (pure CSS) */
+.home-page { font-family: Inter, system-ui, Arial, sans-serif; color: #0f172a; }
+.home-hero { padding: 64px 16px; background: linear-gradient(180deg,#f8fafc,#eef2ff); }
+.hero-content { max-width: 960px; margin: 0 auto; text-align: center; }
+.hero-content h1 { font-size: 32px; line-height: 1.2; font-weight: 800; }
+.hero-content h1 span { color: #7c3aed; }
+.hero-content p { color: #475569; margin: 12px auto 20px; max-width: 720px; }
+.hero-buttons { display: flex; gap: 12px; justify-content: center; }
+.btn { padding: 10px 14px; border-radius: 10px; font-weight: 600; text-decoration: none; display: inline-block; }
+.btn.explore { background: #0ea5e9; color: white; }
+.btn.add { background: #10b981; color: white; }
+
+.features { max-width: 1024px; margin: 28px auto; padding: 0 16px; }
+.features h2 { text-align: center; margin-bottom: 18px; }
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 16px; }
+.feature-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; text-align: center; }
+.feature-card img { width: 64px; height: 64px; margin-bottom: 10px; }
+.feature-card h3 { margin: 8px 0 6px; }
+.feature-card p { color: #475569; font-size: 14px; }
+
+.cta-section { text-align: center; padding: 40px 16px; background: #f8fafc; }
+.cta-section h2 { margin-bottom: 10px; }
+
+.footer { text-align: center; padding: 20px; color: #64748b; font-size: 14px; }
+

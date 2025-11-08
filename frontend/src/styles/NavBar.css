@@ -1,0 +1,9 @@
+.root{--nav-bg:rgba(255,255,255,0.85);--nav-border:rgba(90,96,248,0.18);--nav-text:#0f172a;--nav-muted:#64748b;--brand-grad:linear-gradient(90deg,#6a11cb,#2575fc)}
+.app-navbar{position:sticky;top:0;z-index:50;background:var(--nav-bg);backdrop-filter:saturate(140%) blur(12px);border-bottom:1px solid var(--nav-border);height:60px}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:60px}
+.brand{font-weight:800;letter-spacing:.3px;background:var(--brand-grad);-webkit-background-clip:text;background-clip:text;color:transparent;text-decoration:none;font-size:18px}
+.links{display:flex;gap:12px}
+.link{color:var(--nav-text);text-decoration:none;padding:8px 12px;border-radius:10px;border:1px solid transparent;transition:all .15s ease;font-weight:600}
+.
+.link:hover{border-color:#c7d2fe;background:rgba(99,102,241,.08)}
+.link.active{background:linear-gradient(180deg,#eef2ff 0%,#ffffff 100%);border-color:#c7d2fe}
