@@ -18,12 +18,25 @@ const Register = () => {
     setError('');
     setLoading(true);
     try {
+      // Debug logs to surface why submission might fail before network
+      // (Check DevTools Console for these entries)
+      // eslint-disable-next-line no-console
+      console.log('Register submit payload', { name, email, role });
+      // eslint-disable-next-line no-console
+      console.log('useAuth.register type', typeof register);
       const data = await register({ name, email, password, role });
       if (data.role === 'admin') navigate('/admin');
       else if (data.role === 'owner') navigate('/dashboard/owner');
       else navigate('/dashboard/visitor');
     } catch (err) {
-      setError(err?.response?.data?.message || 'Registration failed');
+      // Prefer precise backend message, fall back to generic JS/network message
+      const msg =
+        (err && err.response && err.response.data && err.response.data.message) ||
+        err?.message ||
+        'Registration failed';
+      // eslint-disable-next-line no-console
+      console.error('Register error:', err);
+      setError(msg);
     } finally {
       setLoading(false);
     }

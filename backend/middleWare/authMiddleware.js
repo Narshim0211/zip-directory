@@ -19,7 +19,7 @@ const protect = async (req, res, next) => {
       // Find user by ID from token
       req.user = await User.findById(decoded.id).select("-password");
 
-      next(); // move to next middleware or route
+      return next(); // move to next middleware or route
     } catch (error) {
       console.error(error);
       return res.status(401).json({ message: "Not authorized, invalid token" });

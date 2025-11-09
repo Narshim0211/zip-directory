@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api/axios";
 import "../styles/BusinessDetails.css";
@@ -35,11 +35,11 @@ const BusinessDetails = () => {
         comment: text,
         user: "000000000000000000000001", // temp user (replace with logged-in ID)
       });
-      setMessage("✅ Review submitted successfully!");
+      setMessage("Review submitted successfully!");
       setText("");
       setRating(0);
     } catch (err) {
-      setMessage("❌ Failed to submit review.");
+      setMessage("Failed to submit review.");
       console.error(err);
     }
   };
@@ -63,7 +63,7 @@ const BusinessDetails = () => {
 
       {/* Reviews Section */}
       <section className="reviews-section">
-        <h2>⭐ Reviews</h2>
+        <h2>Reviews</h2>
         <div id="averageRating">Average: {average}</div>
 
         {/* Review Form */}
@@ -76,7 +76,7 @@ const BusinessDetails = () => {
                 className={rating >= v ? "selected" : ""}
                 onClick={() => setRating(v)}
               >
-                ★
+                *
               </span>
             ))}
           </div>
@@ -98,7 +98,7 @@ const BusinessDetails = () => {
           ) : (
             reviews.map((r) => (
               <div key={r._id} className="review-card">
-                <p className="rating">⭐ {r.rating}</p>
+                <p className="rating">* {r.rating}</p>
                 <p className="comment">{r.comment}</p>
               </div>
             ))
@@ -106,10 +106,11 @@ const BusinessDetails = () => {
         </div>
       </section>
 
-      <footer>© 2025 SalonHub • All Rights Reserved</footer>
+      <footer>© 2025 SalonHub · All Rights Reserved</footer>
       {message && <div className="toast">{message}</div>}
     </div>
   );
 };
 
 export default BusinessDetails;
+

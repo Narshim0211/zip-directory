@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useMemo } from 'react';
+﻿import React, { useEffect, useState, useMemo } from 'react';
 import api from '../api/axios';
+import NewsFeed from './NewsFeed';
 import './ownerDashboard.css';
 
 const OwnerDashboard = () => {
@@ -10,14 +11,16 @@ const OwnerDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Placeholder calls; replace with real endpoints when available
-        // const { data: s } = await api.get(`/businesses/:id/stats`);
-        // const { data: r } = await api.get(`/businesses/:id/reviews?limit=5`);
-        // setStats(s);
-        // setRecentReviews(r.items || r);
-
-        // Temporary demo data to render the UI until endpoints are ready
-        setStats({ views: 3420, weekly: [420,510,390,600,560,620,820], avgRating: 4.7, reviewsCount: 128 });
+        // Owner stats
+        const { data: s } = await api.get('/owner/stats');
+        const safeStats = {
+          views: s?.weeklyViews || 0,
+          weekly: Array.isArray(s?.weekly) ? s.weekly : [],
+          avgRating: Number(s?.avgRating || 0),
+          reviewsCount: Number(s?.reviewsCount || 0),
+        };
+        setStats(safeStats);
+        // Keep placeholder recent reviews for now (endpoint not specified yet)
         setRecentReviews([
           { _id: '1', user: { name: 'Ava' }, rating: 5, comment: 'Amazing service!', createdAt: new Date().toISOString() },
           { _id: '2', user: { name: 'Liam' }, rating: 4, comment: 'Great haircut and friendly staff.', createdAt: new Date().toISOString() },
@@ -49,7 +52,7 @@ const OwnerDashboard = () => {
         </div>
         <div className="kpi tone-gold">
           <div className="kpi-title">Avg Rating</div>
-          <div className="kpi-value">{stats.avgRating.toFixed(1)}</div>
+          <div className="kpi-value">{Number(stats.avgRating || 0).toFixed(1)}</div>
         </div>
         <div className="kpi tone-green">
           <div className="kpi-title">Returning Visitors</div>
@@ -77,7 +80,7 @@ const OwnerDashboard = () => {
                       <div className="meta">{new Date(r.createdAt).toLocaleDateString()}</div>
                     </div>
                   </div>
-                  <div className="stars">{'⭐'.repeat(Math.max(1, Math.round(r.rating || 0)))}</div>
+                  <div className="stars">{'*'.repeat(Math.max(1, Math.round(r.rating || 0)))}</div>
                   <div className="comment">{r.comment}</div>
                   <button className="btn small">Reply</button>
                 </div>
@@ -97,9 +100,10 @@ const OwnerDashboard = () => {
           </div>
         </div>
       </section>
+      {/* News Feed (footer section) */}
+      <NewsFeed limit={6} />
     </div>
   );
 };
 
 export default OwnerDashboard;
-

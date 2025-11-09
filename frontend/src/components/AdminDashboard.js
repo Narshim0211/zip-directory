@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import api from "../api/axios";
 import "./adminDashboard.css";
 
@@ -7,6 +7,9 @@ const AdminDashboard = () => {
   const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  // Admin quick-post forms
+  const [news, setNews] = useState({ title: "", summary: "", imageUrl: "", category: "Hair" });
+  const [announce, setAnnounce] = useState({ title: "", description: "", link: "" });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,7 +41,7 @@ const AdminDashboard = () => {
       setPending((list) => list.filter((b) => b._id !== id));
       setStats((s) => ({
         ...s,
-        pending: Math.max((s.pending || 1) - 1, 0),
+        pending: Math.max((s.pending || 0) - 1, 0),
         approved: action === "approve" ? (s.approved || 0) + 1 : s.approved,
         rejected: action === "reject" ? (s.rejected || 0) + 1 : s.rejected,
       }));
@@ -75,11 +78,11 @@ const AdminDashboard = () => {
         <div className="panel-head">
           <div>
             <div className="panel-title">Pending Approvals</div>
-            <div className="panel-sub">{loading ? "Loading…" : `${filtered.length} pending`}</div>
+            <div className="panel-sub">{loading ? "Loadingâ€¦" : `${filtered.length} pending`}</div>
           </div>
           <input
             className="search"
-            placeholder="Search businesses…"
+            placeholder="Search businessesâ€¦"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -126,4 +129,7 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
+
+
 

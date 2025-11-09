@@ -1,16 +1,14 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import "../styles/HomePage.css";
+import api from "../api/axios";
 import NewsFeed from "./NewsFeed";
 import PopularSalons from "./HomePage/PopularSalons";
-import api from "../api/axios";
+import SearchHero from "./SearchHero";
 
-const HomePage = () => {
-  const [city, setCity] = useState("");
-  const [category, setCategory] = useState("");
+const VisitorHome = () => {
   const [results, setResults] = useState([]);
 
-  const handleSearch = async () => {
+  const handleSearch = async (city, category) => {
     const params = new URLSearchParams();
     if (city) params.set("city", city);
     if (category) params.set("category", category);
@@ -24,36 +22,15 @@ const HomePage = () => {
   };
 
   return (
-    <div className="home-page">
+    <div className="home-page" style={{ paddingBottom: 24 }}>
       <section className="home-hero">
         <div className="hero-content">
-          <h1>
-            Connecting <span>Salons</span>, <span>Stylists</span>, and <span>Clients</span> in One Beautiful Place
-          </h1>
-          <p>
-            Discover top-rated hair and beauty professionals in your city.
-          </p>
-          {/* Search-focused hero */}
-          <div className="search-box" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: 10, marginTop: 16 }}>
-            <input
-              type="text"
-              placeholder="Enter your city"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-            />
-            <select value={category} onChange={(e) => setCategory(e.target.value)}>
-              <option value="">All Categories</option>
-              <option value="Salon">Salon</option>
-              <option value="Freelance Stylist">Hair Stylist</option>
-              <option value="Spa">Spa</option>
-              <option value="Barbershop">Barbershop</option>
-            </select>
-            <button className="btn explore" onClick={handleSearch}>Search</button>
-          </div>
+          <h1>Find Your Perfect Salon or Stylist ✂️</h1>
+          <p>Search by city and discover top-rated stylists near you.</p>
+          <SearchHero onSearch={handleSearch} />
         </div>
       </section>
 
-      {/* Inline search results */}
       <section className="results-section" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 16px' }}>
         {results.length > 0 && (
           <>
@@ -75,11 +52,8 @@ const HomePage = () => {
 
       <NewsFeed />
       <PopularSalons />
-
-      <footer className="footer">(c) 2025 SalonHub - Built for the Beauty Industry</footer>
     </div>
   );
 };
 
-export default HomePage;
-
+export default VisitorHome;

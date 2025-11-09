@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import '../styles/Auth.css';
 
 const AuthForm = ({ title, subtitle, onSubmit, children, footer, loading, ctaText = 'Continue' }) => {
@@ -12,7 +12,7 @@ const AuthForm = ({ title, subtitle, onSubmit, children, footer, loading, ctaTex
         <form className="auth-form" onSubmit={onSubmit}>
           {children}
           <button className="auth-btn" disabled={loading} type="submit">
-            {loading ? 'Please wait…' : ctaText}
+            {loading ? 'Please wait...' : ctaText}
           </button>
         </form>
         {footer && <div className="auth-footer">{footer}</div>}

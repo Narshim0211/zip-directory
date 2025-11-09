@@ -1,4 +1,4 @@
-const express = require("express");
+﻿const express = require("express");
 const router = express.Router();
 const Business = require("../models/Business");
 const User = require("../models/User");
@@ -31,7 +31,7 @@ router.get("/stats", protect, adminOnly, async (req, res) => {
   }
 });
 
-// ✅ Get all businesses (for dashboard)
+// âœ… Get all businesses (for dashboard)
 router.get("/businesses", protect, adminOnly, async (req, res) => {
   try {
     const { status } = req.query;
@@ -50,7 +50,7 @@ router.get("/businesses", protect, adminOnly, async (req, res) => {
   }
 });
 
-// ✅ Approve a business
+// âœ… Approve a business
 router.put("/businesses/:id/approve", protect, adminOnly, async (req, res) => {
   try {
     const updated = await Business.findByIdAndUpdate(
@@ -59,13 +59,24 @@ router.put("/businesses/:id/approve", protect, adminOnly, async (req, res) => {
       { new: true }
     );
     if (!updated) return res.status(404).json({ message: "Business not found" });
+    // Best effort: record activity
+    try {
+      const Activity = require("../models/Activity");
+      await Activity.create({
+        type: "business",
+        title: `Business approved: ${updated.name}`,
+        description: `${updated.name} in ${updated.city} is now live`,
+        link: `/business/${updated._id}`,
+        createdBy: String(req.user && req.user._id) || "admin",
+      });
+    } catch (_) {}
     res.json({ message: "Business approved", business: updated });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
-// ✅ Reject a business
+// âœ… Reject a business
 router.put("/businesses/:id/reject", protect, adminOnly, async (req, res) => {
   try {
     const updated = await Business.findByIdAndUpdate(
@@ -74,16 +85,27 @@ router.put("/businesses/:id/reject", protect, adminOnly, async (req, res) => {
       { new: true }
     );
     if (!updated) return res.status(404).json({ message: "Business not found" });
+    // Best effort: record activity
+    try {
+      const Activity = require("../models/Activity");
+      await Activity.create({
+        type: "business",
+        title: `Business rejected: ${updated.name}`,
+        description: `${updated.name} was rejected`,
+        link: `/business/${updated._id}`,
+        createdBy: String(req.user && req.user._id) || "admin",
+      });
+    } catch (_) {}
     res.json({ message: "Business rejected", business: updated });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
-// ✅ Basic admin analytics
+// âœ… Basic admin analytics
 // (Existing endpoints remain below)
 
-// Users – list with filters and paging
+// Users â€“ list with filters and paging
 router.get('/users', protect, adminOnly, async (req, res) => {
   try {
     const page = Math.max(parseInt(req.query.page || '1', 10), 1);

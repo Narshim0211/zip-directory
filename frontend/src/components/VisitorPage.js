@@ -44,6 +44,7 @@ const VisitorPage = () => {
             <select value={category} onChange={(e) => setCategory(e.target.value)}>
               <option value="">All Categories</option>
               <option value="Salon">Salon</option>
+              <option value="Freelance Stylist">Hair Stylist</option>
               <option value="Spa">Spa</option>
               <option value="Barbershop">Barbershop</option>
             </select>
@@ -53,7 +54,7 @@ const VisitorPage = () => {
       </section>
 
       <section className="results-section">
-        <h2>✨ Explore Listings</h2>
+        <h2>Explore Listings</h2>
         <div className="card-grid">
           {filtered.length === 0 ? (
             <p>No listings found.</p>
@@ -65,7 +66,7 @@ const VisitorPage = () => {
                 <p>{biz.city}</p>
                 <p className="category">{biz.category}</p>
                 <Link to={`/business/${biz._id}`} className="view-btn">
-                  View Details →
+                  View Details
                 </Link>
               </div>
             ))
@@ -73,7 +74,7 @@ const VisitorPage = () => {
         </div>
       </section>
 
-      <footer>© 2025 SalonHub | All Rights Reserved</footer>
+      <footer>(c) 2025 SalonHub | All Rights Reserved</footer>
     </div>
   );
 };

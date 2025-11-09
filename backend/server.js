@@ -63,6 +63,14 @@ app.use('/api/auth', authRoutes);
 const adminRoutes = require("./routes/adminRoutes");
 app.use("/api/admin", adminRoutes);
 
+// News & Activity
+const newsRoutes = require('./routes/newsRoutes');
+app.use('/api/news', newsRoutes);
+
+// Owner routes
+const ownerRoutes = require('./routes/ownerRoutes');
+app.use('/api/owner', ownerRoutes);
+
 // Dev-only: Seed an admin user if missing
 if (process.env.NODE_ENV !== 'production') {
   app.post('/api/dev/seed-admin', async (req, res) => {
@@ -119,4 +127,15 @@ app.use((err, req, res, next) => {
     return res.status(403).json({ error: 'CORS: origin not allowed' });
   }
   next(err);
+});
+
+// Global JSON error handler to normalize responses
+// Maps known errors to clean client messages
+app.use((err, req, res, next) => {
+  const status = err.status || (err.name === 'MongoServerError' && err.code === 11000 ? 400 : 500);
+  let message = err.message || 'Internal Server Error';
+  if (err.name === 'MongoServerError' && err.code === 11000) {
+    message = 'User already exists';
+  }
+  res.status(status).json({ message });
 });

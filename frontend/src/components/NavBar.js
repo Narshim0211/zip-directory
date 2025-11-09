@@ -20,13 +20,16 @@ const NavBar = () => {
         <nav className="links">
           <NavLink to="/" end className={({ isActive }) => (isActive ? "link active" : "link")}>Home</NavLink>
           <NavLink to="/visitor" className={({ isActive }) => (isActive ? "link active" : "link")}>Explore</NavLink>
-          <NavLink to="/owner" className={({ isActive }) => (isActive ? "link active" : "link")}>Add Business</NavLink>
-          <NavLink
-            to={user?.role === 'admin' ? '/admin' : user?.role === 'owner' ? '/dashboard/owner' : '/login'}
-            className={({ isActive }) => (isActive ? "link active" : "link")}
-          >
-            Admin
-          </NavLink>
+          <NavLink to="/recent" className={({ isActive }) => (isActive ? "link active" : "link")}>Recent Activity</NavLink>
+          {user?.role === 'owner' && (
+            <>
+              <NavLink to="/owner" className={({ isActive }) => (isActive ? "link active" : "link")}>Add Business</NavLink>
+              <NavLink to="/dashboard/owner" className={({ isActive }) => (isActive ? "link active" : "link")}>Dashboard</NavLink>
+            </>
+          )}
+          {user?.role === 'admin' && (
+            <NavLink to="/admin" className={({ isActive }) => (isActive ? "link active" : "link")}>Admin</NavLink>
+          )}
           {!user ? (
             <>
               <Link className="link" to="/login">Login</Link>
@@ -34,7 +37,7 @@ const NavBar = () => {
             </>
           ) : (
             <>
-              <span className="link" style={{ opacity: 0.8 }}>Hi, {user.name}</span>
+              <NavLink to="/profile" className={({ isActive }) => (isActive ? "link active" : "link")}>Hi, {user.name}</NavLink>
               <button className="link" onClick={handleLogout} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>Logout</button>
             </>
           )}

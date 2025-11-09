@@ -4,6 +4,5 @@
 .brand{font-weight:800;letter-spacing:.3px;background:var(--brand-grad);-webkit-background-clip:text;background-clip:text;color:transparent;text-decoration:none;font-size:18px}
 .links{display:flex;gap:12px}
 .link{color:var(--nav-text);text-decoration:none;padding:8px 12px;border-radius:10px;border:1px solid transparent;transition:all .15s ease;font-weight:600}
-.
 .link:hover{border-color:#c7d2fe;background:rgba(99,102,241,.08)}
 .link.active{background:linear-gradient(180deg,#eef2ff 0%,#ffffff 100%);border-color:#c7d2fe}
