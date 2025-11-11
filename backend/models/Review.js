@@ -1,13 +1,22 @@
 const mongoose = require("mongoose");
 
+const replySchema = new mongoose.Schema(
+  {
+    author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    message: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 const reviewSchema = new mongoose.Schema(
   {
-    business: {
+    businessId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Business",
       required: true,
     },
-    user: {
+    reviewerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -21,7 +30,7 @@ const reviewSchema = new mongoose.Schema(
     text: {
       type: String,
       required: true,
-      minlength: 20,
+      minlength: 5,
     },
     images: [String],
     status: {
@@ -29,22 +38,26 @@ const reviewSchema = new mongoose.Schema(
       enum: ["visible", "hidden", "reported"],
       default: "visible",
     },
+    replies: [replySchema],
+    isFlagged: { type: Boolean, default: false },
+    flaggedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    flagReason: { type: String, default: "" },
+    isPendingRemoval: { type: Boolean, default: false },
+    removalRequestMessage: { type: String, default: "" },
   },
   { timestamps: true }
 );
 
-// Prevent duplicate reviews from the same user for one business
-reviewSchema.index({ business: 1, user: 1 }, { unique: true });
+reviewSchema.index({ businessId: 1, reviewerId: 1 }, { unique: true });
 
-// 🔁 Auto update business ratingAverage when new review is saved
 reviewSchema.post("save", async function (doc, next) {
   const Business = mongoose.model("Business");
-  const reviews = await mongoose.model("Review").find({ business: doc.business, status: "visible" });
+  const reviews = await mongoose.model("Review").find({ businessId: doc.businessId, status: "visible" });
 
   const total = reviews.reduce((sum, r) => sum + r.rating, 0);
-  const avg = total / reviews.length;
+  const avg = reviews.length ? total / reviews.length : 0;
 
-  await Business.findByIdAndUpdate(doc.business, {
+  await Business.findByIdAndUpdate(doc.businessId, {
     ratingAverage: avg,
     ratingsCount: reviews.length,
   });

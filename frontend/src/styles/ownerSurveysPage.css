@@ -1,0 +1,75 @@
+.owner-surveys-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.owner-surveys-page__header h1 {
+  margin: 0;
+  font-size: 2.4rem;
+}
+
+.owner-surveys-page__subtitle {
+  margin: 4px 0 0;
+  color: #64748b;
+}
+
+.owner-surveys-page__creator {
+  background: #fff;
+  border-radius: 20px;
+  padding: 1.25rem;
+  border: 1px solid #e0e7ff;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+}
+
+.owner-surveys-page__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(260px, 1fr);
+  gap: 18px;
+}
+
+.owner-surveys-page__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.owner-surveys-page__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.owner-surveys-page__panel-card {
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid #e0e7ff;
+  padding: 1.2rem;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+}
+
+.owner-surveys-page__panel-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.owner-surveys-page__panel-card li {
+  font-size: 0.95rem;
+  color: #475569;
+}
+
+.owner-surveys-page__panel-card li span {
+  display: block;
+  font-size: 0.8rem;
+  color: #6366f1;
+}
+
+@media (max-width: 1100px) {
+  .owner-surveys-page__layout {
+    grid-template-columns: 1fr;
+  }
+}

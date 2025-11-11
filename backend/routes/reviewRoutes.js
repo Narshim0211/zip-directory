@@ -1,106 +1,188 @@
-const express = require("express");
-const router = express.Router();
-const Review = require("../models/Review");
-const Business = require("../models/Business");
+const createRouter = require('./asyncRouter');
+const router = createRouter();
+const Review = require('../models/Review');
+const Business = require('../models/Business');
+const Activity = require('../models/Activity');
+const { protect, adminOnly } = require('../middleWare/authMiddleware');
+const notificationService = require('../services/notificationService');
 
-// Recent reviews feed (public) – declare before param routes
-router.get("/recent", async (req, res) => {
+const mapReview = (doc) => ({
+  _id: doc._id,
+  rating: doc.rating,
+  text: doc.text,
+  createdAt: doc.createdAt,
+  status: doc.status,
+  replies: doc.replies || [],
+  reviewer: doc.reviewerId,
+});
+
+router.get('/recent', async (req, res) => {
   try {
-    const limit = Math.min(parseInt((req.query && req.query.limit) || "20", 10) || 20, 50);
-    const reviews = await Review.find({ status: "visible" })
+    const limit = Math.min(Math.max(parseInt(req.query.limit || '10', 10), 5), 50);
+    const reviews = await Review.find({ status: 'visible' })
       .sort({ createdAt: -1 })
       .limit(limit)
-      .populate("business", "name city category")
-      .populate("user", "name");
-    const mapped = reviews.map((r) => ({
-      _id: r._id,
-      rating: r.rating,
-      comment: r.text,
-      createdAt: r.createdAt,
-      business: r.business,
-      user: r.user,
-    }));
-    res.json(mapped);
+      .populate('businessId', 'name city category')
+      .populate('reviewerId', 'name');
+    res.json(
+      reviews.map((r) => ({
+        ...mapReview(r),
+        business: r.businessId,
+        user: r.reviewerId,
+      }))
+    );
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Reviews by user id (public for now)
-router.get("/by-user/:userId", async (req, res) => {
+router.get('/business/:businessId', async (req, res) => {
   try {
-    const list = await Review.find({ user: req.params.userId, status: "visible" })
+    const reviews = await Review.find({
+      businessId: req.params.businessId,
+      status: 'visible',
+    })
       .sort({ createdAt: -1 })
-      .populate("business", "name city category");
-    const items = list.map((r) => ({
-      _id: r._id,
-      rating: r.rating,
-      comment: r.text,
-      createdAt: r.createdAt,
-      business: r.business,
-    }));
-    res.json(items);
+      .populate('reviewerId', 'name');
+    res.json(
+      reviews.map((r) => ({
+        ...mapReview(r),
+        user: r.reviewerId,
+      }))
+    );
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// GET all reviews for a specific business
-router.get("/:businessId", async (req, res) => {
+router.post('/', protect, async (req, res) => {
   try {
-    const reviews = await Review.find({ business: req.params.businessId, status: "visible" })
-      .sort({ createdAt: -1 })
-      .populate("user", "name");
-    const mapped = reviews.map((r) => ({
-      _id: r._id,
-      rating: r.rating,
-      comment: r.text,
-      createdAt: r.createdAt,
-      user: r.user,
-    }));
-    res.json(mapped);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+    const { businessId, rating, text } = req.body || {};
+    if (!businessId || !rating || !text) {
+      return res.status(400).json({ message: 'Business, rating, and text are required' });
+    }
+    if (rating < 1 || rating > 5) return res.status(400).json({ message: 'Rating must be 1-5' });
+    if (String(text || '').trim().length < 5) return res.status(400).json({ message: 'Review must be at least 5 characters' });
+    const business = await Business.findById(businessId);
+    if (!business) return res.status(404).json({ message: 'Business not found' });
 
-// POST a new review for a business
-router.post("/:businessId", async (req, res) => {
-  try {
-    const { rating, comment, text, user } = req.body || {};
-    const bodyText = (typeof text === "string" ? text : (typeof comment === "string" ? comment : ""));
-
-    const newReview = new Review({
-      business: req.params.businessId,
-      user,
+    const review = new Review({
+      businessId,
+      reviewerId: req.user._id,
       rating,
-      text: bodyText,
+      text: text.trim(),
+      images: req.body.images || [],
     });
-const savedReview = await newReview.save();
+    const saved = await review.save();
 
-    const reviews = await Review.find({ business: req.params.businessId });
-    const avg = reviews.reduce((acc, r) => acc + r.rating, 0) / (reviews.length || 1);
-await Business.findByIdAndUpdate(req.params.businessId, {
-  ratingAverage: avg,
-  ratingsCount: reviews.length,
-});
-
-    res.status(201).json({
-      _id: savedReview._id,
-      rating: savedReview.rating,
-      comment: savedReview.text,
-      createdAt: savedReview.createdAt,
+    notificationService.notifyUser({
+      recipientId: business.owner,
+      senderId: req.user._id,
+      type: 'new_review',
+      title: 'New review received',
+      message: `${req.user.name || 'Someone'} left you a review.`,
+      contentType: 'review',
+      contentId: saved._id,
+      link: `/business/${business._id}`,
     });
-    // Best-effort: add to activity feed if model is present
+
     try {
-      const Activity = require('../models/Activity');
       await Activity.create({
         type: 'review',
         title: 'New review posted',
-        description: `A ${savedReview.rating}-star review was posted`,
-        link: `/business/${req.params.businessId}`,
+        description: `A ${saved.rating}-star review was shared.`,
+        link: `/business/${business._id}`,
       });
     } catch (_) {}
+
+    res.status(201).json(mapReview(saved));
+  } catch (error) {
+    const msg = error && error.code === 11000 ? 'You have already reviewed this business' : error.message;
+    res.status(400).json({ message: msg });
+  }
+});
+
+const ensureOwnerOrAdmin = async (req, review, business) => {
+  const isAdmin = req.user && req.user.role === 'admin';
+  const isOwner = req.user && business && String(business.owner) === String(req.user._id);
+  return isAdmin || isOwner;
+};
+
+router.post('/:reviewId/reply', protect, async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.reviewId);
+    if (!review) return res.status(404).json({ message: 'Review not found' });
+    const business = await Business.findById(review.businessId);
+    if (!await ensureOwnerOrAdmin(req, review, business)) return res.status(403).json({ message: 'Not authorized' });
+    const message = (req.body.text || '').trim();
+    if (!message) return res.status(400).json({ message: 'Reply text is required' });
+    review.replies.push({ author: req.user._id, message });
+    await review.save();
+
+    notificationService.notifyUser({
+      recipientId: review.reviewerId,
+      senderId: req.user._id,
+      type: 'review_reply',
+      title: 'Owner replied to your review',
+      message: `${business.name} owner replied.`,
+      contentType: 'review',
+      contentId: review._id,
+      link: `/business/${business._id}`,
+    });
+
+    res.json({ ok: true, replies: review.replies });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+router.post('/:reviewId/request-removal', protect, async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.reviewId);
+    if (!review) return res.status(404).json({ message: 'Review not found' });
+    const business = await Business.findById(review.businessId);
+    if (!await ensureOwnerOrAdmin(req, review, business)) return res.status(403).json({ message: 'Not authorized' });
+    review.isPendingRemoval = true;
+    review.removalRequestMessage = (req.body.message || '').trim();
+    await review.save();
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+router.post('/:reviewId/flag', protect, async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.reviewId);
+    if (!review) return res.status(404).json({ message: 'Review not found' });
+    review.isFlagged = true;
+    review.flaggedBy = req.user._id;
+    review.flagReason = (req.body.reason || '').trim();
+    await review.save();
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+router.get('/pending', protect, adminOnly, async (req, res) => {
+  try {
+    const reviews = await Review.find({ $or: [{ isFlagged: true }, { isPendingRemoval: true }] })
+      .sort({ updatedAt: -1 })
+      .populate('businessId', 'name')
+      .populate('reviewerId', 'name');
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.delete('/:reviewId', protect, adminOnly, async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.reviewId);
+    if (!review) return res.status(404).json({ message: 'Review not found' });
+    await review.deleteOne();
+    res.status(204).end();
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

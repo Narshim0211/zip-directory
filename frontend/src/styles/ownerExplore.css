@@ -1,0 +1,69 @@
+.owner-explore {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.owner-explore__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #ececec;
+  padding-bottom: 1rem;
+}
+
+.owner-explore__header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+.owner-explore__hint {
+  margin: 0;
+  max-width: 320px;
+  color: #6b7280;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-bottom: 0.4rem;
+}
+
+.owner-explore__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.owner-explore__card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.owner-explore__card h3 {
+  margin-top: 0;
+  margin-bottom: 0.25rem;
+  font-size: 1.125rem;
+}
+
+.owner-explore__city {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.owner-explore__metric {
+  font-weight: 600;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.owner-explore__trend {
+  margin: 0;
+  color: #10b981;
+  font-weight: 500;
+}

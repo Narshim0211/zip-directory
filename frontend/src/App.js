@@ -1,50 +1,102 @@
-﻿import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "./components/LandingPage";
 import AdminDashboard from "./components/AdminDashboard";
-import OwnerHome from "./components/OwnerHome";
 import BusinessDetails from "./components/BusinessDetails";
-import NavbarPublic from "./components/NavbarPublic";
-import NavbarPrivate from "./components/NavbarPrivate";
-import VisitorPage from "./components/VisitorPage";
-import OwnerPage from "./components/OwnerPage";
+import VisitorPage from "./visitor/pages/VisitorExplore";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import ResetPassword from "./components/ResetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import VisitorProfile from "./components/VisitorProfile";
-import VisitorHome from "./components/VisitorHome";
+import VisitorProfile from "./visitor/pages/VisitorProfile";
+import VisitorHome from "./visitor/pages/VisitorHome";
 import NewsList from "./components/NewsList";
 import NewsDetail from "./components/NewsDetail";
 import RecentActivity from "./components/RecentActivity";
- 
+import VisitorNotifications from "./visitor/pages/VisitorNotifications";
+import VisitorSurveys from "./visitor/pages/VisitorSurveys";
+import OwnerLayout from "./layouts/OwnerLayout";
+import VisitorLayout from "./visitor/layouts/VisitorLayout";
+import Dashboard from "./pages/owner/Dashboard";
+import MyBusiness from "./pages/owner/MyBusiness";
+import ExploreOwner from "./pages/owner/ExploreOwner";
+import Surveys from "./pages/owner/Surveys";
+import Notifications from "./pages/owner/Notifications";
+import PublicLayout from "./layouts/PublicLayout";
+import ErrorBoundary from "./components/Shared/ErrorBoundary";
+import "./App.css";
+
+const LandingOrRedirect = () => {
+  const { user } = useAuth();
+  if (!user) return <LandingPage />;
+  if (user.role === "visitor") return <Navigate to="/visitor/home" replace />;
+  if (user.role === "owner") return <Navigate to="/owner/dashboard" replace />;
+  if (user.role === "admin") return <Navigate to="/admin" replace />;
+  return <LandingPage />;
+};
 
 function Frame() {
-  const { user } = useAuth();
   return (
-    <>
-      {user ? <NavbarPrivate /> : <NavbarPublic />}
+    <ErrorBoundary>
       <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/visitor" element={<VisitorPage />} />
-          <Route path="/explore" element={<VisitorPage />} />
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<LandingOrRedirect />} />
+          <Route path="/explore" element={<Navigate to="/visitor/explore" replace />} />
           <Route path="/recent" element={<RecentActivity />} />
-          <Route path="/owner" element={<ProtectedRoute roles={["owner", "admin"]} element={<OwnerPage />} />} />
-          <Route path="/owner/home" element={<ProtectedRoute roles={["owner", "admin"]} element={<OwnerHome />} />} />
-          <Route path="/visitor/home" element={<ProtectedRoute roles={["visitor"]} element={<VisitorHome />} />} />
-          <Route path="/dashboard/owner" element={<ProtectedRoute roles={["owner", "admin"]} element={<OwnerHome />} />} />
-          <Route path="/dashboard/visitor" element={<ProtectedRoute roles={["visitor"]} element={<VisitorHome />} />} />
-          <Route path="/admin" element={<ProtectedRoute roles={["admin"]} element={<AdminDashboard />} />} />
-          <Route path="/business/:id" element={<BusinessDetails />} />
-          <Route path="/news" element={<NewsList />} />
+          <Route
+            path="/news"
+            element={<NewsList />}
+          />
           <Route path="/news/:id" element={<NewsDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/profile" element={<ProtectedRoute roles={["visitor","owner","admin"]} element={<VisitorProfile />} />} />
+        </Route>
+
+        <Route path="/profile" element={<Navigate to="/visitor/profile" replace />} />
+        <Route path="/surveys" element={<Navigate to="/visitor/surveys" replace />} />
+        <Route path="/notifications" element={<Navigate to="/visitor/notifications" replace />} />
+
+        <Route
+          path="/visitor/*"
+          element={
+            <ProtectedRoute
+              roles={["visitor"]}
+              element={<VisitorLayout />}
+            />
+          }
+        >
+          <Route index element={<VisitorHome />} />
+          <Route path="home" element={<VisitorHome />} />
+          <Route path="explore" element={<VisitorPage />} />
+          <Route path="surveys" element={<VisitorSurveys />} />
+          <Route path="notifications" element={<VisitorNotifications />} />
+          <Route path="profile" element={<VisitorProfile />} />
+        </Route>
+
+        <Route path="/dashboard/owner" element={<Navigate to="/owner/dashboard" replace />} />
+        <Route
+          path="/owner/*"
+          element={
+            <ProtectedRoute
+              roles={["owner", "admin"]}
+              element={<OwnerLayout />}
+            />
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="my-business" element={<MyBusiness />} />
+          <Route path="explore" element={<ExploreOwner />} />
+          <Route path="surveys" element={<Surveys />} />
+          <Route path="notifications" element={<Notifications />} />
+        </Route>
+
+        <Route path="/admin" element={<ProtectedRoute roles={["admin"]} element={<AdminDashboard />} />} />
+        <Route path="/business/:id" element={<BusinessDetails />} />
       </Routes>
-    </>
+    </ErrorBoundary>
   );
 }
 
@@ -59,11 +111,3 @@ function App() {
 }
 
 export default App;
-
-
-
-
-
-
-
-

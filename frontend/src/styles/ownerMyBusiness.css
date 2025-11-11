@@ -1,0 +1,309 @@
+.owner-business-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.owner-business-page__header h1 {
+  margin-bottom: 0.4rem;
+  font-size: 2rem;
+}
+
+.owner-business-page__header p {
+  margin: 0;
+  color: #475569;
+}
+
+.owner-business-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.owner-business-page__grid--stacked {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.owner-business-page__card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.25rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.owner-business__form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.owner-business__form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.owner-business__form input,
+.owner-business__form textarea {
+  margin-top: 0.35rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid #cbd5f5;
+  font-size: 0.95rem;
+  background: #f8fafc;
+}
+
+.owner-business__description {
+  grid-column: 1 / -1;
+}
+
+.owner-business__form button {
+  grid-column: 1 / -1;
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: #fff;
+}
+
+.owner-business__message {
+  color: #2563eb;
+  margin-top: 0.5rem;
+}
+
+.owner-business__gallery-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.owner-business__gallery-upload {
+  background: #eef2ff;
+  border-radius: 12px;
+  padding: 0.85rem;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 600;
+  border: 1px dashed #c7d2fe;
+  color: #4338ca;
+}
+
+.owner-business__gallery-upload input {
+  display: none;
+}
+
+.owner-business__gallery-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.owner-business__gallery-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.owner-business__gallery-item img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.owner-business__gallery-item button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(15, 23, 42, 0.8);
+  border: none;
+  color: #fff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.owner-business__post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.owner-business__post-form textarea,
+.owner-business__post-form input {
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 0.9rem;
+  font-size: 0.95rem;
+  background: #f8fafc;
+}
+
+.owner-business__post-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.owner-business__emoji-btn {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.35rem 0.75rem;
+  background: #fff;
+  cursor: pointer;
+  font-size: 1.05rem;
+}
+
+.owner-business__post-actions button:last-of-type {
+  margin-left: auto;
+  padding: 0.65rem 1.2rem;
+  background: #0f172a;
+  color: #fff;
+  border-radius: 12px;
+  border: none;
+}
+
+.owner-business__post-list {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.owner-business__post-card {
+  padding: 0.9rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.owner-business__post-date {
+  font-size: 0.85rem;
+  color: #475569;
+  margin-bottom: 0.45rem;
+}
+
+.owner-business__post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.5rem 0;
+}
+
+.owner-business__tag {
+  background: #eef2ff;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: #4338ca;
+}
+
+.owner-business__post-actions button {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 0.35rem 0.6rem;
+  background: #fff;
+  cursor: pointer;
+}
+
+.owner-business__insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.owner-business__insight {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 0.8rem;
+  border: 1px solid #e2e8f0;
+}
+
+.owner-business__insight-title {
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.owner-business__insight-meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+.owner-business__reaction-summary {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.owner-business__reaction-pill {
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  background: #eef2ff;
+  font-weight: 600;
+}
+
+.owner-business__notifications {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.notification-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #f8fafc;
+}
+
+.notification-card.unread {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.3);
+}
+
+.notification-card button {
+  background: #0f172a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.35rem 0.85rem;
+  cursor: pointer;
+}
+
+.owner-business__feed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+
+.owner-business__feed-card {
+  background: #0f172a;
+  color: #fff;
+  border-radius: 14px;
+  padding: 1rem;
+  position: relative;
+  min-height: 120px;
+}
+
+.owner-business__feed-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}

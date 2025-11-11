@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import '../styles/Auth.css';
 
 const AuthForm = ({ title, subtitle, onSubmit, children, footer, loading, ctaText = 'Continue' }) => {

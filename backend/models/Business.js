@@ -13,6 +13,11 @@ const businessSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    zip: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     owner: {
   type: String,  // temporarily allow string for testing
   required: false
@@ -56,6 +61,19 @@ const businessSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // GeoJSON location for distance-based search
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [lng, lat]
+        // Not strictly required to avoid breaking older docs; validated on create path
+        required: false,
+      },
+    },
   },
   { timestamps: true }
 );
@@ -63,6 +81,7 @@ const businessSchema = new mongoose.Schema(
 // 📊 Add helpful indexes for faster searches
 businessSchema.index({ name: "text", city: "text", category: "text" });
 businessSchema.index({ city: 1, category: 1, status: 1 });
+businessSchema.index({ location: "2dsphere" });
 
 // ⚙️ Virtual population (get reviews automatically)
 businessSchema.virtual("reviews", {

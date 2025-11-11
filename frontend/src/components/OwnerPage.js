@@ -1,9 +1,9 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import api from "../api/axios";
 import "../styles/OwnerPage.css";
 
 const OwnerPage = () => {
-  const [form, setForm] = useState({ name: "", city: "", category: "", description: "" });
+  const [form, setForm] = useState({ name: "", address: "", city: "", zip: "", category: "", description: "" });
   const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
@@ -18,7 +18,7 @@ const OwnerPage = () => {
       const token = localStorage.getItem("token");
       await api.post("/businesses", form, { headers: { Authorization: `Bearer ${token}` } });
       setMessage("Listing submitted successfully! Waiting for approval.");
-      setForm({ name: "", city: "", category: "", description: "" });
+      setForm({ name: "", address: "", city: "", zip: "", category: "", description: "" });
     } catch (err) {
       console.error(err);
       setMessage("Failed to submit. Please log in first.");
@@ -44,7 +44,9 @@ const OwnerPage = () => {
 
           <form onSubmit={handleSubmit}>
             <input id="name" type="text" placeholder="Business Name" value={form.name} onChange={handleChange} required />
+            <input id="address" type="text" placeholder="Street Address" value={form.address} onChange={handleChange} />
             <input id="city" type="text" placeholder="City" value={form.city} onChange={handleChange} required />
+            <input id="zip" type="text" placeholder="ZIP" value={form.zip} onChange={handleChange} />
             <select id="category" value={form.category} onChange={handleChange} required>
               <option value="">Category</option>
               <option value="Salon">Salon</option>

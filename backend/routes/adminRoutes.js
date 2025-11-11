@@ -1,9 +1,10 @@
-﻿const express = require("express");
-const router = express.Router();
+﻿const createRouter = require('./asyncRouter');
+const router = createRouter();
 const Business = require("../models/Business");
 const User = require("../models/User");
 const Review = require("../models/Review");
 const { protect, adminOnly } = require("../middleWare/authMiddleware");
+const geocodeLocation = require("../config/openCage");
 
 // High-level overview metrics for the dashboard
 // Returns users, businesses and reviews counts plus business status breakdown
@@ -169,3 +170,26 @@ router.delete('/users/:id', protect, adminOnly, async (req, res) => {
 });
 
 module.exports = router;
+
+// Admin: backfill geocoding for businesses missing coordinates (on-demand trigger)
+router.post('/maintenance/backfill-geo', protect, adminOnly, async (req, res) => {
+  try {
+    const cursor = Business.find({}).cursor();
+    let processed = 0, updated = 0, skipped = 0, failed = 0;
+    for await (const b of cursor) {
+      processed += 1;
+      const hasCoords = b.location && Array.isArray(b.location.coordinates) && b.location.coordinates.length === 2;
+      if (hasCoords) { skipped += 1; continue; }
+      const fullAddress = [b.address, b.city, b.zip].filter(Boolean).join(', ');
+      if (!fullAddress) { skipped += 1; continue; }
+      const coords = await geocodeLocation(fullAddress);
+      if (!coords) { failed += 1; continue; }
+      b.location = { type: 'Point', coordinates: [coords.lng, coords.lat] };
+      await b.save();
+      updated += 1;
+    }
+    res.json({ processed, updated, skipped, failed });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});

@@ -1,108 +1,142 @@
-﻿import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/axios';
-import NewsFeed from './NewsFeed';
+import PostComposer from './PostComposer';
+import PostCard from './PostCard';
+import SurveyCard from './SurveyCard';
+import TrendingNews from './TrendingNews';
+import AnalyticsOverviewCard from './AnalyticsOverviewCard';
+import EngagementChart from './EngagementChart';
+import TopPostsTable from './TopPostsTable';
+import AudienceInsights from './AudienceInsights';
+import FollowerTrend from './FollowerTrend';
+import '../styles/postCard.css';
+import '../styles/postComposer.css';
 import './ownerDashboard.css';
 
 const OwnerDashboard = () => {
-  const [stats, setStats] = useState({ views: 0, weekly: [], avgRating: 0, reviewsCount: 0 });
-  const [recentReviews, setRecentReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    views: 0,
+    weekly: [],
+    avgRating: 0,
+    reviewsCount: 0,
+    likes: 0,
+    comments: 0,
+    followers: 0,
+    businesses: 0,
+  });
+  const [engagementTrend, setEngagementTrend] = useState([]);
+  const [topPosts, setTopPosts] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [followerTrend, setFollowerTrend] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [surveys, setSurveys] = useState([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const loadDashboard = async () => {
       try {
-        // Owner stats
-        const { data: s } = await api.get('/owner/stats');
+        const [
+          statsRes,
+          engagementRes,
+          postsRes,
+          geoRes,
+          followerRes,
+        ] = await Promise.all([
+          api.get('/owner/stats'),
+          api.get('/analytics/engagement?days=7'),
+          api.get('/analytics/posts?limit=4'),
+          api.get('/analytics/geo?limit=5'),
+          api.get('/analytics/followers?days=7'),
+        ]);
+
         const safeStats = {
-          views: s?.weeklyViews || 0,
-          weekly: Array.isArray(s?.weekly) ? s.weekly : [],
-          avgRating: Number(s?.avgRating || 0),
-          reviewsCount: Number(s?.reviewsCount || 0),
+          views: statsRes.data?.views || 0,
+          weekly: Array.isArray(statsRes.data?.weekly) ? statsRes.data.weekly : [],
+          avgRating: Number(statsRes.data?.avgRating || 0),
+          reviewsCount: Number(statsRes.data?.reviewsCount || 0),
+          likes: Number(statsRes.data?.likes || 0),
+          comments: Number(statsRes.data?.comments || 0),
+          followers: Number(statsRes.data?.followers || 0),
+          businesses: Number(statsRes.data?.businesses || 0),
         };
         setStats(safeStats);
-        // Keep placeholder recent reviews for now (endpoint not specified yet)
-        setRecentReviews([
-          { _id: '1', user: { name: 'Ava' }, rating: 5, comment: 'Amazing service!', createdAt: new Date().toISOString() },
-          { _id: '2', user: { name: 'Liam' }, rating: 4, comment: 'Great haircut and friendly staff.', createdAt: new Date().toISOString() },
-        ]);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
+        setEngagementTrend(engagementRes.data || []);
+        setTopPosts(postsRes.data || []);
+        setCities(geoRes.data || []);
+        setFollowerTrend(followerRes.data || []);
+      } catch (error) {
+        console.error('Failed to load analytics data', error);
       }
     };
-    fetchData();
+
+  const loadFeed = async () => {
+    try {
+      const [postsRes, surveysRes] = await Promise.all([
+        api.get('/posts'),
+        api.get('/surveys/feed?limit=5'),
+      ]);
+      setPosts(Array.isArray(postsRes.data) ? postsRes.data : []);
+      setSurveys(Array.isArray(surveysRes.data) ? surveysRes.data : []);
+    } catch (error) {
+      console.error('Failed to load feed', error);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  useEffect(() => {
+    loadFeed();
   }, []);
 
   return (
-    <div className="owner-admin">
-      <header className="owner-admin__head">
-        <h1>Owner Admin Dashboard</h1>
-        <p className="sub">Welcome back — manage your listing and see performance at a glance.</p>
-      </header>
-
-      <section className="owner-admin__kpis">
-        <div className="kpi tone-blue">
-          <div className="kpi-title">Views (this week)</div>
-          <div className="kpi-value">{stats.views.toLocaleString()}</div>
-        </div>
-        <div className="kpi tone-purple">
-          <div className="kpi-title">Reviews</div>
-          <div className="kpi-value">{stats.reviewsCount}</div>
-        </div>
-        <div className="kpi tone-gold">
-          <div className="kpi-title">Avg Rating</div>
-          <div className="kpi-value">{Number(stats.avgRating || 0).toFixed(1)}</div>
-        </div>
-        <div className="kpi tone-green">
-          <div className="kpi-title">Returning Visitors</div>
-          <div className="kpi-value">62%</div>
-        </div>
-      </section>
-
-      <section className="owner-admin__grid">
-        <div className="panel">
-          <div className="panel-head">
-            <div className="panel-title">Recent Reviews</div>
-          </div>
-          {loading ? (
-            <div className="shimmer" style={{ height: 140 }} />
-          ) : recentReviews.length === 0 ? (
-            <div className="empty">No reviews yet</div>
-          ) : (
-            <div className="reviews">
-              {recentReviews.map((r) => (
-                <div key={r._id} className="review">
-                  <div className="who">
-                    <div className="avatar" />
-                    <div>
-                      <div className="name">{r.user?.name || 'User'}</div>
-                      <div className="meta">{new Date(r.createdAt).toLocaleDateString()}</div>
-                    </div>
-                  </div>
-                  <div className="stars">{'*'.repeat(Math.max(1, Math.round(r.rating || 0)))}</div>
-                  <div className="comment">{r.comment}</div>
-                  <button className="btn small">Reply</button>
-                </div>
-              ))}
+    <main className="owner-social__feed">
+      <section className="owner-social__top">
+          <div className="panel analytics-panel analytics-panel--wide">
+            <div className="panel-head">
+              <div>
+                <div className="panel-title">Engagement</div>
+                <div className="panel-sub">Weekly views, comments, likes, and reviews</div>
+              </div>
             </div>
-          )}
-        </div>
+            <EngagementChart data={engagementTrend} />
+          </div>
+          <div className="panel analytics-panel analytics-panel--stacked">
+            <FollowerTrend data={followerTrend} />
+            <TopPostsTable posts={topPosts} />
+            <AudienceInsights cities={cities} />
+          </div>
+        </section>
 
-        <div className="panel">
-          <div className="panel-head">
-            <div className="panel-title">Quick Actions</div>
-          </div>
-          <div className="quick-actions">
-            <a className="qa" href="/owner">Edit Business Info</a>
-            <a className="qa" href="/owner">Manage Services</a>
-            <a className="qa" href="/owner">Upload Photos</a>
-          </div>
-        </div>
+        <section className="owner-social__kpis analytics-grid">
+          <AnalyticsOverviewCard label="Businesses" value={stats.businesses} />
+          <AnalyticsOverviewCard label="Views (week)" value={stats.views} />
+          <AnalyticsOverviewCard label="Reviews" value={stats.reviewsCount} />
+          <AnalyticsOverviewCard label="Avg rating" value={stats.avgRating.toFixed(1)} />
+          <AnalyticsOverviewCard label="Followers" value={stats.followers} tone="purple" />
+          <AnalyticsOverviewCard label="Comments" value={stats.comments} tone="green" />
+        </section>
+
+        <section className="owner-social__composer">
+          <PostComposer onPost={(newPost) => setPosts((prev) => [newPost, ...prev])} />
+        </section>
+
+        <section className="owner-social__posts">
+          {posts.map((post) => (
+            <PostCard key={post._id || post.id} post={post} />
+          ))}
+        </section>
+
+      <section className="owner-social__surveys">
+        <h3>Recent surveys</h3>
+        {surveys.map((survey) => (
+          <SurveyCard key={survey._id || survey.id} survey={survey} onVote={() => loadFeed()} />
+        ))}
+        <Link className="owner-social__surveys-link" to="/owner/surveys">
+          View owner survey studio
+        </Link>
       </section>
-      {/* News Feed (footer section) */}
-      <NewsFeed limit={6} />
-    </div>
+    </main>
   );
 };
 

@@ -1,0 +1,139 @@
+.surveys-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0;
+}
+
+.surveys-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.surveys-page__header h1 {
+  margin: 0;
+  font-size: 2.4rem;
+}
+
+.surveys-page__subtitle {
+  margin: 4px 0 0;
+  color: #64748b;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: #a855f7;
+  margin: 0 0 6px;
+}
+
+.surveys-page__create-btn {
+  border: none;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  color: #fff;
+  padding: 0.8rem 1.4rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 14px 30px rgba(79, 70, 229, 0.3);
+}
+
+.surveys-page__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.surveys-page__filter {
+  border-radius: 999px;
+  border: 1px solid #e0e7ff;
+  padding: 0.35rem 1rem;
+  background: #fff;
+  color: #0f172a;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.surveys-page__filter.active {
+  background: #c7d2fe;
+  color: #312e81;
+}
+
+.surveys-page__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 20px;
+}
+
+.surveys-page__feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.surveys-page__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.surveys-page__panel-card {
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid #e0e7ff;
+  padding: 1.25rem;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+}
+
+.surveys-page__panel-card h3,
+.surveys-page__panel-card h4 {
+  margin: 0 0 0.35rem;
+}
+
+.surveys-page__panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.surveys-page__panel li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.surveys-page__panel li span {
+  color: #6366f1;
+  font-weight: 600;
+}
+
+.surveys-page__empty {
+  padding: 1.5rem;
+  text-align: center;
+  background: #fff;
+  border-radius: 18px;
+  border: 1px dashed #c7d2fe;
+  color: #64748b;
+}
+
+.surveys-page__creator {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #e0e7ff;
+  padding: 1.25rem;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+}
+
+@media (max-width: 1100px) {
+  .surveys-page__grid {
+    grid-template-columns: 1fr;
+  }
+}

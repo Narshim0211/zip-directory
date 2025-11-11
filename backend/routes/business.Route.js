@@ -1,7 +1,10 @@
-﻿const express = require("express");
-const router = express.Router();
+const jwt = require("jsonwebtoken");
+const createRouter = require('./asyncRouter');
+const router = createRouter();
 const Business = require("../models/Business");
 const { protect, adminOnly } = require("../middleWare/authMiddleware");
+const geocodeLocation = require("../config/openCage");
+const analyticsService = require("../services/analyticsService");
 
 // âœ… 1ï¸âƒ£ GET all approved businesses (public)
 router.get("/", async (req, res) => {
@@ -43,11 +46,25 @@ router.get("/trending", async (req, res) => {
   }
 });
 
+const tryExtractVisitor = (req) => {
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith("Bearer ")) return null;
+  const token = header.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded.id;
+  } catch (error) {
+    return null;
+  }
+};
+
 // Get single business by id (public)
 router.get("/:id", async (req, res) => {
   try {
     const biz = await Business.findById(req.params.id);
     if (!biz) return res.status(404).json({ message: "Business not found" });
+    const visitorId = tryExtractVisitor(req);
+    analyticsService.recordProfileVisit(biz._id, visitorId).catch(() => {});
     res.json(biz);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -56,7 +73,7 @@ router.get("/:id", async (req, res) => {
 // âœ… 2ï¸âƒ£ POST a new business (auth required; owner from token; status defaults to 'pending')
 router.post("/", protect, async (req, res) => {
   try {
-    const { name, city, category, description, address, images, services, specialties } = req.body;
+    const { name, city, category, description, address, zip, images, services, specialties } = req.body;
 
     // --- Validation ---
     const errors = [];
@@ -71,10 +88,17 @@ router.post("/", protect, async (req, res) => {
 
     if (errors.length) return res.status(400).json({ message: "Validation failed", errors });
 
-    // --- Create new business ---
+    // --- Geocode and create business ---
+    const fullAddress = [address, city, zip].filter(Boolean).join(", ");
+    const coords = await geocodeLocation(fullAddress || city);
+    if (!coords) {
+      return res.status(400).json({ message: "Could not geocode location" });
+    }
+
     const business = new Business({
       name: name.trim(),
       city: city.trim(),
+      zip: zip || "",
       category,
       description,
       address,
@@ -83,6 +107,7 @@ router.post("/", protect, async (req, res) => {
       specialties,
       owner: req.user._id,  // from logged-in user
       status: "pending",
+      location: { type: "Point", coordinates: [coords.lng, coords.lat] },
     });
 
     const saved = await business.save();
@@ -154,10 +179,49 @@ router.delete("/:id", protect, async (req, res) => {
 });
 
 
-// Search approved businesses
+// Search businesses with geo support and smart fallback
 router.get('/search', async (req, res) => {
   try {
-    const { query = "", city = "", category = "", minRating = "", sort = "" } = req.query || {};
+    const { location = '', category = '', radius = '', query = '', city = '', minRating = '', sort = '' } = req.query || {};
+
+    if (location && String(location).trim()) {
+      const coords = await geocodeLocation(location);
+      if (!coords) return res.status(404).json({ message: 'Could not find that location' });
+
+      const maxDistance = Number(radius) || Number(process.env.SEARCH_DEFAULT_RADIUS || 15000);
+      const sortMap = {
+        rating: { ratingAverage: -1, ratingsCount: -1 },
+        reviews: { ratingsCount: -1, ratingAverage: -1 },
+        newest: { createdAt: -1 },
+        distance: { distance: 1 }
+      };
+      const sortKey = String(sort || '').trim();
+      const sortStage = sortKey && sortMap[sortKey] ? [{ $sort: sortMap[sortKey] }] : [];
+
+      const pipeline = [
+        {
+          $geoNear: {
+            near: { type: 'Point', coordinates: [coords.lng, coords.lat] },
+            distanceField: 'distance',
+            spherical: true,
+            maxDistance: maxDistance,
+            query: { status: 'approved', ...(category && String(category).trim() ? { category } : {}) },
+          }
+        },
+        ...sortStage,
+        { $limit: 100 }
+      ];
+
+      const nearby = await Business.aggregate(pipeline);
+      if (nearby.length > 0) return res.json(nearby);
+
+      const fallback = await Business.find({ status: 'approved' }).sort({ createdAt: -1 }).limit(50);
+      if (fallback.length > 0) return res.json(fallback);
+
+      const any = await Business.find({}).sort({ createdAt: -1 }).limit(50);
+      return res.json(any);
+    }
+
     const filter = { status: 'approved' };
     if (city && String(city).trim()) filter.city = city;
     if (category && String(category).trim()) filter.category = category;
@@ -165,7 +229,6 @@ router.get('/search', async (req, res) => {
 
     let q = Business.find(filter);
     if (query && String(query).trim()) {
-      // Escape regex meta-characters correctly (replacement uses $& for the matched char)
       const escaped = String(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(escaped, 'i');
       q = Business.find({ ...filter, $or: [{ name: regex }, { city: regex }] });
@@ -178,8 +241,14 @@ router.get('/search', async (req, res) => {
     };
     const sortObj = sortMap[sort] || { createdAt: -1 };
 
-    const items = await q.sort(sortObj).limit(100);
-    res.json(items);
+    let items = await q.sort(sortObj).limit(100);
+    if (items.length > 0) return res.json(items);
+
+    const fallback = await Business.find({ status: 'approved' }).sort({ createdAt: -1 }).limit(50);
+    if (fallback.length > 0) return res.json(fallback);
+
+    const any = await Business.find({}).sort({ createdAt: -1 }).limit(50);
+    return res.json(any);
   } catch (e) {
     res.status(500).json({ message: e.message });
   }

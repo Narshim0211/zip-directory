@@ -1,0 +1,25 @@
+.owner-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #eef2ff;
+}
+
+.owner-layout__sidebar {
+  flex-shrink: 0;
+}
+
+.owner-layout__main {
+  flex: 1;
+  padding: 32px clamp(16px, 3vw, 64px);
+  overflow-y: auto;
+}
+
+@media (max-width: 900px) {
+  .owner-layout {
+    flex-direction: column;
+  }
+
+  .owner-layout__sidebar {
+    width: 100%;
+  }
+}

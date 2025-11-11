@@ -1,5 +1,5 @@
-const express = require("express");
-const router = express.Router();
+const createRouter = require('./asyncRouter');
+const router = createRouter();
 const { protect } = require("../middleWare/authMiddleware");
 const authController = require("../controllers/authController");
 

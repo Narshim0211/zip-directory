@@ -1,5 +1,5 @@
-const express = require('express');
-const router = express.Router();
+const createRouter = require('./asyncRouter');
+const router = createRouter();
 const Activity = require('../models/Activity');
 const { protect, adminOnly } = require('../middleWare/authMiddleware');
 

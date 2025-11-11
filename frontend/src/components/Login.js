@@ -19,8 +19,9 @@ const Login = () => {
       const data = await login(email, password);
       // Role-based redirect to dashboards
       if (data.role === 'admin') navigate('/admin');
-      else if (data.role === 'owner') navigate('/dashboard/owner');
-      else navigate('/dashboard/visitor');
+      else if (data.role === 'owner') navigate('/owner/dashboard');
+      else if (data.role === 'visitor') navigate('/visitor/home');
+      else navigate('/visitor/home');
     } catch (err) {
       setError(err?.response?.data?.message || 'Login failed');
     } finally {

@@ -1,7 +1,10 @@
 const express = require('express');
+const http = require('http');
 const app = express();
 const mongoose = require('mongoose');
 const User = require('./models/User');
+const logger = require('./utils/logger');
+const errorHandler = require('./middleWare/errorMiddleware');
 require('dotenv').config();
 
 // Middleware
@@ -12,7 +15,11 @@ const rawOrigins = [
   process.env.WEB_ORIGIN,      // e.g. https://salonhub.com
   process.env.ADMIN_ORIGIN,    // e.g. https://admin.salonhub.com
   'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
   'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
+  'http://127.0.0.1:3002',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
 ].filter(Boolean);
@@ -28,7 +35,6 @@ const corsOptions = {
     }
     return callback(new Error('Not allowed by CORS'));
   },
-  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   maxAge: 86400,
@@ -41,9 +47,10 @@ app.options(/.*/, cors(corsOptions));
 app.use(express.json());
 
 // DB connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log('MongoDB connection error:', err.message));
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => logger.info('MongoDB connected'))
+  .catch((err) => logger.error(`MongoDB connection error: ${err.message}`));
 
 // Health check
 app.get('/api/test', (req, res) => {
@@ -67,10 +74,54 @@ app.use("/api/admin", adminRoutes);
 const newsRoutes = require('./routes/newsRoutes');
 app.use('/api/news', newsRoutes);
 
+require('./cron/newsCron');
+
+// Surveys & Feed
+const surveyRoutes = require('./routes/surveyRoutes');
+app.use('/api/surveys', surveyRoutes);
+const feedRoutes = require('./routes/feedRoutes');
+app.use('/api/feed', feedRoutes);
+
 // Owner routes
 const ownerRoutes = require('./routes/ownerRoutes');
 app.use('/api/owner', ownerRoutes);
 
+// Follow
+const followRoutes = require('./routes/followRoutes');
+app.use('/api/follow', followRoutes);
+
+// Posts & Comments
+const postRoutes = require('./routes/postRoutes');
+app.use('/api/posts', postRoutes);
+
+const analyticsRoutes = require('./routes/analyticsRoutes');
+app.use('/api/analytics', analyticsRoutes);
+
+// Goals
+const goalsRoutes = require('./routes/goalsRoutes');
+app.use('/api/goals', goalsRoutes);
+
+// Style inspiration
+const stylesRoutes = require('./routes/stylesRoutes');
+app.use('/api/styles', stylesRoutes);
+
+// Articles feed
+const articlesRoutes = require('./routes/articlesRoutes');
+app.use('/api/articles', articlesRoutes);
+
+// AI advisor
+const aiRoutes = require('./routes/aiRoutes');
+app.use('/api/ai', aiRoutes);
+
+const commentRoutes = require('./routes/commentRoutes');
+app.use('/api/comments', commentRoutes);
+
+const reportRoutes = require('./routes/reportRoutes');
+app.use('/api/comments/reports', reportRoutes);
+// Notifications
+const { initNotificationSocket } = require('./services/notificationSocket');
+const notificationRoutes = require('./routes/notificationRoutes');
+app.use('/api/notifications', notificationRoutes);
 // Dev-only: Seed an admin user if missing
 if (process.env.NODE_ENV !== 'production') {
   app.post('/api/dev/seed-admin', async (req, res) => {
@@ -112,30 +163,37 @@ if (process.env.NODE_ENV !== 'production') {
 
 
 // Start server (export app for Vercel serverless)
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT || 5000);
 if (process.env.VERCEL) {
   module.exports = app; // Vercel will handle the serverless function
 } else {
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+  const createServerInstance = () => {
+    const server = http.createServer(app);
+    initNotificationSocket(server, rawOrigins);
+    return server;
+  };
+
+  const startServer = (port, attempts = 0) => {
+    const server = createServerInstance();
+    const handleError = (err) => {
+      if (err.code === 'EADDRINUSE' && !process.env.PORT && attempts < 10) {
+        logger.warn(`Port ${port} already in use, trying ${port + 1}...`);
+        server.close();
+        setTimeout(() => startServer(port + 1, attempts + 1), 100);
+        return;
+      }
+      logger.error('Unable to bind any port; exiting.');
+      process.exit(1);
+    };
+
+    server.once('error', handleError);
+    server.listen(port, () => {
+      server.off('error', handleError);
+      logger.info(`Server running on http://localhost:${port}`);
+    });
+  };
+
+  startServer(PORT);
 }
 
-// Basic error handler for CORS rejections
-app.use((err, req, res, next) => {
-  if (err && err.message && String(err.message).startsWith('Not allowed by CORS')) {
-    return res.status(403).json({ error: 'CORS: origin not allowed' });
-  }
-  next(err);
-});
-
-// Global JSON error handler to normalize responses
-// Maps known errors to clean client messages
-app.use((err, req, res, next) => {
-  const status = err.status || (err.name === 'MongoServerError' && err.code === 11000 ? 400 : 500);
-  let message = err.message || 'Internal Server Error';
-  if (err.name === 'MongoServerError' && err.code === 11000) {
-    message = 'User already exists';
-  }
-  res.status(status).json({ message });
-});
+app.use(errorHandler);
