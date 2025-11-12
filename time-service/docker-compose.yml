@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # MongoDB Database for Time Service
+  time-mongo:
+    image: mongo:7.0-alpine
+    container_name: salonhub-time-mongo
+    ports:
+      - "27018:27017"
+    volumes:
+      - time-mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: time-service-db
+    networks:
+      - salonhub-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Time Management Microservice
+  time-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: salonhub-time-service
+    ports:
+      - "5001:5001"
+    depends_on:
+      time-mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 5001
+      MONGODB_URI: mongodb://admin:admin123@time-mongo:27017/time-service-db?authSource=admin
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001
+      AUTH_SERVICE_URL: http://auth-service:5000
+      JWT_SECRET: your_jwt_secret_here_change_in_production
+      LOG_LEVEL: debug
+      LOG_DIR: /app/logs
+      ENABLE_VISITOR_REMINDERS: "true"
+      ENABLE_OWNER_REMINDERS: "true"
+      ENABLE_EMAIL_NOTIFICATIONS: "false"
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+    networks:
+      - salonhub-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  time-mongo-data:
+    driver: local
+
+networks:
+  salonhub-network:
+    driver: bridge

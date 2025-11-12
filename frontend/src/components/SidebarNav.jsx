@@ -7,7 +7,8 @@ const navItems = [
   { label: "Explore", path: "/explore", icon: "E" },
   { label: "Surveys", path: "/surveys", icon: "S" },
   { label: "Notifications", path: "/notifications", icon: "N" },
-  { label: "Profile", path: "/profile", icon: "P" },
+  { label: "My Toolkit", path: "/visitor/toolkit", icon: "T" },
+  { label: "Profile", path: "/visitor/profile/edit", icon: "P" },
 ];
 
 export default function SidebarNav() {

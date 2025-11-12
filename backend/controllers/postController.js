@@ -12,7 +12,12 @@ exports.listPosts = async (req, res) => {
         path: 'comments',
         populate: { path: 'author', select: 'name' },
       });
-    res.json(posts);
+    // attach identity projection
+    const feedService = require('../services/feedService');
+    const mapped = posts.map(p => ({ type: 'post', data: p.toObject ? p.toObject() : p }));
+    await feedService.attachIdentities(mapped);
+    // return mapped posts with identity
+    res.json(mapped.map(m => ({ ...m.data, identity: m.identity })));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -29,7 +34,10 @@ exports.createPost = async (req, res) => {
     });
     await post.save();
     await post.populate('author', 'name avatarUrl role');
-    res.status(201).json(post);
+    const feedService = require('../services/feedService');
+    const m = { type: 'post', data: post.toObject ? post.toObject() : post };
+    await feedService.attachIdentities([m]);
+    res.status(201).json({ ...m.data, identity: m.identity });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

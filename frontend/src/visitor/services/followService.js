@@ -1,11 +1,29 @@
 import api from "../../api/axios";
 
-const follow = async (id) => {
+// follow by profile type and id. type: 'owner' | 'visitor' | undefined (legacy user id)
+const follow = async (id, type) => {
+  if (type === 'owner') {
+    const { data } = await api.post(`/v1/owner-profiles/${id}/follow`);
+    return data;
+  }
+  if (type === 'visitor') {
+    const { data } = await api.post(`/v1/visitor-profiles/${id}/follow`);
+    return data;
+  }
+  // legacy
   const { data } = await api.post(`/follow/follow/${id}`);
   return data;
 };
 
-const unfollow = async (id) => {
+const unfollow = async (id, type) => {
+  if (type === 'owner') {
+    const { data } = await api.delete(`/v1/owner-profiles/${id}/follow`);
+    return data;
+  }
+  if (type === 'visitor') {
+    const { data } = await api.delete(`/v1/visitor-profiles/${id}/follow`);
+    return data;
+  }
   const { data } = await api.delete(`/follow/unfollow/${id}`);
   return data;
 };

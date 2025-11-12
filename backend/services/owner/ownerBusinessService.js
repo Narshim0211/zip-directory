@@ -8,7 +8,15 @@ const ensureBusinessOwner = async (ownerId, payload = {}) => {
     address: payload.address,
     zip: payload.zip,
     description: payload.description,
+    category: payload.category,
+    state: payload.state,
   };
+
+  // Only include businessType if provided and valid
+  if (payload.businessType && ["salon", "spa", "freelance"].includes(payload.businessType)) {
+    update.businessType = payload.businessType;
+  }
+
   const options = { new: true, upsert: true, setDefaultsOnInsert: true };
   return Business.findOneAndUpdate({ owner: ownerId }, { $set: update }, options);
 };

@@ -10,7 +10,7 @@ export default function TrendingNewsSidebar() {
     let mounted = true;
 
     api
-      .get("/news")
+      .get("/news/trending?limit=10")
       .then((response) => {
         if (!mounted) return;
         setNews(Array.isArray(response.data) ? response.data : []);

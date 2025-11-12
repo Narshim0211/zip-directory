@@ -17,6 +17,7 @@ const postSchema = new mongoose.Schema(
       enum: ['public', 'followers'],
       default: 'public',
     },
+    visibleToVisitors: { type: Boolean, default: true },
     isPromoted: {
       type: Boolean,
       default: false,
@@ -45,5 +46,7 @@ const postSchema = new mongoose.Schema(
 postSchema.index({ createdAt: -1 });
 postSchema.index({ visibility: 1 });
 postSchema.index({ isPromoted: -1 });
+postSchema.index({ author: 1, createdAt: -1 });
+postSchema.index({ business: 1 });
 
 module.exports = mongoose.model('Post', postSchema);

@@ -82,6 +82,27 @@ app.use('/api/surveys', surveyRoutes);
 const feedRoutes = require('./routes/feedRoutes');
 app.use('/api/feed', feedRoutes);
 
+// V1 API routes
+const v1FeedRoutes = require('./routes/v1/feedRoutes');
+app.use('/api/v1/feed', v1FeedRoutes);
+
+const v1VisitorSurveyRoutes = require('./routes/v1/visitor/surveyRoutes');
+app.use('/api/v1/visitor/surveys', v1VisitorSurveyRoutes);
+
+const v1OwnerSurveyRoutes = require('./routes/v1/owner/surveyRoutes');
+app.use('/api/v1/owner/surveys', v1OwnerSurveyRoutes);
+
+const v1OwnerPostRoutes = require('./routes/v1/owner/postRoutes');
+app.use('/api/v1/owner/posts', v1OwnerPostRoutes);
+
+// V1 owner profiles (public + owner)
+const v1OwnerProfilesRoutes = require('./routes/v1/ownerProfiles.routes');
+app.use('/api/v1/owner-profiles', v1OwnerProfilesRoutes);
+
+// V1 visitor profiles
+const v1VisitorProfilesRoutes = require('./routes/v1/visitorProfiles.routes');
+app.use('/api/v1/visitor-profiles', v1VisitorProfilesRoutes);
+
 // Owner routes
 const ownerRoutes = require('./routes/ownerRoutes');
 app.use('/api/owner', ownerRoutes);

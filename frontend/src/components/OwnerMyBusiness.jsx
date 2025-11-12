@@ -11,6 +11,7 @@ const OwnerMyBusiness = () => {
     address: "",
     zip: "",
     description: "",
+    businessType: "salon",
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -43,6 +44,7 @@ const OwnerMyBusiness = () => {
           address: data.address || "",
           zip: data.zip || "",
           description: data.description || "",
+          businessType: data.businessType || "salon",
         });
         setGallery(data.images || []);
       }
@@ -235,6 +237,14 @@ const OwnerMyBusiness = () => {
             <label>
               City
               <input name="city" value={form.city} onChange={handleChange} required />
+            </label>
+            <label>
+              Business Type
+              <select name="businessType" value={form.businessType} onChange={handleChange}>
+                <option value="salon">Salon</option>
+                <option value="spa">Spa</option>
+                <option value="freelance">Freelance Hair Stylist</option>
+              </select>
             </label>
             <label>
               Address

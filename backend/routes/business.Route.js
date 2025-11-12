@@ -182,7 +182,7 @@ router.delete("/:id", protect, async (req, res) => {
 // Search businesses with geo support and smart fallback
 router.get('/search', async (req, res) => {
   try {
-    const { location = '', category = '', radius = '', query = '', city = '', minRating = '', sort = '' } = req.query || {};
+    const { location = '', category = '', radius = '', query = '', city = '', state = '', zip = '', minRating = '', sort = '' } = req.query || {};
 
     if (location && String(location).trim()) {
       const coords = await geocodeLocation(location);
@@ -224,6 +224,8 @@ router.get('/search', async (req, res) => {
 
     const filter = { status: 'approved' };
     if (city && String(city).trim()) filter.city = city;
+    if (state && String(state).trim()) filter.state = state;
+    if (zip && String(zip).trim()) filter.zip = zip;
     if (category && String(category).trim()) filter.category = category;
     if (minRating) filter.ratingAverage = { $gte: Number(minRating) || 0 };
 

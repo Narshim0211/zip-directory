@@ -7,7 +7,7 @@ export default function FollowButton({ targetId, type, initialFollowing = false 
   const handleClick = async () => {
     try {
       if (following) {
-        await followService.unfollow(targetId);
+        await followService.unfollow(targetId, type);
       } else {
         await followService.follow(targetId, type);
       }

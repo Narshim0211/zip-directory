@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 
-const FollowButton = ({ targetId, initialFollowing = false, onChange }) => {
+const FollowButton = ({ targetId, targetType, initialFollowing = false, onChange }) => {
   const [following, setFollowing] = useState(initialFollowing);
   const [loading, setLoading] = useState(false);
 
@@ -14,11 +14,24 @@ const FollowButton = ({ targetId, initialFollowing = false, onChange }) => {
     setLoading(true);
     try {
       if (following) {
-        await api.delete(`/follow/unfollow/${targetId}`);
+        // call v1 profile endpoints when targetType provided
+        if (targetType === 'owner') {
+          await api.delete(`/v1/owner-profiles/${targetId}/follow`);
+        } else if (targetType === 'visitor') {
+          await api.delete(`/v1/visitor-profiles/${targetId}/follow`);
+        } else {
+          await api.delete(`/follow/unfollow/${targetId}`);
+        }
         setFollowing(false);
         onChange?.(targetId, false);
       } else {
-        await api.post(`/follow/follow/${targetId}`);
+        if (targetType === 'owner') {
+          await api.post(`/v1/owner-profiles/${targetId}/follow`);
+        } else if (targetType === 'visitor') {
+          await api.post(`/v1/visitor-profiles/${targetId}/follow`);
+        } else {
+          await api.post(`/follow/follow/${targetId}`);
+        }
         setFollowing(true);
         onChange?.(targetId, true);
       }

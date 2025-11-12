@@ -6,7 +6,8 @@
     "start": "node server.js",
     "server": "nodemon server.js",
     "dev": "nodemon server.js",
-    "backfill:geo": "node scripts/backfillGeo.js"
+    "backfill:geo": "node scripts/backfillGeo.js",
+    "backfill:owners": "node scripts/backfillOwnerProfiles.js"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +21,7 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.2",
+    "nanoid": "^5.1.6",
     "node-cron": "^3.0.2",
     "socket.io": "^4.8.1"
   },

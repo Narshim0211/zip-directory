@@ -28,6 +28,11 @@ const businessSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    state: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     address: {
       type: String,
       default: "",
@@ -36,6 +41,11 @@ const businessSchema = new mongoose.Schema(
       type: String,
       enum: ["Salon", "Spa", "Barbershop", "Freelance Stylist"],
       required: true,
+    },
+    businessType: {
+      type: String,
+      enum: ["salon", "spa", "freelance"],
+      default: "salon",
     },
     description: {
       type: String,
@@ -81,7 +91,9 @@ const businessSchema = new mongoose.Schema(
 // 📊 Add helpful indexes for faster searches
 businessSchema.index({ name: "text", city: "text", category: "text" });
 businessSchema.index({ city: 1, category: 1, status: 1 });
+businessSchema.index({ state: 1, city: 1, zip: 1 });
 businessSchema.index({ location: "2dsphere" });
+businessSchema.index({ businessType: 1 });
 
 // ⚙️ Virtual population (get reviews automatically)
 businessSchema.virtual("reviews", {

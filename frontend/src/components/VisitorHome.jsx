@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import feedService from '../visitor/services/feedService';
+import React, { useEffect, useState } from 'react';
+import v1Client from '../api/v1';
 import followService from '../visitor/services/followService';
 import FeedPostCard from '../visitor/components/FeedPostCard';
 import FeedSurveyCard from '../visitor/components/FeedSurveyCard';
+import SearchSection from '../visitor/components/SearchSection';
 import '../styles/visitorHomePage.css';
 
 const VisitorHome = () => {
@@ -15,11 +16,12 @@ const VisitorHome = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [feedData, following] = await Promise.all([
-          feedService.getFeed(),
+        const [feedResponse, following] = await Promise.all([
+          v1Client.feed.getFeed({ limit: 30 }),
           followService.getFollowing(),
         ]);
-        setFeed(feedData);
+        // v1 API returns { success, items, hasMore }
+        setFeed(feedResponse.items || []);
         setFollowingOwners(following.filter((item) => item.role === 'owner'));
       } catch (err) {
         console.error('Feed loading failed', err);
@@ -31,29 +33,45 @@ const VisitorHome = () => {
     fetchData();
   }, []);
 
-  const posts = useMemo(() => feed.filter((item) => item.type === 'post'), [feed]);
-  const surveys = useMemo(() => feed.filter((item) => item.type === 'survey'), [feed]);
-
   return (
-    <div className="visitor-home-page visitor-home-page--feed">
-      <section className="visitor-home-page__content">
+    <div className="visitor-home-page">
+      <div className="visitor-home-page__container">
         <header className="visitor-home-page__hero">
-          <h1>Welcome back to SalonHub</h1>
-          <p>Your personalized feed of salon posts and community surveys.</p>
+          <h1 className="visitor-home-page__title">Welcome to SalonHub</h1>
+          <p className="visitor-home-page__subtitle">
+            Discover salons, trends, and connect with beauty creators.
+          </p>
         </header>
+
+        <SearchSection />
 
         {loading && <p className="visitor-home-page__status">Loading your feed...</p>}
         {error && <p className="visitor-home-page__status-error">{error}</p>}
 
-        <div className="visitor-home-page__feed-grid">
-          {posts.map((post) => (
-            <FeedPostCard key={post._id || post.id || post.url} post={post} followingOwners={followingOwners} />
-          ))}
-          {surveys.map((survey) => (
-            <FeedSurveyCard key={survey._id || survey.id} survey={survey} />
-          ))}
+        {!loading && !error && feed.length === 0 && (
+          <div className="visitor-home-page__empty">
+            <p>No posts or surveys yet. Start following salons to see their updates!</p>
+          </div>
+        )}
+
+        <div className="visitor-home-page__feed">
+          {feed.map((item) => {
+            // v1 API returns { type, data } format
+            if (item.type === 'post') {
+              return (
+                <FeedPostCard
+                  key={item.data._id || item.data.id}
+                  post={item.data}
+                  followingOwners={followingOwners}
+                />
+              );
+            } else if (item.type === 'survey') {
+              return <FeedSurveyCard key={item.data._id || item.data.id} survey={item.data} />;
+            }
+            return null;
+          })}
         </div>
-      </section>
+      </div>
     </div>
   );
 };

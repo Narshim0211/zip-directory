@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import api from '../api/axios';
 import FollowButton from './FollowButton';
+import IdentityBadge from './Shared/IdentityBadge';
 import '../styles/surveyCard.css';
 
 const SurveyCard = ({ survey, onVote, showFollow, following, onFollow }) => {
@@ -27,19 +28,21 @@ const SurveyCard = ({ survey, onVote, showFollow, following, onFollow }) => {
 
   return (
     <div className="survey-card">
-      <div className="survey-card__header">
-        <div>
-          <strong>{survey.question}</strong>
-          {survey.category && (
-            <span className="survey-card__category">{survey.category}</span>
-          )}
-          <span className="survey-card__meta">
-            by {survey.author?.name || 'Guest'} · {new Date(survey.createdAt).toLocaleDateString()}
-          </span>
+      <div className="survey-card__header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <IdentityBadge identity={survey.identity} author={survey.author} />
+          <div>
+            <strong>{survey.question}</strong>
+            {survey.category && (
+              <span className="survey-card__category">{survey.category}</span>
+            )}
+            <div className="survey-card__meta">{new Date(survey.createdAt).toLocaleDateString()}</div>
+          </div>
         </div>
-        {showFollow && survey.author?._id && (
+        {showFollow && (
           <FollowButton
-            targetId={survey.author._id}
+            targetId={survey.identity?.profileId || survey.author?._id}
+            targetType={survey.identity?.type}
             initialFollowing={following}
             onChange={(id, value) => onFollow?.(id, value)}
           />

@@ -10,6 +10,8 @@ import ResetPassword from "./components/ResetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import VisitorProfile from "./visitor/pages/VisitorProfile";
+import VisitorToolkit from "./visitor/pages/VisitorToolkit";
+import VisitorProfileEditPage from "./visitor/pages/VisitorProfileEditPage";
 import VisitorHome from "./visitor/pages/VisitorHome";
 import NewsList from "./components/NewsList";
 import NewsDetail from "./components/NewsDetail";
@@ -24,6 +26,9 @@ import ExploreOwner from "./pages/owner/ExploreOwner";
 import Surveys from "./pages/owner/Surveys";
 import Notifications from "./pages/owner/Notifications";
 import PublicLayout from "./layouts/PublicLayout";
+import PublicOwnerProfile from "./pages/PublicOwnerProfile";
+import EditOwnerProfile from "./pages/EditOwnerProfile";
+import PublicVisitorProfile from "./pages/PublicVisitorProfile";
 import ErrorBoundary from "./components/Shared/ErrorBoundary";
 import "./App.css";
 
@@ -72,7 +77,9 @@ function Frame() {
           <Route path="explore" element={<VisitorPage />} />
           <Route path="surveys" element={<VisitorSurveys />} />
           <Route path="notifications" element={<VisitorNotifications />} />
-          <Route path="profile" element={<VisitorProfile />} />
+          <Route path="toolkit" element={<VisitorToolkit />} />
+          <Route path="profile" element={<Navigate to="/visitor/toolkit" replace />} />
+          <Route path="profile/edit" element={<VisitorProfileEditPage />} />
         </Route>
 
         <Route path="/dashboard/owner" element={<Navigate to="/owner/dashboard" replace />} />
@@ -95,6 +102,9 @@ function Frame() {
 
         <Route path="/admin" element={<ProtectedRoute roles={["admin"]} element={<AdminDashboard />} />} />
         <Route path="/business/:id" element={<BusinessDetails />} />
+        <Route path="/o/:slug" element={<PublicOwnerProfile />} />
+        <Route path="/owner/me/edit" element={<ProtectedRoute roles={["owner"]} element={<EditOwnerProfile />} />} />
+  <Route path="/v/:slug" element={<PublicVisitorProfile />} />
       </Routes>
     </ErrorBoundary>
   );

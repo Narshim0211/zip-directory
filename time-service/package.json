@@ -1,0 +1,46 @@
+{
+  "name": "salonhub-time-service",
+  "version": "1.0.0",
+  "description": "Time Management Microservice for SalonHub - Separate Visitor and Owner task, goal, reminder, and reflection management",
+  "main": "app.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed:quotes": "node scripts/seedQuotes.js",
+    "seed:all": "npm run seed:quotes",
+    "migrate": "node scripts/migrate.js"
+  },
+  "keywords": [
+    "time-management",
+    "microservice",
+    "visitor",
+    "owner",
+    "tasks",
+    "goals",
+    "reminders",
+    "reflections",
+    "salonhub"
+  ],
+  "author": "SalonHub Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongoose": "^8.19.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.2.0",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.1.2",
+    "nodemailer": "^6.9.14",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
