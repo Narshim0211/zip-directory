@@ -1,0 +1,13 @@
+/* Owner Profile Page styles */
+.owner-profile-page { max-width: 1100px; margin: 0 auto; }
+.owner-profile__header { display:flex; align-items:center; gap:16px; background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:12px; margin-bottom:16px; }
+.owner-profile__avatar { width:72px; height:72px; border-radius:9999px; object-fit:cover; border:1px solid #e5e7eb; }
+.owner-profile__handle { color:#6b7280; }
+.owner-profile__stats { display:flex; gap:12px; color:#374151; font-size:0.9rem; }
+.owner-profile__actions { margin-left:auto; }
+.owner-profile__grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+@media (max-width: 900px) { .owner-profile__grid { grid-template-columns: 1fr; } }
+.owner-featured { list-style:none; padding-left: 0; }
+.owner-featured li { padding:6px 0; border-bottom:1px dashed #e5e7eb; }
+.empty { color:#6b7280; }
+.btn-primary { background:#2563eb; color:#fff; border:none; border-radius:6px; padding:8px 12px; cursor:pointer; }

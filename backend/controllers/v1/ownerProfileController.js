@@ -3,9 +3,10 @@ const ownerProfileService = require('../../services/owner/ownerProfileService');
 const OwnerProfile = require('../../models/OwnerProfile');
 
 exports.getMe = asyncWrap(async (req, res) => {
-  const p = await OwnerProfile.findOne({ userId: req.user._id }).populate('featuredBusinesses');
-  if (!p) return res.status(404).json({ message: 'Profile not found' });
-  res.json(p);
+  // Auto-create profile if it doesn't exist
+  const p = await ownerProfileService.ensureProfileForUser(req.user);
+  const populated = await OwnerProfile.findById(p._id).populate('featuredBusinesses');
+  res.json(populated || p);
 });
 
 exports.updateMe = asyncWrap(async (req, res) => {

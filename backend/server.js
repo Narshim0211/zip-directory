@@ -103,9 +103,23 @@ app.use('/api/v1/owner-profiles', v1OwnerProfilesRoutes);
 const v1VisitorProfilesRoutes = require('./routes/v1/visitorProfiles.routes');
 app.use('/api/v1/visitor-profiles', v1VisitorProfilesRoutes);
 
+// V2 API routes (Facebook-style profiles)
+const v2OwnerProfilesRoutes = require('./routes/v2/ownerProfiles.routes');
+app.use('/api/v2/owner-profiles', v2OwnerProfilesRoutes);
+
+const v2VisitorProfilesRoutes = require('./routes/v2/visitorProfiles.routes');
+app.use('/api/v2/visitor-profiles', v2VisitorProfilesRoutes);
+
 // Owner routes
 const ownerRoutes = require('./routes/ownerRoutes');
 app.use('/api/owner', ownerRoutes);
+// Owner profile routes (role-isolated)
+try {
+  const ownerProfileRoutes = require('./routes/owner/profileRoutes');
+  app.use('/api/owner/profile', ownerProfileRoutes);
+} catch (e) {
+  logger.warn('Owner profile routes not loaded:', e.message);
+}
 
 // Follow
 const followRoutes = require('./routes/followRoutes');
@@ -139,6 +153,17 @@ app.use('/api/comments', commentRoutes);
 
 const reportRoutes = require('./routes/reportRoutes');
 app.use('/api/comments/reports', reportRoutes);
+// Time Manager 2.0: Modular architecture with complete role isolation
+const visitorTimeRoutes = require('./modules/visitorTimeManager/routes/visitorTimeRoutes');
+const ownerTimeRoutes = require('./modules/ownerTimeManager/routes/ownerTimeRoutes');
+const { globalErrorHandler } = require('./modules/shared/utils/errorHandler');
+
+app.use('/api/visitor/time', visitorTimeRoutes);
+app.use('/api/owner/time', ownerTimeRoutes);
+
+// Initialize reminder service (optional - only if needed)
+// const { initializeReminderCron } = require('./modules/shared/services/reminderService');
+// initializeReminderCron();
 // Notifications
 const { initNotificationSocket } = require('./services/notificationSocket');
 const notificationRoutes = require('./routes/notificationRoutes');
@@ -218,3 +243,4 @@ if (process.env.VERCEL) {
 }
 
 app.use(errorHandler);
+

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 
 export default function VisitorProfileEditPage() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -84,6 +86,35 @@ export default function VisitorProfileEditPage() {
 
   return (
     <div className="panel">
+      <div style={{ marginBottom: '20px' }}>
+        <button
+          type="button"
+          onClick={() => navigate('/visitor/profile')}
+          style={{
+            padding: '8px 16px',
+            background: '#f8f9fa',
+            border: '1px solid #dee2e6',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '500',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = '#e9ecef';
+            e.target.style.borderColor = '#adb5bd';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = '#f8f9fa';
+            e.target.style.borderColor = '#dee2e6';
+          }}
+        >
+          ← Back to Profile
+        </button>
+      </div>
       <h2>Edit Profile</h2>
       <form onSubmit={save}>
         <label>First name</label>

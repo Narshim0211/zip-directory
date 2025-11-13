@@ -33,7 +33,8 @@ export default function EditOwnerProfile() {
   useEffect(() => {
     const loadBiz = async () => {
       try {
-        const { data } = await api.get('/businesses/recent?limit=50');
+        // Load only businesses owned by current user
+        const { data } = await api.get('/businesses/my-businesses?limit=50');
         setBusinesses(data || []);
         // if user already has featured businesses, pre-select them
         try {

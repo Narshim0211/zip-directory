@@ -1,0 +1,69 @@
+.loading-spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.spinner {
+  display: inline-block;
+  position: relative;
+}
+
+.spinner-circle {
+  box-sizing: border-box;
+  display: block;
+  border-radius: 50%;
+  border: 3px solid #f3f3f3;
+  border-top-color: #3498db;
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+/* Size variants */
+.spinner-small .spinner-circle {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+}
+
+.spinner-medium .spinner-circle {
+  width: 40px;
+  height: 40px;
+  border-width: 3px;
+}
+
+.spinner-large .spinner-circle {
+  width: 60px;
+  height: 60px;
+  border-width: 4px;
+}
+
+.spinner-message {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+}
+
+@keyframes spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Inline variant for buttons */
+.spinner-inline {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+.spinner-inline .spinner-circle {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}

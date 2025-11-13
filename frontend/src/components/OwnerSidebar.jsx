@@ -5,9 +5,10 @@ import { useAuth } from '../context/AuthContext';
 const ownerItems = [
   { label: 'Dashboard', path: '/owner/dashboard' },
   { label: 'My Business', path: '/owner/my-business' },
-  { label: 'My Profile', path: '/owner/me/edit' },
+  { label: 'My Profile', path: '/owner/profile/me' },
   { label: 'Explore', path: '/owner/explore' },
   { label: 'Surveys', path: '/owner/surveys' },
+  { label: 'Time Manager', path: '/owner/time' },
   { label: 'Notifications', path: '/owner/notifications' },
 ];
 

@@ -27,10 +27,16 @@ import Surveys from "./pages/owner/Surveys";
 import Notifications from "./pages/owner/Notifications";
 import PublicLayout from "./layouts/PublicLayout";
 import PublicOwnerProfile from "./pages/PublicOwnerProfile";
+import OwnerProfilePageV2 from "./pages/OwnerProfilePageV2";
 import EditOwnerProfile from "./pages/EditOwnerProfile";
 import PublicVisitorProfile from "./pages/PublicVisitorProfile";
+import VisitorProfilePageV2 from "./pages/VisitorProfilePageV2";
+import VisitorProfilePage from "./pages/VisitorProfilePage";
 import ErrorBoundary from "./components/Shared/ErrorBoundary";
 import "./App.css";
+import TimeManagerPage from "./features/timeManager/pages/TimeManagerPage";
+import OwnerTimeManager from "./pages/owner/TimeManager";
+import OwnerProfilePage from "./pages/owner/Profile";
 
 const LandingOrRedirect = () => {
   const { user } = useAuth();
@@ -78,8 +84,9 @@ function Frame() {
           <Route path="surveys" element={<VisitorSurveys />} />
           <Route path="notifications" element={<VisitorNotifications />} />
           <Route path="toolkit" element={<VisitorToolkit />} />
-          <Route path="profile" element={<Navigate to="/visitor/toolkit" replace />} />
+          <Route path="profile" element={<VisitorProfilePage />} />
           <Route path="profile/edit" element={<VisitorProfileEditPage />} />
+          <Route path="time/*" element={<TimeManagerPage />} />
         </Route>
 
         <Route path="/dashboard/owner" element={<Navigate to="/owner/dashboard" replace />} />
@@ -98,13 +105,23 @@ function Frame() {
           <Route path="explore" element={<ExploreOwner />} />
           <Route path="surveys" element={<Surveys />} />
           <Route path="notifications" element={<Notifications />} />
+          <Route path="profile/me" element={<OwnerProfilePage />} />
+          <Route path="time" element={<OwnerTimeManager />} />
         </Route>
 
         <Route path="/admin" element={<ProtectedRoute roles={["admin"]} element={<AdminDashboard />} />} />
         <Route path="/business/:id" element={<BusinessDetails />} />
-        <Route path="/o/:slug" element={<PublicOwnerProfile />} />
+
+        {/* V2 Profile Routes - Facebook Style */}
+        <Route path="/o/:slug" element={<OwnerProfilePageV2 />} />
+        <Route path="/v/:slug" element={<VisitorProfilePageV2 />} />
+
+        {/* Legacy Profile Routes (for reference) */}
+        <Route path="/o-legacy/:slug" element={<PublicOwnerProfile />} />
+        <Route path="/v-legacy/:slug" element={<PublicVisitorProfile />} />
+
+        {/* Edit Profile Routes */}
         <Route path="/owner/me/edit" element={<ProtectedRoute roles={["owner"]} element={<EditOwnerProfile />} />} />
-  <Route path="/v/:slug" element={<PublicVisitorProfile />} />
       </Routes>
     </ErrorBoundary>
   );

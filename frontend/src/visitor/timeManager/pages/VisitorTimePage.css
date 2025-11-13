@@ -1,0 +1,283 @@
+.visitor-time-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.time-page-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.time-page-header h1 {
+  font-size: 32px;
+  margin: 0 0 8px 0;
+  color: #212529;
+}
+
+.time-page-header p {
+  color: #6c757d;
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Analytics Summary */
+.analytics-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.analytics-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.analytics-card__value {
+  font-size: 36px;
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 8px;
+}
+
+.analytics-card__label {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+/* Date Navigator */
+.date-navigator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.date-nav-btn {
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.date-nav-btn:hover {
+  background: #0056b3;
+}
+
+.date-display {
+  text-align: center;
+}
+
+.date-display h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  color: #212529;
+}
+
+.btn-today {
+  padding: 4px 12px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-today:hover {
+  background: #218838;
+}
+
+/* Add Task */
+.add-task-section {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.btn-add-task {
+  padding: 12px 24px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-add-task:hover {
+  background: #218838;
+}
+
+/* Add Task Form */
+.add-task-form {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.task-input,
+.task-textarea,
+.task-select,
+.task-select-sm,
+.task-input-sm {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.task-textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.task-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.task-form-reminder {
+  margin-bottom: 16px;
+}
+
+.task-form-reminder label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.reminder-options {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.task-select-sm,
+.task-input-sm {
+  width: auto;
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.btn-submit:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Error Banner */
+.error-banner {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #f5c6cb;
+}
+
+/* Tasks Container */
+.tasks-container {
+  display: grid;
+  gap: 24px;
+}
+
+.session-section {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.session-title {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  color: #212529;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-count {
+  font-size: 14px;
+  color: #6c757d;
+  font-weight: normal;
+}
+
+.empty-session {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Loading */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-spinner {
+  background: white;
+  padding: 20px 40px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .date-navigator {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .task-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

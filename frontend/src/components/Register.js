@@ -6,7 +6,8 @@ import AuthForm from './AuthForm';
 const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('visitor');
@@ -16,18 +17,25 @@ const Register = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Validate first and last names
+    if (!firstName.trim() || !lastName.trim()) {
+      setError('Please enter both first and last names');
+      return;
+    }
+
     setLoading(true);
     try {
       // Debug logs to surface why submission might fail before network
       // (Check DevTools Console for these entries)
       // eslint-disable-next-line no-console
-      console.log('Register submit payload', { name, email, role });
+      console.log('Register submit payload', { firstName, lastName, email, role });
       // eslint-disable-next-line no-console
       console.log('useAuth.register type', typeof register);
-      const data = await register({ name, email, password, role });
+      const data = await register({ firstName, lastName, email, password, role });
       if (data.role === 'admin') navigate('/admin');
       else if (data.role === 'owner') navigate('/dashboard/owner');
-      else navigate('/dashboard/visitor');
+      else navigate('/visitor/home');
     } catch (err) {
       // Prefer precise backend message, fall back to generic JS/network message
       const msg =
@@ -57,13 +65,24 @@ const Register = () => {
       }
     >
       <div className="auth-field">
-        <label>Name</label>
+        <label>First Name</label>
         <input
           className="auth-input"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
           required
-          placeholder="Jane Doe"
+          placeholder="Jane"
+        />
+      </div>
+
+      <div className="auth-field">
+        <label>Last Name</label>
+        <input
+          className="auth-input"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          required
+          placeholder="Doe"
         />
       </div>
 

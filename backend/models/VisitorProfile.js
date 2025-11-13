@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const VisitorProfileSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', unique: true, required: true },
   firstName: { type: String, required: true, trim: true },
-  lastName: { type: String, required: true, trim: true },
+  lastName: { type: String, default: '', trim: true },
   handle: { type: String, unique: true, index: true },
   slug: { type: String, unique: true, index: true },
   avatarUrl: { type: String, default: '' },

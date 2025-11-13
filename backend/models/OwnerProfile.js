@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const OwnerProfileSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', unique: true, required: true },
   firstName: { type: String, required: true, trim: true },
-  lastName: { type: String, required: true, trim: true },
+  lastName: { type: String, default: '', trim: true },
   displayName: { type: String, trim: true, default: '' },
   handle: { type: String, unique: true },
   slug: { type: String, unique: true },
