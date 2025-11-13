@@ -1,0 +1,109 @@
+/* RoleBadge Component Styles */
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+/* Size variants */
+.role-badge--small {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.role-badge--small .role-badge__icon {
+  font-size: 10px;
+}
+
+.role-badge--medium {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.role-badge--medium .role-badge__icon {
+  font-size: 12px;
+}
+
+.role-badge--large {
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 14px;
+}
+
+.role-badge--large .role-badge__icon {
+  font-size: 14px;
+}
+
+/* Shape variants */
+.role-badge--pill {
+  border-radius: 999px;
+}
+
+.role-badge--square {
+  border-radius: 4px;
+}
+
+/* Role-specific colors */
+.role-badge--owner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+.role-badge--owner:hover {
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+  transform: translateY(-1px);
+}
+
+.role-badge--visitor {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(240, 147, 251, 0.3);
+}
+
+.role-badge--visitor:hover {
+  box-shadow: 0 4px 8px rgba(240, 147, 251, 0.4);
+  transform: translateY(-1px);
+}
+
+.role-badge__icon {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.role-badge__text {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+/* Light theme alternative */
+.role-badge--owner.role-badge--light {
+  background: #e8eaf6;
+  color: #5e35b1;
+  box-shadow: 0 2px 4px rgba(94, 53, 177, 0.1);
+}
+
+.role-badge--visitor.role-badge--light {
+  background: #fce4ec;
+  color: #c2185b;
+  box-shadow: 0 2px 4px rgba(194, 24, 91, 0.1);
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .role-badge {
+    transition: none;
+  }
+
+  .role-badge:hover {
+    transform: none;
+  }
+}

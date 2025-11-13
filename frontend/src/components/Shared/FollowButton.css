@@ -1,0 +1,231 @@
+/* FollowButton Component Styles */
+
+.follow-button-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.follow-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+/* Size variants */
+.follow-button--small {
+  padding: 6px 14px;
+  font-size: 13px;
+  min-width: 80px;
+}
+
+.follow-button--medium {
+  padding: 8px 20px;
+  font-size: 14px;
+  min-width: 100px;
+}
+
+.follow-button--large {
+  padding: 12px 28px;
+  font-size: 16px;
+  min-width: 120px;
+}
+
+/* Default variant - Not Following */
+.follow-button--default.follow-button--not-following {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  border: 2px solid transparent;
+}
+
+.follow-button--default.follow-button--not-following:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5568d3 0%, #65408a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Default variant - Following */
+.follow-button--default.follow-button--following {
+  background: #f5f5f5;
+  color: #666;
+  border: 2px solid #e0e0e0;
+}
+
+.follow-button--default.follow-button--following:hover:not(:disabled) {
+  background: #ffe0e0;
+  color: #d32f2f;
+  border-color: #ffcdd2;
+}
+
+.follow-button--default.follow-button--following:hover:not(:disabled) .follow-button__text::after {
+  content: ' Unfollow';
+}
+
+.follow-button--default.follow-button--following:hover:not(:disabled) .follow-button__text {
+  visibility: hidden;
+  position: relative;
+}
+
+.follow-button--default.follow-button--following:hover:not(:disabled) .follow-button__text::after {
+  visibility: visible;
+  position: absolute;
+  left: 0;
+  width: 100%;
+}
+
+/* Outline variant - Not Following */
+.follow-button--outline.follow-button--not-following {
+  background: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.follow-button--outline.follow-button--not-following:hover:not(:disabled) {
+  background: #f5f7ff;
+  border-color: #5568d3;
+  color: #5568d3;
+}
+
+/* Outline variant - Following */
+.follow-button--outline.follow-button--following {
+  background: transparent;
+  color: #666;
+  border: 2px solid #e0e0e0;
+}
+
+.follow-button--outline.follow-button--following:hover:not(:disabled) {
+  background: #fff5f5;
+  color: #d32f2f;
+  border-color: #ffcdd2;
+}
+
+/* Text variant - Not Following */
+.follow-button--text.follow-button--not-following {
+  background: transparent;
+  color: #667eea;
+  border: 2px solid transparent;
+  min-width: auto;
+}
+
+.follow-button--text.follow-button--not-following:hover:not(:disabled) {
+  background: #f5f7ff;
+  color: #5568d3;
+}
+
+/* Text variant - Following */
+.follow-button--text.follow-button--following {
+  background: transparent;
+  color: #666;
+  border: 2px solid transparent;
+  min-width: auto;
+}
+
+.follow-button--text.follow-button--following:hover:not(:disabled) {
+  background: #fff5f5;
+  color: #d32f2f;
+}
+
+/* Loading state */
+.follow-button--loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.follow-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.follow-button__spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error message */
+.follow-button__error {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #856404;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Focus state for accessibility */
+.follow-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.follow-button:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .follow-button--small {
+    padding: 5px 12px;
+    font-size: 12px;
+    min-width: 70px;
+  }
+
+  .follow-button--medium {
+    padding: 7px 16px;
+    font-size: 13px;
+    min-width: 90px;
+  }
+
+  .follow-button--large {
+    padding: 10px 24px;
+    font-size: 15px;
+    min-width: 110px;
+  }
+}
+
+/* Accessibility - Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .follow-button,
+  .follow-button__spinner,
+  .follow-button__error {
+    animation: none;
+    transition: none;
+  }
+
+  .follow-button:hover:not(:disabled) {
+    transform: none;
+  }
+}

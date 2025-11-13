@@ -37,6 +37,8 @@ import "./App.css";
 import TimeManagerPage from "./features/timeManager/pages/TimeManagerPage";
 import OwnerTimeManager from "./pages/owner/TimeManager";
 import OwnerProfilePage from "./pages/owner/Profile";
+import OwnerBookingManager from "./pages/owner/BookingManager";
+import MicroservicesRoutes from "./routes/MicroservicesRoutes";
 
 const LandingOrRedirect = () => {
   const { user } = useAuth();
@@ -107,10 +109,22 @@ function Frame() {
           <Route path="notifications" element={<Notifications />} />
           <Route path="profile/me" element={<OwnerProfilePage />} />
           <Route path="time" element={<OwnerTimeManager />} />
+          <Route path="booking" element={<OwnerBookingManager />} />
         </Route>
 
         <Route path="/admin" element={<ProtectedRoute roles={["admin"]} element={<AdminDashboard />} />} />
         <Route path="/business/:id" element={<BusinessDetails />} />
+
+        {/* Microservices Routes - Protected for all authenticated users */}
+        <Route 
+          path="/microservices/*" 
+          element={
+            <ProtectedRoute 
+              roles={["owner", "visitor", "admin"]} 
+              element={<MicroservicesRoutes />} 
+            />
+          } 
+        />
 
         {/* V2 Profile Routes - Facebook Style */}
         <Route path="/o/:slug" element={<OwnerProfilePageV2 />} />

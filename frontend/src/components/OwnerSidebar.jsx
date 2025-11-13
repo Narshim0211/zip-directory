@@ -9,6 +9,7 @@ const ownerItems = [
   { label: 'Explore', path: '/owner/explore' },
   { label: 'Surveys', path: '/owner/surveys' },
   { label: 'Time Manager', path: '/owner/time' },
+  { label: 'Booking Manager', path: '/owner/booking' },
   { label: 'Notifications', path: '/owner/notifications' },
 ];
 

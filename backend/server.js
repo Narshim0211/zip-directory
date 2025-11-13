@@ -125,6 +125,10 @@ try {
 const followRoutes = require('./routes/followRoutes');
 app.use('/api/follow', followRoutes);
 
+// Profile Resolver (unified profile lookup across roles)
+const profileResolverRoutes = require('./routes/profileResolverRoutes');
+app.use('/api/profile', profileResolverRoutes);
+
 // Posts & Comments
 const postRoutes = require('./routes/postRoutes');
 app.use('/api/posts', postRoutes);
@@ -168,6 +172,18 @@ app.use('/api/owner/time', ownerTimeRoutes);
 const { initNotificationSocket } = require('./services/notificationSocket');
 const notificationRoutes = require('./routes/notificationRoutes');
 app.use('/api/notifications', notificationRoutes);
+
+// Microservices Proxy Gateway Routes
+// Per PRD Section 8: Frontend → Main Backend → Microservices
+const profileProxyRoutes = require('./routes/profileProxyRoutes');
+app.use('/api/profiles-service', profileProxyRoutes);
+
+const bookingProxyRoutes = require('./routes/bookingProxyRoutes');
+app.use('/api/booking-service', bookingProxyRoutes);
+
+const paymentProxyRoutes = require('./routes/paymentProxyRoutes');
+app.use('/api/payment-service', paymentProxyRoutes);
+
 // Dev-only: Seed an admin user if missing
 if (process.env.NODE_ENV !== 'production') {
   app.post('/api/dev/seed-admin', async (req, res) => {
