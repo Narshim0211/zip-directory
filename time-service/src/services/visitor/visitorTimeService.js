@@ -1,19 +1,103 @@
 /**
- * Visitor Time Management Service
- * Handles all CRUD operations for visitor tasks, goals, reminders, and reflections
+ * Visitor Time Service
+ * Handles all business logic for visitor task management
+ * Uses UTC midnight dates for consistent querying
  */
+
 const VisitorTask = require('../../models/visitor/VisitorTask');
-const VisitorGoal = require('../../models/visitor/VisitorGoal');
-const VisitorReminder = require('../../models/visitor/VisitorReminder');
-const VisitorReflection = require('../../models/visitor/VisitorReflection');
+const {
+  toUtcMidnight,
+  getWeekRange,
+  getMonthRange,
+  getTodayUtc,
+  formatDateOnly,
+  isValidTimeOfDay,
+} = require('../../utils/dateUtils');
 
 class VisitorTimeService {
   /**
-   * TASK OPERATIONS
+   * TASK OPERATIONS - NEW IMPLEMENTATION WITH UTC DATE HANDLING
    */
 
   /**
-   * Get all tasks for a visitor with optional filters
+   * Get daily tasks for a specific date
+   * @param {string} userId - User ID
+   * @param {string} dateIso - Date in ISO format (e.g., "2025-01-15")
+   * @returns {Promise<Array>} - Tasks for that day, grouped by session
+   */
+  async getDailyTasks(userId, dateIso) {
+    try {
+      // Convert to UTC midnight for consistent querying
+      const taskDate = dateIso ? toUtcMidnight(dateIso) : getTodayUtc();
+
+      const tasks = await VisitorTask.find({
+        userId,
+        taskDate,
+      })
+        .sort({ session: 1, createdAt: 1 }) // Sort by session (morning, afternoon, evening)
+        .lean();
+
+      console.log(`[VisitorTimeService] Retrieved ${tasks.length} tasks for ${formatDateOnly(taskDate)}`);
+      return tasks;
+    } catch (error) {
+      console.error('[VisitorTimeService] getDailyTasks error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get weekly tasks for a specific week
+   * @param {string} userId - User ID
+   * @param {string} weekStartIso - Monday of the week (e.g., "2025-01-13")
+   * @returns {Promise<Array>} - Tasks for that week (Monday to Sunday)
+   */
+  async getWeeklyTasks(userId, weekStartIso) {
+    try {
+      const { start, end } = getWeekRange(weekStartIso);
+
+      const tasks = await VisitorTask.find({
+        userId,
+        taskDate: { $gte: start, $lte: end },
+      })
+        .sort({ taskDate: 1, session: 1, createdAt: 1 })
+        .lean();
+
+      console.log(`[VisitorTimeService] Retrieved ${tasks.length} weekly tasks`);
+      return tasks;
+    } catch (error) {
+      console.error('[VisitorTimeService] getWeeklyTasks error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get monthly tasks
+   * @param {string} userId - User ID
+   * @param {number} month - Month number (1-12)
+   * @param {number} year - Year (e.g., 2025)
+   * @returns {Promise<Array>} - Tasks for that month
+   */
+  async getMonthlyTasks(userId, month, year) {
+    try {
+      const { start, end } = getMonthRange(month, year);
+
+      const tasks = await VisitorTask.find({
+        userId,
+        taskDate: { $gte: start, $lte: end },
+      })
+        .sort({ taskDate: 1, session: 1, createdAt: 1 })
+        .lean();
+
+      console.log(`[VisitorTimeService] Retrieved ${tasks.length} monthly tasks`);
+      return tasks;
+    } catch (error) {
+      console.error('[VisitorTimeService] getMonthlyTasks error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all tasks for a visitor with optional filters (LEGACY - for backwards compatibility)
    * @param {string} userId - User ID
    * @param {object} filters - Filters (scope, session, isCompleted)
    * @returns {Promise<Array>} Array of tasks
@@ -22,12 +106,14 @@ class VisitorTimeService {
     try {
       const query = { userId };
 
-      if (filters.scope) query.scope = filters.scope;
+      if (filters.scopeTag) query.scopeTag = filters.scopeTag;
+      if (filters.scope) query.scopeTag = filters.scope; // Legacy support
       if (filters.session) query.session = filters.session;
-      if (filters.isCompleted !== undefined) query.isCompleted = filters.isCompleted;
+      if (filters.completed !== undefined) query.completed = filters.completed;
+      if (filters.isCompleted !== undefined) query.completed = filters.isCompleted; // Legacy support
 
       const tasks = await VisitorTask.find(query)
-        .sort({ createdAt: -1 })
+        .sort({ taskDate: -1, createdAt: -1 })
         .lean();
 
       console.log(`[VisitorTimeService] Retrieved ${tasks.length} tasks for user ${userId}`);
@@ -62,23 +148,64 @@ class VisitorTimeService {
   /**
    * Create new task
    * @param {string} userId - User ID
-   * @param {object} taskData - Task data
+   * @param {object} payload - Task data
    * @returns {Promise<Object>} Created task
    */
-  async createTask(userId, taskData) {
+  async createTask(userId, payload) {
     try {
-      const task = new VisitorTask({
-        userId,
-        ...taskData,
-      });
+      // Validate and convert taskDate to UTC midnight
+      const taskDate = payload.date || payload.taskDate;
+      if (!taskDate) {
+        throw new Error('taskDate or date is required');
+      }
 
-      await task.save();
-      console.log(`[VisitorTimeService] Created task ${task._id} for user ${userId}`);
+      const utcTaskDate = toUtcMidnight(taskDate);
+
+      // Validate timeOfDay if provided
+      if (payload.timeOfDay && !isValidTimeOfDay(payload.timeOfDay)) {
+        throw new Error('timeOfDay must be in HH:mm format (e.g., "09:30")');
+      }
+
+      // Validate session
+      const validSessions = ['morning', 'afternoon', 'evening'];
+      if (!payload.session || !validSessions.includes(payload.session)) {
+        throw new Error('session must be one of: morning, afternoon, evening');
+      }
+
+      // Build task object
+      const taskData = {
+        userId,
+        title: payload.title,
+        notes: payload.notes || payload.description || '',
+        taskDate: utcTaskDate,
+        session: payload.session,
+        timeOfDay: payload.timeOfDay || null,
+        durationMin: payload.durationMin || payload.duration || null,
+        priority: payload.priority || 'medium',
+        scopeTag: payload.scopeTag || payload.scope || 'daily',
+        completed: payload.completed || false,
+        category: payload.category || 'general',
+        tags: payload.tags || [],
+      };
+
+      // Handle reminder if provided
+      if (payload.reminder) {
+        taskData.reminder = {
+          enabled: payload.reminder.enabled || false,
+          channels: payload.reminder.channels || [],
+          sendAt: payload.reminder.sendAt || null,
+          phone: payload.reminder.phone || null,
+          email: payload.reminder.email || null,
+        };
+      }
+
+      const task = await VisitorTask.create(taskData);
+      console.log(`[VisitorTimeService] Created task ${task._id} for ${formatDateOnly(utcTaskDate)}`);
 
       return task.toObject();
     } catch (error) {
-      console.error('[VisitorTimeService] createTask error:', error.message);
-      throw new Error(`Failed to create task: ${error.message}`);
+      console.error('[VisitorTimeService] createTask error:', error);
+      throw error;
     }
   }
 
@@ -86,58 +213,65 @@ class VisitorTimeService {
    * Update task
    * @param {string} taskId - Task ID
    * @param {string} userId - User ID (for authorization)
-   * @param {object} updates - Updates to apply
+   * @param {object} updates - Fields to update
    * @returns {Promise<Object>} Updated task
    */
   async updateTask(taskId, userId, updates) {
     try {
+      // Find task and verify ownership
+      const task = await VisitorTask.findOne({ _id: taskId, userId });
+      if (!task) {
+        throw new Error('Task not found or unauthorized');
+      }
+
+      // Handle taskDate update if provided
+      if (updates.date || updates.taskDate) {
+        const newDate = updates.date || updates.taskDate;
+        updates.taskDate = toUtcMidnight(newDate);
+        delete updates.date; // Remove 'date' field if present
+      }
+
+      // Validate timeOfDay if being updated
+      if (updates.timeOfDay && !isValidTimeOfDay(updates.timeOfDay)) {
+        throw new Error('timeOfDay must be in HH:mm format (e.g., "09:30")');
+      }
+
+      // Handle completed → completedAt logic
+      if (updates.completed === true && !task.completed) {
+        updates.completedAt = new Date();
+      } else if (updates.completed === false) {
+        updates.completedAt = null;
+      }
+
+      // Handle status update (for compatibility with older frontend code)
+      if (updates.status === 'completed') {
+        updates.completed = true;
+        updates.completedAt = new Date();
+      } else if (updates.status === 'pending' || updates.status === 'todo') {
+        updates.completed = false;
+        updates.completedAt = null;
+      }
+
+      // Handle reminder updates
+      if (updates.reminder) {
+        updates.reminder = {
+          ...task.reminder?.toObject?.() || {},
+          ...updates.reminder,
+        };
+      }
+
       // Remove fields that shouldn't be updated
       delete updates.userId;
       delete updates._id;
 
-      const task = await VisitorTask.findOneAndUpdate(
-        { _id: taskId, userId },
-        updates,
-        { new: true, runValidators: true }
-      );
-
-      if (!task) {
-        throw new Error('Task not found or unauthorized');
-      }
+      // Apply updates
+      Object.assign(task, updates);
+      await task.save();
 
       console.log(`[VisitorTimeService] Updated task ${taskId}`);
       return task.toObject();
     } catch (error) {
-      console.error('[VisitorTimeService] updateTask error:', error.message);
-      throw error;
-    }
-  }
-
-  /**
-   * Mark task as complete
-   * @param {string} taskId - Task ID
-   * @param {string} userId - User ID
-   * @returns {Promise<Object>} Updated task
-   */
-  async completeTask(taskId, userId) {
-    try {
-      const task = await VisitorTask.findOneAndUpdate(
-        { _id: taskId, userId },
-        {
-          isCompleted: true,
-          completedAt: new Date(),
-        },
-        { new: true }
-      );
-
-      if (!task) {
-        throw new Error('Task not found or unauthorized');
-      }
-
-      console.log(`[VisitorTimeService] Completed task ${taskId}`);
-      return task.toObject();
-    } catch (error) {
-      console.error('[VisitorTimeService] completeTask error:', error.message);
+      console.error('[VisitorTimeService] updateTask error:', error);
       throw error;
     }
   }
@@ -145,7 +279,7 @@ class VisitorTimeService {
   /**
    * Delete task
    * @param {string} taskId - Task ID
-   * @param {string} userId - User ID
+   * @param {string} userId - User ID (for authorization)
    * @returns {Promise<Object>} Deleted task
    */
   async deleteTask(taskId, userId) {
@@ -159,7 +293,74 @@ class VisitorTimeService {
       console.log(`[VisitorTimeService] Deleted task ${taskId}`);
       return task.toObject();
     } catch (error) {
-      console.error('[VisitorTimeService] deleteTask error:', error.message);
+      console.error('[VisitorTimeService] deleteTask error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get task statistics for analytics
+   * @param {string} userId - User ID
+   * @param {string} dateIso - Date to get stats for (defaults to today)
+   * @returns {Promise<Object>} - { total, completed, pending, completionRate }
+   */
+  async getTaskStats(userId, dateIso) {
+    try {
+      const taskDate = dateIso ? toUtcMidnight(dateIso) : getTodayUtc();
+
+      const [total, completed] = await Promise.all([
+        VisitorTask.countDocuments({ userId, taskDate }),
+        VisitorTask.countDocuments({ userId, taskDate, completed: true }),
+      ]);
+
+      return {
+        total,
+        completed,
+        pending: total - completed,
+        completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+      };
+    } catch (error) {
+      console.error('[VisitorTimeService] getTaskStats error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get pending reminders that need to be sent
+   * @returns {Promise<Array>} - Tasks with pending reminders
+   */
+  async getPendingReminders() {
+    try {
+      const now = new Date();
+
+      const tasks = await VisitorTask.find({
+        'reminder.enabled': true,
+        'reminder.sendAt': { $lte: now },
+        'reminder.sentAt': null,
+      })
+        .populate('userId', 'name email phone')
+        .lean();
+
+      return tasks;
+    } catch (error) {
+      console.error('[VisitorTimeService] getPendingReminders error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Mark reminder as sent
+   * @param {string} taskId - Task ID
+   * @returns {Promise<void>}
+   */
+  async markReminderSent(taskId) {
+    try {
+      await VisitorTask.updateOne(
+        { _id: taskId },
+        { $set: { 'reminder.sentAt': new Date() } }
+      );
+    } catch (error) {
+      console.error('[VisitorTimeService] markReminderSent error:', error);
       throw error;
     }
   }

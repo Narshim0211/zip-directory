@@ -8,6 +8,7 @@ export default {
   getTask: (taskId) => timeClient.get(`${BASE}/tasks/${taskId}`).then((r) => r.data),
   createTask: (data) => timeClient.post(`${BASE}/tasks`, data).then((r) => r.data),
   updateTask: (taskId, updates) => timeClient.put(`${BASE}/tasks/${taskId}`, updates).then((r) => r.data),
+  completeTask: (taskId, status) => timeClient.put(`${BASE}/tasks/${taskId}`, { status }).then((r) => r.data),
   deleteTask: (taskId) => timeClient.delete(`${BASE}/tasks/${taskId}`).then((r) => r.data),
 
   // Daily/Weekly tasks

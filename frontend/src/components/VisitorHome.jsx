@@ -16,13 +16,19 @@ const VisitorHome = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [feedResponse, following] = await Promise.all([
-          v1Client.feed.getFeed({ limit: 30 }),
-          followService.getFollowing(),
-        ]);
-        // v1 API returns { success, items, hasMore }
+        // Fetch feed - this should always work (no auth required)
+        const feedResponse = await v1Client.feed.getFeed({ limit: 30 });
         setFeed(feedResponse.items || []);
-        setFollowingOwners(following.filter((item) => item.role === 'owner'));
+
+        // Try to fetch following list, but don't fail if auth expires
+        try {
+          const following = await followService.getFollowing();
+          setFollowingOwners(following.filter((item) => item.role === 'owner'));
+        } catch (followErr) {
+          console.warn('Could not fetch following list (auth may have expired):', followErr);
+          // Continue showing feed even if following list fails
+          setFollowingOwners([]);
+        }
       } catch (err) {
         console.error('Feed loading failed', err);
         setError('Unable to load your feed right now.');

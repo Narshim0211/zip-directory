@@ -1,0 +1,170 @@
+.hair-goals-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 18px;
+}
+
+.hair-goals-panel {
+	background: #fff;
+	border-radius: 24px;
+	padding: 20px;
+	box-shadow: 0 15px 40px rgba(15, 23, 42, 0.08);
+	border: 1px solid #e5e7eb;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.hair-goals-panel__header h3 {
+	margin: 0;
+	font-size: 1.2rem;
+}
+
+.hair-goals-panel__header p {
+	margin: 4px 0 0;
+	color: #475569;
+	font-size: 0.9rem;
+}
+
+.hair-goals-camera {
+	height: 140px;
+	border-radius: 18px;
+	border: 1px solid #d1d5db;
+	background: linear-gradient(140deg, #111, #1f2937);
+	color: #fff;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+}
+
+.hair-goals-camera__lens {
+	width: 70px;
+	height: 70px;
+	border-radius: 50%;
+	border: 2px dashed rgba(255, 255, 255, 0.6);
+}
+
+.hair-goals-camera__text {
+	font-size: 0.9rem;
+}
+
+.hair-goals-select {
+	width: 100%;
+	padding: 12px;
+	border-radius: 12px;
+	border: 1px solid #cbd5f5;
+	font-size: 1rem;
+	font-weight: 600;
+	background: #f8fafc;
+}
+
+.hair-goals-ring {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+}
+
+.hair-goals-ring svg {
+	transform: rotate(-90deg);
+}
+
+.hair-goals-ring circle {
+	fill: none;
+	stroke: #e2e8f0;
+	stroke-width: 10;
+}
+
+.hair-goals-ring__progress {
+	stroke: #6366f1;
+	stroke-linecap: round;
+}
+
+.hair-goals-ring__label {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	font-size: 1.25rem;
+	font-weight: 600;
+}
+
+.hair-goals-ring__label small {
+	font-size: 0.75rem;
+	color: #64748b;
+}
+
+.hair-goals-message {
+	font-size: 0.85rem;
+	color: #475569;
+	padding: 0 4px;
+}
+
+.hair-goals-reminder__body {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.hair-goals-reminder__date {
+	font-size: 0.85rem;
+	color: #2563eb;
+	margin-top: 4px;
+}
+
+.hair-goals-toggle {
+	padding: 10px 16px;
+	border-radius: 999px;
+	border: none;
+	font-weight: 700;
+	color: #fff;
+	background: #e5e7eb;
+	cursor: pointer;
+}
+
+.hair-goals-toggle--active {
+	background: #22c55e;
+}
+
+.hair-goals-reminder__hint {
+	font-size: 0.85rem;
+	color: #475569;
+	margin: 0;
+}
+
+.hair-goals-inspiration-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 12px;
+}
+
+.hair-goals-inspiration-card {
+	border: 1px solid #e5e7eb;
+	border-radius: 16px;
+	padding: 16px;
+	background: #f8fafc;
+	cursor: grab;
+	font-weight: 600;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	align-items: flex-start;
+}
+
+.hair-goals-inspiration-card:active {
+	cursor: grabbing;
+}
+
+.hair-goals-inspiration-card__badge {
+	font-size: 1.2rem;
+}
+
+.hair-goals-inspiration-card__title {
+	font-size: 1rem;
+}
+
+.hair-goals-inspiration-card__meta {
+	font-size: 0.8rem;
+	color: #475569;
+}

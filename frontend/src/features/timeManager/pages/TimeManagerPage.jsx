@@ -8,10 +8,12 @@ import MonthlyPlanner from '../components/MonthlyPlanner';
 import usePlannerApi from '../hooks/usePlannerApi';
 import '../styles/timeManager.css';
 
-export default function TimeManagerPage({ role = 'visitor' }) {
+export default function TimeManagerPage({ role = 'visitor', basePath }) {
   const location = useLocation();
   const api = usePlannerApi({ role });
   const [tasks, setTasks] = useState([]);
+  const computedBase =
+    basePath || `${role === 'owner' ? '/owner' : '/visitor'}/time`;
 
   // Load tasks for analytics summary
   useEffect(() => {
@@ -38,13 +40,13 @@ export default function TimeManagerPage({ role = 'visitor' }) {
       <ProgressAnalytics tasks={tasks} />
       
       <div className="tm-nav">
-        <NavLink to={`${role === 'owner' ? '/owner' : '/visitor'}/time/daily`} className={activeView === 'daily' ? 'active' : ''}>
+        <NavLink to={`${computedBase}/daily`} className={activeView === 'daily' ? 'active' : ''}>
           Daily
         </NavLink>
-        <NavLink to={`${role === 'owner' ? '/owner' : '/visitor'}/time/weekly`} className={activeView === 'weekly' ? 'active' : ''}>
+        <NavLink to={`${computedBase}/weekly`} className={activeView === 'weekly' ? 'active' : ''}>
           Weekly
         </NavLink>
-        <NavLink to={`${role === 'owner' ? '/owner' : '/visitor'}/time/monthly`} className={activeView === 'monthly' ? 'active' : ''}>
+        <NavLink to={`${computedBase}/monthly`} className={activeView === 'monthly' ? 'active' : ''}>
           Monthly
         </NavLink>
       </div>

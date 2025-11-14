@@ -4,7 +4,6 @@ import api from "../api/axios";
 import HairGoalsCard from "./HairGoalsCard";
 import StyleBoardCard from "./StyleBoardCard";
 import PersonalizedNewsFeed from "./PersonalizedNewsFeed";
-import AIAdvisorCard from "./AIAdvisorCard";
 import "../styles/visitorProfile.css";
 
 const VisitorProfile = () => {
@@ -34,8 +33,6 @@ const VisitorProfile = () => {
         <h1>Profile</h1>
         <p>{`${me.name} - ${me.email} - ${me.role}`}</p>
       </header>
-
-      <AIAdvisorCard />
 
       <HairGoalsCard />
 

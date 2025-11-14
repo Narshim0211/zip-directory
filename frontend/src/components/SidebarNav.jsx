@@ -4,11 +4,10 @@ import { useAuth } from "../context/AuthContext";
 
 const navItems = [
   { label: "Home", path: "/visitor/home", icon: "H" },
-  { label: "Explore", path: "/explore", icon: "E" },
-  { label: "Surveys", path: "/surveys", icon: "S" },
-  { label: "Notifications", path: "/notifications", icon: "N" },
+  { label: "Explore", path: "/visitor/explore", icon: "E" },
+  { label: "Survey", path: "/visitor/surveys", icon: "S" },
+  { label: "Notifications", path: "/visitor/notifications", icon: "N" },
   { label: "My Toolkit", path: "/visitor/toolkit", icon: "T" },
-  { label: "Time Manager", path: "/visitor/time", icon: "⏱" },
   { label: "Profile", path: "/visitor/profile", icon: "P" },
 ];
 

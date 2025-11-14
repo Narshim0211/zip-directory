@@ -29,6 +29,13 @@ const BookingManager = () => {
   const [editingStaff, setEditingStaff] = useState(null);
   const [selectedBooking, setSelectedBooking] = useState(null);
 
+  // Load data on mount (before any conditional returns)
+  useEffect(() => {
+    if (user && (user.role === 'owner' || user.role === 'admin')) {
+      loadDashboardData();
+    }
+  }, [user]);
+
   // Strict role-based access control
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -56,10 +63,6 @@ const BookingManager = () => {
       </div>
     );
   }
-
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
 
   const loadDashboardData = async () => {
     try {

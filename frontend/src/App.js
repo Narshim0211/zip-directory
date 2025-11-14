@@ -10,7 +10,10 @@ import ResetPassword from "./components/ResetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import VisitorProfile from "./visitor/pages/VisitorProfile";
-import VisitorToolkit from "./visitor/pages/VisitorToolkit";
+import ToolkitPage from "./features/toolkit/pages/ToolkitPage";
+import StyleAdvisorPage from "./features/toolkit/pages/StyleAdvisorPage";
+import HairGoalsPage from "./features/toolkit/pages/HairGoalsPage";
+import TimeManagerToolkitPage from "./features/toolkit/pages/TimeManagerToolkitPage";
 import VisitorProfileEditPage from "./visitor/pages/VisitorProfileEditPage";
 import VisitorHome from "./visitor/pages/VisitorHome";
 import NewsList from "./components/NewsList";
@@ -35,7 +38,7 @@ import VisitorProfilePage from "./pages/VisitorProfilePage";
 import ErrorBoundary from "./components/Shared/ErrorBoundary";
 import "./App.css";
 import TimeManagerPage from "./features/timeManager/pages/TimeManagerPage";
-import OwnerTimeManager from "./pages/owner/TimeManager";
+import TimeManagerOwnerPage from "./features/timeManager/pages/owner/TimeManagerOwnerPage";
 import OwnerProfilePage from "./pages/owner/Profile";
 import OwnerBookingManager from "./pages/owner/BookingManager";
 import MicroservicesRoutes from "./routes/MicroservicesRoutes";
@@ -85,7 +88,12 @@ function Frame() {
           <Route path="explore" element={<VisitorPage />} />
           <Route path="surveys" element={<VisitorSurveys />} />
           <Route path="notifications" element={<VisitorNotifications />} />
-          <Route path="toolkit" element={<VisitorToolkit />} />
+          <Route path="toolkit">
+            <Route index element={<ToolkitPage />} />
+            <Route path="time/*" element={<TimeManagerToolkitPage />} />
+            <Route path="style-advisor" element={<StyleAdvisorPage />} />
+            <Route path="goals" element={<HairGoalsPage />} />
+          </Route>
           <Route path="profile" element={<VisitorProfilePage />} />
           <Route path="profile/edit" element={<VisitorProfileEditPage />} />
           <Route path="time/*" element={<TimeManagerPage />} />
@@ -108,7 +116,7 @@ function Frame() {
           <Route path="surveys" element={<Surveys />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="profile/me" element={<OwnerProfilePage />} />
-          <Route path="time" element={<OwnerTimeManager />} />
+          <Route path="time/*" element={<TimeManagerOwnerPage />} />
           <Route path="booking" element={<OwnerBookingManager />} />
         </Route>
 

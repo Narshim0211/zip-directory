@@ -1,13 +1,14 @@
 /**
  * Visitor Time Management Routes
- * All endpoints for visitor daily/weekly/monthly planner, goals, reminders, and reflections
+ * All endpoints for visitor daily/weekly/monthly planner with UTC date handling
  */
 const express = require('express');
 const router = express.Router();
-const asyncHandler = require('../middleware/asyncHandler');
-const authMiddleware = require('../middleware/authMiddleware');
-const authVisitor = require('../middleware/authVisitor');
-const rateLimiter = require('../middleware/rateLimiter');
+const asyncHandler = require('../../middleware/asyncHandler');
+const authMiddleware = require('../../middleware/authMiddleware');
+const authVisitor = require('../../middleware/authVisitor');
+const rateLimiter = require('../../middleware/rateLimiter');
+const visitorTimeService = require('../../services/visitor/visitorTimeService');
 
 // Apply auth and rate limiting to all routes
 router.use(authMiddleware);
@@ -41,16 +42,36 @@ router.get(
 router.post(
   '/tasks',
   asyncHandler(async (req, res) => {
-    const { title, description, scope, session, priority, dueDate } = req.body;
     const userId = req.user.id;
+    const payload = req.body;
 
-    // TODO: Implement with visitorTimeService.createTask()
+    // Validate required fields
+    if (!payload.title) {
+      return res.status(400).json({
+        success: false,
+        message: 'title is required',
+      });
+    }
+
+    if (!payload.date && !payload.taskDate) {
+      return res.status(400).json({
+        success: false,
+        message: 'date or taskDate is required',
+      });
+    }
+
+    if (!payload.session) {
+      return res.status(400).json({
+        success: false,
+        message: 'session is required (morning, afternoon, or evening)',
+      });
+    }
+
+    const task = await visitorTimeService.createTask(userId, payload);
 
     res.status(201).json({
       success: true,
-      message: 'Create task endpoint - to be implemented',
-      userId,
-      data: { title, description, scope, session, priority, dueDate },
+      task,
     });
   })
 );
@@ -62,13 +83,11 @@ router.get(
     const { taskId } = req.params;
     const userId = req.user.id;
 
-    // TODO: Implement with visitorTimeService.getTask(taskId)
+    const task = await visitorTimeService.getTask(taskId, userId);
 
     res.json({
       success: true,
-      message: 'Get single task endpoint - to be implemented',
-      userId,
-      taskId,
+      task,
     });
   })
 );
@@ -81,14 +100,11 @@ router.put(
     const userId = req.user.id;
     const updates = req.body;
 
-    // TODO: Implement with visitorTimeService.updateTask(taskId, updates)
+    const task = await visitorTimeService.updateTask(taskId, userId, updates);
 
     res.json({
       success: true,
-      message: 'Update task endpoint - to be implemented',
-      userId,
-      taskId,
-      updates,
+      task,
     });
   })
 );
@@ -100,13 +116,78 @@ router.delete(
     const { taskId } = req.params;
     const userId = req.user.id;
 
-    // TODO: Implement with visitorTimeService.deleteTask(taskId)
+    const task = await visitorTimeService.deleteTask(taskId, userId);
 
     res.json({
       success: true,
-      message: 'Delete task endpoint - to be implemented',
-      userId,
-      taskId,
+      message: 'Task deleted successfully',
+      task,
+    });
+  })
+);
+
+// GET /api/visitor/time/tasks/daily - Get daily tasks
+router.get(
+  '/tasks/daily',
+  asyncHandler(async (req, res) => {
+    const { date } = req.query;
+    const userId = req.user.id;
+
+    const tasks = await visitorTimeService.getDailyTasks(userId, date);
+
+    res.json({
+      success: true,
+      tasks,
+      date: date || new Date().toISOString().split('T')[0],
+    });
+  })
+);
+
+// GET /api/visitor/time/tasks/weekly - Get weekly tasks
+router.get(
+  '/tasks/weekly',
+  asyncHandler(async (req, res) => {
+    const { startDate } = req.query;
+    const userId = req.user.id;
+
+    if (!startDate) {
+      return res.status(400).json({
+        success: false,
+        message: 'startDate query parameter is required (YYYY-MM-DD format, must be a Monday)',
+      });
+    }
+
+    const tasks = await visitorTimeService.getWeeklyTasks(userId, startDate);
+
+    res.json({
+      success: true,
+      tasks,
+      startDate,
+    });
+  })
+);
+
+// GET /api/visitor/time/monthly - Get monthly tasks
+router.get(
+  '/monthly',
+  asyncHandler(async (req, res) => {
+    const { month, year } = req.query;
+    const userId = req.user.id;
+
+    if (!month || !year) {
+      return res.status(400).json({
+        success: false,
+        message: 'month and year query parameters are required',
+      });
+    }
+
+    const tasks = await visitorTimeService.getMonthlyTasks(userId, parseInt(month), parseInt(year));
+
+    res.json({
+      success: true,
+      tasks,
+      month: parseInt(month),
+      year: parseInt(year),
     });
   })
 );

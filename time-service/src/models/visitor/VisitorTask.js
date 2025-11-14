@@ -1,9 +1,22 @@
 /**
  * VisitorTask Model
  * Represents daily, weekly, and monthly tasks for Visitor users
+ *
+ * CRITICAL: taskDate is stored as UTC midnight for consistent querying
+ * timeOfDay stores the user's local time preference as HH:mm string
  */
 const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
+
+// Reminder sub-schema (nested object for better organization)
+const ReminderSchema = new Schema({
+  enabled: { type: Boolean, default: false },
+  channels: [{ type: String, enum: ['sms', 'email'] }],
+  sendAt: Date, // When to send the reminder (can be different from taskDate)
+  phone: String,
+  email: String,
+  sentAt: Date // Track when reminder was actually sent
+}, { _id: false });
 
 const VisitorTaskSchema = new Schema(
   {
@@ -19,40 +32,28 @@ const VisitorTaskSchema = new Schema(
       trim: true,
       maxlength: 200,
     },
-    description: {
+    notes: { // Changed from 'description' to match PRD
       type: String,
       default: '',
       maxlength: 1000,
     },
-    scope: {
-      type: String,
-      enum: ['daily', 'weekly', 'monthly'],
-      default: 'daily',
+    // CRITICAL: This is the canonical date (UTC midnight) for filtering
+    taskDate: {
+      type: Date,
+      required: true,
+      index: true, // Essential for daily/weekly/monthly queries
     },
     session: {
       type: String,
-      enum: ['Morning', 'Afternoon', 'Evening'],
-      default: 'Morning',
+      enum: ['morning', 'afternoon', 'evening'], // lowercase to match PRD
+      required: true,
     },
-    isCompleted: {
-      type: Boolean,
-      default: false,
-    },
-    completedAt: {
-      type: Date,
+    timeOfDay: {
+      type: String, // "09:30" format - user's local time preference
       default: null,
     },
-    reminderEnabled: {
-      type: Boolean,
-      default: true,
-    },
-    reminderType: {
-      type: String,
-      enum: ['email', 'sms', 'in-app', 'none'],
-      default: 'in-app',
-    },
-    reminderTime: {
-      type: Date,
+    durationMin: {
+      type: Number,
       default: null,
     },
     priority: {
@@ -60,24 +61,36 @@ const VisitorTaskSchema = new Schema(
       enum: ['low', 'medium', 'high'],
       default: 'medium',
     },
+    scopeTag: { // Changed from 'scope' to match PRD exactly
+      type: String,
+      enum: ['daily', 'weekly', 'monthly'],
+      default: 'daily',
+    },
+    completed: { // Changed from 'isCompleted' to match PRD
+      type: Boolean,
+      default: false,
+    },
+    completedAt: {
+      type: Date,
+      default: null,
+    },
     category: {
       type: String,
       default: 'general',
     },
     tags: [String],
-    dueDate: {
-      type: Date,
-      default: null,
-    },
+    // Nested reminder object (replaces flat fields)
+    reminder: ReminderSchema,
   },
   {
     timestamps: true,
   }
 );
 
-// Index for efficient queries
-VisitorTaskSchema.index({ userId: 1, scope: 1, createdAt: -1 });
-VisitorTaskSchema.index({ userId: 1, isCompleted: 1 });
-VisitorTaskSchema.index({ userId: 1, session: 1 });
+// CRITICAL: Index on userId + taskDate for fast daily/weekly/monthly queries
+VisitorTaskSchema.index({ userId: 1, taskDate: 1 });
+VisitorTaskSchema.index({ userId: 1, taskDate: 1, session: 1 });
+VisitorTaskSchema.index({ userId: 1, completed: 1 });
+VisitorTaskSchema.index({ 'reminder.enabled': 1, 'reminder.sendAt': 1, 'reminder.sentAt': 1 }); // For cron job
 
 module.exports = model('VisitorTask', VisitorTaskSchema);

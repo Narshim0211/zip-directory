@@ -21,7 +21,15 @@ function addDays(dateStr, days) {
   return d.toISOString().split('T')[0];
 }
 
-const WEEK_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const WEEK_DAYS = [
+  { short: 'Mon', full: 'Monday' },
+  { short: 'Tue', full: 'Tuesday' },
+  { short: 'Wed', full: 'Wednesday' },
+  { short: 'Thu', full: 'Thursday' },
+  { short: 'Fri', full: 'Friday' },
+  { short: 'Sat', full: 'Saturday' },
+  { short: 'Sun', full: 'Sunday' }
+];
 
 export default function WeeklyPlanner({ role = 'visitor' }) {
   const api = usePlannerApi({ role });
@@ -39,9 +47,13 @@ export default function WeeklyPlanner({ role = 'visitor' }) {
     const out = {};
     WEEK_DAYS.forEach((_, i) => { out[addDays(weekStart, i)] = []; });
     for (const t of tasks) {
-      const key = (t.date || '').split('T')[0] || addDays(weekStart, 0);
-      if (!out[key]) out[key] = [];
-      out[key].push(t);
+      // Use taskDate if available, fallback to date
+      const taskDateStr = t.taskDate ? new Date(t.taskDate).toISOString().split('T')[0] :
+                          (t.date || '').split('T')[0];
+      const key = taskDateStr || addDays(weekStart, 0);
+      if (out[key]) {
+        out[key].push(t);
+      }
     }
     return out;
   }, [tasks, weekStart]);
@@ -69,31 +81,77 @@ export default function WeeklyPlanner({ role = 'visitor' }) {
   useEffect(() => { load(); }, [weekStart]);
 
   const toggleComplete = async (task) => {
-    const updated = { status: task.status === 'completed' ? 'pending' : 'completed', completed: !(task.completed) };
-    const res = await api.updateTask(task._id, updated);
-    setTasks(prev => prev.map(t => (t._id === task._id ? res : t)));
+    try {
+      const updated = { completed: !(task.completed) };
+      const res = await api.updateTask(task._id, updated);
+      const updatedTask = res.task || res;
+      setTasks(prev => prev.map(t => (t._id === task._id ? updatedTask : t)));
+    } catch (error) {
+      console.error('Failed to toggle task:', error);
+      alert('Failed to update task');
+    }
   };
 
   const handleCreate = async (payload) => {
-    const meta = payload.assignedTo ? { metadata: { assignedTo: payload.assignedTo } } : {};
-    const created = await api.createTask({ ...payload, ...meta, date: weekStart, scope: 'weekly' });
-    setTasks(prev => [created, ...prev]);
-    setShowForm(false);
+    try {
+      // Determine the taskDate - use payload.taskDate if provided, otherwise use weekStart
+      const taskDate = payload.taskDate || payload.date || weekStart;
+
+      const taskData = {
+        ...payload,
+        taskDate: taskDate,
+        date: taskDate,
+        session: payload.session?.toLowerCase() || 'morning',
+        scopeTag: payload.scopeTag || payload.scope || 'weekly'
+      };
+
+      // Add assignment metadata if owner role
+      if (payload.assignedTo) {
+        taskData.metadata = { assignedTo: payload.assignedTo };
+      }
+
+      const res = await api.createTask(taskData);
+      const created = res.task || res;
+      setTasks(prev => [...prev, created]);
+      setShowForm(false);
+      await load(); // Refresh to ensure consistency
+    } catch (error) {
+      console.error('Failed to create task:', error);
+      alert(error.response?.data?.message || 'Failed to create task');
+    }
   };
 
   const handleUpdate = async (payload) => {
-    const updates = payload.assignedTo
-      ? { ...payload, metadata: { ...(editing.metadata || {}), assignedTo: payload.assignedTo } }
-      : payload;
-    const res = await api.updateTask(editing._id, updates);
-    setTasks(prev => prev.map(t => (t._id === editing._id ? res : t)));
-    setEditing(null);
+    try {
+      const updates = {
+        ...payload,
+        session: payload.session?.toLowerCase() || editing.session
+      };
+
+      // Preserve assignment metadata if owner role
+      if (payload.assignedTo) {
+        updates.metadata = { ...(editing.metadata || {}), assignedTo: payload.assignedTo };
+      }
+
+      const res = await api.updateTask(editing._id, updates);
+      const updated = res.task || res;
+      setTasks(prev => prev.map(t => (t._id === editing._id ? updated : t)));
+      setEditing(null);
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      alert(error.response?.data?.message || 'Failed to update task');
+    }
   };
 
   const handleDelete = async (task) => {
     if (!window.confirm('Delete this task?')) return;
-    await api.deleteTask(task._id);
-    setTasks(prev => prev.filter(t => t._id !== task._id));
+    try {
+      await api.deleteTask(task._id);
+      setTasks(prev => prev.filter(t => t._id !== task._id));
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+      alert('Failed to delete task');
+    }
   };
 
   return (
@@ -132,18 +190,28 @@ export default function WeeklyPlanner({ role = 'visitor' }) {
         </div>
       ) : (
         <div className="tm-daily__grid">
-          {WEEK_DAYS.map((label, idx) => {
+          {WEEK_DAYS.map((dayConfig, idx) => {
             const dateKey = addDays(weekStart, idx);
             const dayTasks = grouped[dateKey] || [];
             return (
               <div key={dateKey} className="tm-slot">
-                <div className="tm-slot__title">{label} - {dateKey}</div>
+                <div className="tm-slot__title">
+                  <span>{dayConfig.short} - {dateKey}</span>
+                  <span className="tm-slot__count">({dayTasks.length})</span>
+                </div>
                 <div className="tm-slot__list">
                   {dayTasks.length === 0 ? (
                     <div className="empty">No tasks</div>
                   ) : (
                     dayTasks.map(t => (
-                      <TaskCard key={t._id || t.id} task={t} showStatus onEdit={() => setEditing(t)} onDelete={() => handleDelete(t)} />
+                      <TaskCard
+                        key={t._id || t.id}
+                        task={t}
+                        showStatus
+                        onToggleComplete={() => toggleComplete(t)}
+                        onEdit={() => setEditing(t)}
+                        onDelete={() => handleDelete(t)}
+                      />
                     ))
                   )}
                 </div>

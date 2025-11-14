@@ -1,11 +1,62 @@
 .vercel
-# Environment files
+
+# ====================================
+# Environment Files (SENSITIVE DATA)
+# ====================================
+# Exclude ALL .env files containing sensitive data:
+# - Database credentials (MongoDB)
+# - API keys (Stripe, AI services)
+# - JWT secrets
+# - Service authentication tokens
+
+# Root level
 .env
-*.env
+.env.local
+.env.*.local
+
+# Backend service
 backend/.env
+backend/.env.local
+backend/.env.*
 
+# Time management service
+time-service/.env
+time-service/.env.local
+time-service/.env.*
 
-# Environment files
-*.env
-*/.env
-*/.env.*
+# Frontend service
+frontend/.env
+frontend/.env.local
+frontend/.env.development
+frontend/.env.production
+frontend/.env.*
+
+# Admin service
+admin/.env
+admin/.env.local
+admin/.env.development
+admin/.env.production
+admin/.env.*
+
+# Microservices
+services/**/.env
+services/**/.env.local
+services/**/.env.*
+services/ai-style-service/.env
+services/auth-service/.env
+services/booking-service/.env
+services/payment-service/.env
+services/profile-service/.env
+
+# Any other nested .env files
+**/.env
+**/.env.local
+**/.env.*.local
+**/.env.development
+**/.env.production
+
+# BUT keep .env.example and .env.template files (templates are safe)
+!**/.env.example
+!**/.env.template
+!.env.example
+!.env.template

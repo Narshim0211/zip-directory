@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 const links = [
   { label: 'Home', to: '/home' },
   { label: 'Explore', to: '/explore' },
+  { label: 'Time Manager', to: '/time/daily' },
   { label: 'Surveys', to: '/surveys' },
   { label: 'Notifications', to: '/notifications' },
   { label: 'Profile', to: '/profile' },
@@ -14,6 +15,7 @@ const links = [
 const iconMap = {
   Home: '🏠',
   Explore: '🧭',
+  'Time Manager': '⏰',
   Surveys: '📊',
   Notifications: '🔔',
   Profile: '👤',

@@ -4,10 +4,10 @@
  */
 const express = require('express');
 const router = express.Router();
-const asyncHandler = require('../middleware/asyncHandler');
-const authMiddleware = require('../middleware/authMiddleware');
-const authOwner = require('../middleware/authOwner');
-const rateLimiter = require('../middleware/rateLimiter');
+const asyncHandler = require('../../middleware/asyncHandler');
+const authMiddleware = require('../../middleware/authMiddleware');
+const authOwner = require('../../middleware/authOwner');
+const rateLimiter = require('../../middleware/rateLimiter');
 
 // Apply auth and rate limiting to all routes
 router.use(authMiddleware);

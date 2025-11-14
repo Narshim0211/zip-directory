@@ -14,13 +14,24 @@ export default function QuoteBanner({ role = 'visitor' }) {
         if (!api.getQuote) return; // optional for owner
         const data = await api.getQuote();
         if (!mounted) return;
-        setQuote(typeof data === 'string' ? data : data?.quote || '');
+        // Handle different response formats
+        if (typeof data === 'string') {
+          setQuote(data);
+        } else if (data?.quote?.content) {
+          // API returns { success: true, quote: { content, author } }
+          setQuote(data.quote.content);
+        } else if (data?.content) {
+          // Direct quote object { content, author }
+          setQuote(data.content);
+        } else {
+          setQuote('');
+        }
       } catch (_) {
         // best-effort only
       }
     })();
     return () => { mounted = false; };
-  }, []);
+  }, [role]);
 
   if (!quote) return null;
   return (

@@ -1,4 +1,5 @@
 const express = require('express');
+const detectPort = require('detect-port');
 const http = require('http');
 const app = express();
 const mongoose = require('mongoose');
@@ -6,6 +7,7 @@ const User = require('./models/User');
 const logger = require('./utils/logger');
 const errorHandler = require('./middleWare/errorMiddleware');
 require('dotenv').config();
+const stripeWebhookRoutes = require('./routes/stripeWebhookRoutes');
 
 // Middleware
 const cors = require('cors');
@@ -41,6 +43,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use('/webhooks', stripeWebhookRoutes);
 // Express 5 (path-to-regexp v6): use a RegExp or omit path.
 // Handle preflight for all routes using a RegExp that matches anything.
 app.options(/.*/, cors(corsOptions));
@@ -152,26 +155,41 @@ app.use('/api/articles', articlesRoutes);
 const aiRoutes = require('./routes/aiRoutes');
 app.use('/api/ai', aiRoutes);
 
+const styleAdvisorRoutes = require('./routes/styleAdvisorRoutes');
+app.use('/api/visitor/style', styleAdvisorRoutes);
+
+const toolkitRoutes = require('./routes/toolkitRoutes');
+app.use('/api/visitor/toolkit', toolkitRoutes);
+
+const visitorTimeRoutes = require('./visitor/time/routes/timeRoutes');
+app.use('/api/visitor/time-manager', visitorTimeRoutes);
+
+const ownerTimeRoutes = require('./owner/time/routes/timeRoutes');
+app.use('/api/owner/time-manager', ownerTimeRoutes);
+
 const commentRoutes = require('./routes/commentRoutes');
 app.use('/api/comments', commentRoutes);
 
 const reportRoutes = require('./routes/reportRoutes');
 app.use('/api/comments/reports', reportRoutes);
-// Time Manager 2.0: Modular architecture with complete role isolation
-const visitorTimeRoutes = require('./modules/visitorTimeManager/routes/visitorTimeRoutes');
-const ownerTimeRoutes = require('./modules/ownerTimeManager/routes/ownerTimeRoutes');
-const { globalErrorHandler } = require('./modules/shared/utils/errorHandler');
 
-app.use('/api/visitor/time', visitorTimeRoutes);
-app.use('/api/owner/time', ownerTimeRoutes);
+// Time Manager: Proxy to Time Microservice
+const { timeProxy } = require('./middleWare/timeProxy');
+app.use('/api/visitor/time', timeProxy('/visitor/time'));
+app.use('/api/owner/time', timeProxy('/owner/time'));
 
-// Initialize reminder service (optional - only if needed)
-// const { initializeReminderCron } = require('./modules/shared/services/reminderService');
-// initializeReminderCron();
+// Import reminder cron functions before calling them
+const { startVisitorReminderCron } = require('./visitor/time/cron/reminderCron');
+const { startOwnerReminderCron } = require('./owner/time/cron/reminderCron');
+
+startVisitorReminderCron();
+startOwnerReminderCron();
+
 // Notifications
 const { initNotificationSocket } = require('./services/notificationSocket');
 const notificationRoutes = require('./routes/notificationRoutes');
 app.use('/api/notifications', notificationRoutes);
+
 
 // Microservices Proxy Gateway Routes
 // Per PRD Section 8: Frontend → Main Backend → Microservices
@@ -229,33 +247,36 @@ const PORT = Number(process.env.PORT || 5000);
 if (process.env.VERCEL) {
   module.exports = app; // Vercel will handle the serverless function
 } else {
-  const createServerInstance = () => {
-    const server = http.createServer(app);
-    initNotificationSocket(server, rawOrigins);
-    return server;
+const createServerInstance = () => {
+  const server = http.createServer(app);
+  initNotificationSocket(server, rawOrigins);
+  return server;
+};
+
+const startServer = async (port) => {
+  const freePort = await detectPort(port);
+  if (freePort !== port) {
+    logger.warn(`Port ${port} already in use, switching to ${freePort}.`);
+  }
+
+  const server = createServerInstance();
+  const handleError = (err) => {
+    if (err.code === "EADDRINUSE") {
+      logger.error(`Port ${freePort} became unavailable.`);
+    } else {
+      logger.error("Unexpected server error", err);
+    }
+    process.exit(1);
   };
 
-  const startServer = (port, attempts = 0) => {
-    const server = createServerInstance();
-    const handleError = (err) => {
-      if (err.code === 'EADDRINUSE' && !process.env.PORT && attempts < 10) {
-        logger.warn(`Port ${port} already in use, trying ${port + 1}...`);
-        server.close();
-        setTimeout(() => startServer(port + 1, attempts + 1), 100);
-        return;
-      }
-      logger.error('Unable to bind any port; exiting.');
-      process.exit(1);
-    };
+  server.once("error", handleError);
+  server.listen(freePort, () => {
+    server.off("error", handleError);
+    logger.info(`Server running on http://localhost:${freePort}`);
+  });
+};
 
-    server.once('error', handleError);
-    server.listen(port, () => {
-      server.off('error', handleError);
-      logger.info(`Server running on http://localhost:${port}`);
-    });
-  };
-
-  startServer(PORT);
+startServer(PORT);
 }
 
 app.use(errorHandler);

@@ -1,0 +1,20 @@
+services:
+  # Redis - Caching Layer
+  redis:
+    image: redis:7-alpine
+    container_name: salonhub-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-dev-data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  redis-dev-data:
+    driver: local

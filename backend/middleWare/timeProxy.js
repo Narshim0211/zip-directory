@@ -52,18 +52,20 @@ function timeProxy(prefix = '') {
       // Relay headers selectively if needed (skipped for simplicity)
       return res.send(response.data);
     } catch (err) {
-      const status = err.response?.status || 502;
-      const message = err.response?.data || { error: err.message || 'Proxy error' };
-      return res.status(status).send(message);
+    const status = err.response?.status || 502;
+    if (status === 502 || err.code === 'ECONNREFUSED') {
+      return res.status(200).json({
+        tasks: [],
+        message: 'Time service temporarily unavailable. Data will reappear once it reconnects.',
+      });
     }
-  };
+    const message = err.response?.data || { error: err.message || 'Proxy error' };
+    return res.status(status).send(message);
+  }
+};
 
-  // Attach to all common methods
-  router.get('*', handler);
-  router.post('*', handler);
-  router.put('*', handler);
-  router.patch('*', handler);
-  router.delete('*', handler);
+  // Catch all requests using middleware
+  router.use(handler);
 
   return router;
 }

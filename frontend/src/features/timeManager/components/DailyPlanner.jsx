@@ -7,7 +7,12 @@ import useLocalSync from '../hooks/useLocalSync';
 import useOwnerBusinesses from '../hooks/useOwnerBusinesses';
 import '../styles/timeManager.css';
 
-const SESSIONS = ['Morning', 'Afternoon', 'Evening'];
+// Session configuration - lowercase to match backend
+const SESSIONS = [
+  { key: 'morning', label: 'Morning', icon: '🌅' },
+  { key: 'afternoon', label: 'Afternoon', icon: '☀️' },
+  { key: 'evening', label: 'Evening', icon: '🌙' }
+];
 
 export default function DailyPlanner({ role = 'visitor' }) {
   const api = usePlannerApi({ role });
@@ -18,13 +23,18 @@ export default function DailyPlanner({ role = 'visitor' }) {
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [quickAddSession, setQuickAddSession] = useState(null);
+  const [quickAddTitle, setQuickAddTitle] = useState('');
 
   useLocalSync('tm.daily.tasks', tasks);
 
   const grouped = useMemo(() => {
-    const out = { Morning: [], Afternoon: [], Evening: [] };
+    const out = { morning: [], afternoon: [], evening: [] };
     for (const t of tasks) {
-      out[t.session || 'Morning'].push(t);
+      const session = (t.session || 'morning').toLowerCase();
+      if (out[session]) {
+        out[session].push(t);
+      }
     }
     return out;
   }, [tasks]);
@@ -47,31 +57,82 @@ export default function DailyPlanner({ role = 'visitor' }) {
   useEffect(() => { load(); }, [selectedDate]);
 
   const toggleComplete = async (task) => {
-    const updated = { status: task.status === 'completed' ? 'pending' : 'completed', completed: !(task.completed) };
+    const updated = { completed: !(task.completed) };
     const res = await api.updateTask(task._id, updated);
-    setTasks(prev => prev.map(t => (t._id === task._id ? res : t)));
+    setTasks(prev => prev.map(t => (t._id === task._id ? res.task || res : t)));
   };
 
   const handleCreate = async (payload) => {
-    const meta = payload.assignedTo ? { metadata: { assignedTo: payload.assignedTo } } : {};
-    const created = await api.createTask({ ...payload, ...meta, date: selectedDate, scope: 'daily' });
-    setTasks(prev => [created, ...prev]);
-    setShowForm(false);
+    try {
+      // Ensure session is lowercase
+      const taskData = {
+        ...payload,
+        date: selectedDate,
+        taskDate: selectedDate,
+        session: payload.session?.toLowerCase() || 'morning',
+        scopeTag: 'daily'
+      };
+
+      const res = await api.createTask(taskData);
+      const created = res.task || res;
+      setTasks(prev => [...prev, created]);
+      setShowForm(false);
+      await load(); // Refresh to ensure consistency
+    } catch (error) {
+      console.error('Failed to create task:', error);
+      alert(error.response?.data?.message || 'Failed to create task');
+    }
   };
 
   const handleUpdate = async (payload) => {
-    const updates = payload.assignedTo
-      ? { ...payload, metadata: { ...(editing.metadata || {}), assignedTo: payload.assignedTo } }
-      : payload;
-    const res = await api.updateTask(editing._id, updates);
-    setTasks(prev => prev.map(t => (t._id === editing._id ? res : t)));
-    setEditing(null);
+    try {
+      const updates = {
+        ...payload,
+        session: payload.session?.toLowerCase() || editing.session
+      };
+      const res = await api.updateTask(editing._id, updates);
+      const updated = res.task || res;
+      setTasks(prev => prev.map(t => (t._id === editing._id ? updated : t)));
+      setEditing(null);
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      alert(error.response?.data?.message || 'Failed to update task');
+    }
   };
 
   const handleDelete = async (task) => {
     if (!window.confirm('Delete this task?')) return;
-    await api.deleteTask(task._id);
-    setTasks(prev => prev.filter(t => t._id !== task._id));
+    try {
+      await api.deleteTask(task._id);
+      setTasks(prev => prev.filter(t => t._id !== task._id));
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+      alert('Failed to delete task');
+    }
+  };
+
+  const handleQuickAdd = async (session) => {
+    if (!quickAddTitle.trim()) return;
+
+    try {
+      const taskData = {
+        title: quickAddTitle,
+        date: selectedDate,
+        taskDate: selectedDate,
+        session: session,
+        scopeTag: 'daily'
+      };
+
+      const res = await api.createTask(taskData);
+      const created = res.task || res;
+      setTasks(prev => [...prev, created]);
+      setQuickAddTitle('');
+      setQuickAddSession(null);
+      await load(); // Refresh to ensure consistency
+    } catch (error) {
+      console.error('Failed to quick-add task:', error);
+      alert(error.response?.data?.message || 'Failed to create task');
+    }
   };
 
   return (
@@ -108,15 +169,57 @@ export default function DailyPlanner({ role = 'visitor' }) {
         </div>
       ) : (
         <div className="tm-daily__grid">
-          {SESSIONS.map((s) => (
-            <div key={s} className="tm-slot">
-              <div className="tm-slot__title">{s}</div>
+          {SESSIONS.map((sessionConfig) => (
+            <div key={sessionConfig.key} className="tm-slot">
+              <div className="tm-slot__title">
+                <span>{sessionConfig.icon} {sessionConfig.label}</span>
+                <span className="tm-slot__count">({grouped[sessionConfig.key].length})</span>
+              </div>
+
+              {/* Quick Add Form - Inline within session */}
+              {quickAddSession === sessionConfig.key ? (
+                <div className="tm-quick-add">
+                  <input
+                    type="text"
+                    placeholder="Task title..."
+                    value={quickAddTitle}
+                    onChange={(e) => setQuickAddTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleQuickAdd(sessionConfig.key);
+                      if (e.key === 'Escape') { setQuickAddSession(null); setQuickAddTitle(''); }
+                    }}
+                    autoFocus
+                    className="tm-quick-add__input"
+                  />
+                  <div className="tm-quick-add__actions">
+                    <button onClick={() => handleQuickAdd(sessionConfig.key)} className="btn-sm btn-primary">Add</button>
+                    <button onClick={() => { setQuickAddSession(null); setQuickAddTitle(''); }} className="btn-sm">Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  className="tm-quick-add-trigger"
+                  onClick={() => setQuickAddSession(sessionConfig.key)}
+                  disabled={!!editing || showForm}
+                >
+                  + Quick Add
+                </button>
+              )}
+
+              {/* Task List */}
               <div className="tm-slot__list">
-                {grouped[s].length === 0 ? (
-                  <div className="empty">No tasks</div>
+                {grouped[sessionConfig.key].length === 0 ? (
+                  <div className="empty">No tasks for this session</div>
                 ) : (
-                  grouped[s].map(t => (
-                    <TaskCard key={t._id || t.id} task={t} showStatus onEdit={() => setEditing(t)} onDelete={() => handleDelete(t)} />
+                  grouped[sessionConfig.key].map(t => (
+                    <TaskCard
+                      key={t._id || t.id}
+                      task={t}
+                      showStatus
+                      onToggleComplete={() => toggleComplete(t)}
+                      onEdit={() => setEditing(t)}
+                      onDelete={() => handleDelete(t)}
+                    />
                   ))
                 )}
               </div>
