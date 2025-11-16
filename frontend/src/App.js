@@ -13,6 +13,7 @@ import VisitorProfile from "./visitor/pages/VisitorProfile";
 import ToolkitPage from "./features/toolkit/pages/ToolkitPage";
 import StyleAdvisorPage from "./features/toolkit/pages/StyleAdvisorPage";
 import HairGoalsPage from "./features/toolkit/pages/HairGoalsPage";
+import WeeklyReportsPage from "./features/toolkit/pages/WeeklyReportsPage";
 import TimeManagerToolkitPage from "./features/toolkit/pages/TimeManagerToolkitPage";
 import VisitorProfileEditPage from "./visitor/pages/VisitorProfileEditPage";
 import VisitorHome from "./visitor/pages/VisitorHome";
@@ -93,6 +94,7 @@ function Frame() {
             <Route path="time/*" element={<TimeManagerToolkitPage />} />
             <Route path="style-advisor" element={<StyleAdvisorPage />} />
             <Route path="goals" element={<HairGoalsPage />} />
+            <Route path="goals/reports" element={<WeeklyReportsPage />} />
           </Route>
           <Route path="profile" element={<VisitorProfilePage />} />
           <Route path="profile/edit" element={<VisitorProfileEditPage />} />

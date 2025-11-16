@@ -26,21 +26,12 @@ export default function ToolkitPage() {
 			</div>
 
 			<div className="toolkit-grid">
-					<ToolkitCard
+				<ToolkitCard
 					title="Time Manager"
 					description="Plan your day and week with a drag-and-drop timeline."
 					badge="Free"
 					ctaText="Open Planner"
 					onClick={() => openCard("/visitor/toolkit/time/daily", false)}
-				/>
-
-				<ToolkitCard
-					title="AI Style Advisor"
-					description="Hair try-ons, outfits, and chat-based beauty coaching."
-					badge="Premium"
-					onClick={() => openCard("/visitor/toolkit/style-advisor", true)}
-					locked={!isSubscribed}
-					disabled={loading}
 				/>
 
 				<ToolkitCard

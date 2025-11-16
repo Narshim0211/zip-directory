@@ -87,25 +87,8 @@ const askQuestion = (req, res) => {
   );
 };
 
-const getProfile = (req, res) =>
-  handleServiceCall(res, () =>
-    styleAdvisorService.getProfile({
-      user: req.user,
-    })
-  );
-
-const saveProfile = (req, res) =>
-  handleServiceCall(res, () =>
-    styleAdvisorService.saveProfile({
-      user: req.user,
-      payload: req.body,
-    })
-  );
-
 module.exports = {
   hairTryOn,
   outfitTryOn,
   askQuestion,
-  getProfile,
-  saveProfile,
 };

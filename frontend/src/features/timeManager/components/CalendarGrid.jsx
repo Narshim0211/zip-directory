@@ -7,7 +7,9 @@ export function WeeklyGrid({
   onAddClick, 
   onTaskClick, 
   onToggleComplete,
-  onDateClick 
+  onDateClick,
+  onDelete,
+  onDeleteReminder
 }) {
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   
@@ -70,7 +72,7 @@ export function WeeklyGrid({
                   key={task._id || task.id} 
                   className="tm-weekly-grid__task"
                   onClick={(e) => {
-                    if (e.target.type !== 'checkbox') {
+                    if (e.target.type !== 'checkbox' && !e.target.closest('button')) {
                       onTaskClick?.(task);
                     }
                   }}
@@ -88,6 +90,20 @@ export function WeeklyGrid({
                     <span className={`tm-priority tm-priority--${task.priority}`}>
                       {task.priority === 'high' ? '🔴' : task.priority === 'medium' ? '🟡' : '🟢'}
                     </span>
+                  )}
+                  {onDelete && (
+                    <button
+                      type="button"
+                      className="tm-task-delete-btn tm-task-delete-btn--mini"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(task._id);
+                      }}
+                      title="Delete task"
+                      aria-label="Delete task"
+                    >
+                      ✕
+                    </button>
                   )}
                 </div>
               ))}
@@ -109,7 +125,9 @@ export function MonthlyGrid({
   onAddClick, 
   onDateClick, 
   onTaskClick, 
-  onToggleComplete 
+  onToggleComplete,
+  onDelete,
+  onDeleteReminder
 }) {
   // Generate calendar grid
   const generateCalendar = () => {
@@ -206,7 +224,7 @@ export function MonthlyGrid({
                       key={task._id || task.id} 
                       className="tm-monthly-grid__task"
                       onClick={(e) => {
-                        if (e.target.type !== 'checkbox') {
+                        if (e.target.type !== 'checkbox' && !e.target.closest('button')) {
                           onTaskClick?.(task);
                         }
                       }}
@@ -220,6 +238,20 @@ export function MonthlyGrid({
                       <span className={task.completed ? 'tm-task-completed' : ''}>
                         {task.title}
                       </span>
+                      {onDelete && (
+                        <button
+                          type="button"
+                          className="tm-task-delete-btn tm-task-delete-btn--mini"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(task._id);
+                          }}
+                          title="Delete task"
+                          aria-label="Delete task"
+                        >
+                          ✕
+                        </button>
+                      )}
                     </div>
                   ))}
                   {dateTasks.length > 3 && (

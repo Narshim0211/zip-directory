@@ -3,8 +3,15 @@ const visitorService = require('../../services/visitor/visitorProfileService');
 const VisitorProfile = require('../../models/VisitorProfile');
 
 exports.getMe = asyncWrap(async (req, res) => {
-  const p = await VisitorProfile.findOne({ userId: req.user._id });
-  if (!p) return res.status(404).json({ message: 'Profile not found' });
+  // Try to find existing profile
+  let p = await VisitorProfile.findOne({ userId: req.user._id });
+  
+  // If profile doesn't exist, auto-create one
+  if (!p) {
+    console.log(`[getMe] No profile found for user ${req.user._id}, auto-creating...`);
+    p = await visitorService.ensureProfileForUser(req.user);
+  }
+  
   res.json(p);
 });
 

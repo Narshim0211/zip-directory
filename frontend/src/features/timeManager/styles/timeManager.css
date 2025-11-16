@@ -362,3 +362,61 @@
     font-size: 0.625rem;
   }
 }
+
+.session-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #eef2f7;
+  padding-bottom: 4px;
+}
+
+.session-heading-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.session-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.session-title {
+  font-weight: 600;
+}
+
+.session-count {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.session-add-btn {
+  background: #fff;
+  border: 1px solid #d1d5db;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.session-add-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.session-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

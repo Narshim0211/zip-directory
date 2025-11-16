@@ -33,11 +33,21 @@ export default function useTimeManagerApi(role = "visitor") {
     (taskId, updates) => api.put(`${endpoint}/daily/${taskId}`, updates).then((r) => r.data),
     [endpoint]
   );
+  const updateTask = useCallback(
+    (taskId, updates) => api.put(`${endpoint}/daily/${taskId}`, updates).then((r) => r.data),
+    [endpoint]
+  );
+  const deleteTask = useCallback(
+    (taskId) => api.delete(`${endpoint}/daily/${taskId}`).then((r) => r.data),
+    [endpoint]
+  );
   return {
     fetchDaily,
     fetchWeekly,
     fetchMonthly,
     toggleComplete,
+    updateTask,
+    deleteTask,
     createDaily,
     createWeekly,
     createMonthly,

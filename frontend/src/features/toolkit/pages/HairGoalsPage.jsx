@@ -1,146 +1,320 @@
-import React, { useMemo, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageShell from "../components/PageShell";
 import HeaderBar from "../components/HeaderBar";
+import HairGoalsErrorBoundary from "../components/HairGoalsErrorBoundary";
+import { HairGoalsProvider, useHairGoals } from "../context/HairGoalsContext";
+import HairGoalsSummaryCard from "../components/HairGoalsSummaryCard";
+import WeeklyCheckinForm from "../components/WeeklyCheckinForm";
+import WeeklyReportPopup from "../components/WeeklyReportPopup";
 import "../toolkit.css";
 import "./hairGoals.css";
+import "../styles/hairGoalsDiary.css";
 
-const GOALS = [
-	"Grow",
-	"Maintain",
-	"Cut Shorter",
-	"Color Change",
-	"Extensions",
-	"Volume Boost",
-];
+// Universal goal - no need for multiple options
+const UNIVERSAL_GOAL = {
+	id: "glowup",
+	icon: "✨💇‍♀️",
+	label: "Start Your Glow-Up",
+	subtitle: "Track growth, health, or color—all in one place"
+};
 
-const LOOKS = [
-	{ id: "sunrise", label: "Sunrise Layers", time: "7 months", mood: "Light" },
-	{ id: "midnight", label: "Midnight Bob", time: "3 months", mood: "Bold" },
-	{ id: "aerate", label: "Aero Volume", time: "5 months", mood: "Playful" },
-];
+// Local storage keys
+const STORAGE_KEYS = {
+	GOAL: "hairGoals_selectedGoal",
+	PHOTOS: "hairGoals_photos"
+};
 
-export default function HairGoalsPage() {
+// Main page component (wrapped in provider below)
+function HairGoalsPageContent() {
 	const navigate = useNavigate();
-	const [selectedGoal, setSelectedGoal] = useState(GOALS[0]);
-	const [reminderEnabled, setReminderEnabled] = useState(true);
-	const [matchingMessage, setMatchingMessage] = useState("Drag a look to the ring to see how long it takes.");
-	const [progress] = useState(42);
-	const [draggingLook, setDraggingLook] = useState(null);
+	const { 
+		getCurrentWeekNumber, 
+		getCurrentWeekEntry, 
+		addOrUpdateWeeklyEntry 
+	} = useHairGoals();
+	
+	// State
+	const [step, setStep] = useState("goal"); // goal | upload | progress
+	const [selectedGoal, setSelectedGoal] = useState(null);
+	const [photos, setPhotos] = useState([]);
+	
+	// Weekly diary states
+	const [showCheckinForm, setShowCheckinForm] = useState(false);
+	const [showGoalEdit, setShowGoalEdit] = useState(false);
+	const [showReportPopup, setShowReportPopup] = useState(false);
+	const [reportWeekNumber, setReportWeekNumber] = useState(null);
 
-	const ringStyle = useMemo(() => {
-		const circumference = 2 * Math.PI * 40;
-		const offset = circumference - (progress / 100) * circumference;
-		return {
-			strokeDasharray: circumference,
-			strokeDashoffset: offset,
-		};
-	}, [progress]);
+	// Load from localStorage on mount
+	useEffect(() => {
+		const savedGoal = localStorage.getItem(STORAGE_KEYS.GOAL);
+		const savedPhotos = localStorage.getItem(STORAGE_KEYS.PHOTOS);
 
-	const handleDragStart = (look) => {
-		setDraggingLook(look);
-		setMatchingMessage("Release over the ring to lock it.");
+		if (savedGoal) {
+			setSelectedGoal(savedGoal);
+			setStep(savedPhotos ? "progress" : "upload");
+		}
+		if (savedPhotos) setPhotos(JSON.parse(savedPhotos));
+	}, []);
+
+	// Save to localStorage
+	const saveToStorage = (key, value) => {
+		localStorage.setItem(key, typeof value === "object" ? JSON.stringify(value) : value);
 	};
 
-	const handleDragEnd = () => {
-		if (!draggingLook) return;
-		setMatchingMessage(`Matched ${draggingLook.label}. Estimated ${draggingLook.time}.`);
-		setDraggingLook(null);
+	// Handle goal start
+	const handleStartGlowUp = () => {
+		setSelectedGoal(UNIVERSAL_GOAL.id);
+		saveToStorage(STORAGE_KEYS.GOAL, UNIVERSAL_GOAL.id);
+		setStep("upload");
+	};
+
+	// Handle photo upload
+	const handlePhotoUpload = (event) => {
+		const file = event.target.files[0];
+		if (!file) return;
+
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			const currentWeek = getCurrentWeekNumber();
+			const newPhoto = {
+				id: Date.now(),
+				dataUrl: e.target.result,
+				date: new Date().toISOString(),
+				weekNumber: currentWeek
+			};
+
+			const updatedPhotos = [...photos, newPhoto];
+			setPhotos(updatedPhotos);
+			saveToStorage(STORAGE_KEYS.PHOTOS, updatedPhotos);
+
+			// Add photo to weekly entry (if exists)
+			addOrUpdateWeeklyEntry({
+				weekNumber: currentWeek,
+				photoUri: e.target.result,
+			});
+
+			// Check if weekly entry is complete - show popup if so
+			const currentEntry = getCurrentWeekEntry();
+			if (currentEntry && currentEntry.goal && currentEntry.hairFeeling) {
+				setReportWeekNumber(currentWeek);
+				setShowReportPopup(true);
+			}
+
+			// Move to progress view
+			if (step === "upload") {
+				setStep("progress");
+			}
+		};
+		reader.readAsDataURL(file);
+	};
+
+
+
+	// Render goal selection screen
+	const renderGoalSelection = () => (
+		<div className="hg-container">
+			<div className="hg-hero">
+				<h2 className="hg-hero-title">Your Hair Glow-Up Starts Today</h2>
+				<p className="hg-hero-subtitle">Watch your transformation unfold with weekly photo updates</p>
+			</div>
+
+			<div className="hg-universal-card-container">
+				<button
+					className="hg-universal-card"
+					onClick={handleStartGlowUp}
+				>
+					<div className="hg-universal-icon">{UNIVERSAL_GOAL.icon}</div>
+					<div className="hg-universal-content">
+						<div className="hg-universal-label">{UNIVERSAL_GOAL.label}</div>
+						<div className="hg-universal-subtitle">{UNIVERSAL_GOAL.subtitle}</div>
+					</div>
+				</button>
+			</div>
+		</div>
+	);
+
+	// Render upload screen
+	const renderUploadScreen = () => (
+		<div className="hg-container">
+			<div className="hg-upload-section">
+				<h2 className="hg-section-title">Add Your Starting Photo</h2>
+				<p className="hg-section-subtitle">Upload a clear photo of your hair to begin tracking</p>
+
+				<div className="hg-upload-preview">
+					<div className="hg-silhouette">
+						<span className="hg-silhouette-icon">📸</span>
+						<p>Your starting photo will appear here</p>
+					</div>
+				</div>
+
+				<label className="hg-upload-btn">
+					<input
+						type="file"
+						accept="image/*"
+						onChange={handlePhotoUpload}
+						style={{ display: "none" }}
+					/>
+					<span className="hg-upload-btn-icon">📷</span>
+					<span>Tap to Upload Photo</span>
+				</label>
+
+				<button className="hg-back-btn" onClick={() => setStep("goal")}>
+					← Change Goal
+				</button>
+			</div>
+		</div>
+	);
+
+	// Weekly diary handlers
+	const handleEditGoal = () => {
+		setShowGoalEdit(true);
+	};
+
+	const handleFinishCheckin = () => {
+		setShowCheckinForm(true);
+	};
+
+	const handleAddPhoto = () => {
+		// Trigger file input
+		document.getElementById('weekly-photo-upload').click();
+	};
+
+	const handleGoalEditComplete = ({ hasPhoto, entryData, editMode }) => {
+		setShowGoalEdit(false);
+		// Just close, no popup needed for goal-only edit
+	};
+
+	const handleCheckinComplete = ({ hasPhoto, entryData, editMode }) => {
+		setShowCheckinForm(false);
+		
+		if (hasPhoto) {
+			// Show report popup immediately
+			setReportWeekNumber(entryData.weekNumber);
+			setShowReportPopup(true);
+		} else {
+			// Show success message
+			alert('Check-in saved! Add this week\'s photo to see your full report.');
+		}
+	};
+
+	const handleViewFullReport = () => {
+		setShowReportPopup(false);
+		navigate('/visitor/toolkit/goals/reports');
+	};
+
+	// Render progress tracker screen
+	const renderProgressTracker = () => {
+		return (
+			<div className="hg-container">
+				{/* Weekly Diary Summary Card */}
+				<div className="hg-diary-section">
+					<HairGoalsSummaryCard
+						onEditGoal={handleEditGoal}
+						onFinishCheckin={handleFinishCheckin}
+						onAddPhoto={handleAddPhoto}
+						onViewReport={handleViewFullReport}
+					/>
+					
+					<div className="hg-diary-simple-actions">
+						<button 
+							className="hg-simple-link-btn"
+							onClick={() => navigate('/visitor/toolkit/goals/reports')}
+						>
+							View Past Reports →
+						</button>
+					</div>
+				</div>
+
+				{/* Hidden file input for photo */}
+				<input
+					id="weekly-photo-upload"
+					type="file"
+					accept="image/*"
+					onChange={handlePhotoUpload}
+					style={{ display: 'none' }}
+				/>
+
+				{/* Timeline Section */}
+				<div className="hg-timeline-header">
+					<h3>Your Timeline</h3>
+				</div>
+
+				<div className="hg-timeline-section">
+					<div className="hg-timeline-grid">
+						{photos.map((photo, idx) => (
+							<div key={idx} className="hg-photo-card" onClick={() => {/* could add lightbox later */}}>
+								<img src={photo.dataUrl} alt={`Week ${photo.weekNumber}`} className="hg-photo-img" />
+								<div className="hg-photo-label">Week {photo.weekNumber}</div>
+							</div>
+						))}
+					</div>
+				</div>
+
+
+			</div>
+		);
 	};
 
 	return (
-		<PageShell fullWidth>
-			<HeaderBar
-				title="Hair Goals"
-				subtitle="Set it once, let AI handle the rest."
-				onBack={() => navigate("/visitor/toolkit")}
-			/>
+		<HairGoalsErrorBoundary>
+			<PageShell fullWidth>
+				<HeaderBar
+					title="Hair Glow-Up Diary"
+					subtitle="Track what's actually working for your hair"
+					onBack={() => navigate("/visitor/toolkit")}
+				/>
 
-			<div className="hair-goals-grid">
-				<section className="hair-goals-panel hair-goals-setup">
-					<div className="hair-goals-panel__header">
-						<h3>Auto goal capture</h3>
-						<p>Your camera is on — we read hair length, strands, thickness, and color.</p>
-					</div>
-					<div className="hair-goals-camera">
-						<div className="hair-goals-camera__lens" />
-						<div className="hair-goals-camera__text">Auto photo captured</div>
-					</div>
-					<select
-						value={selectedGoal}
-						onChange={(event) => setSelectedGoal(event.target.value)}
-						className="hair-goals-select"
-					>
-						{GOALS.map((option) => (
-							<option key={option} value={option}>
-								{option}
-							</option>
-						))}
-					</select>
-				</section>
-
-				<section className="hair-goals-panel hair-goals-progress">
-					<div className="hair-goals-panel__header">
-						<h3>Progress ring</h3>
-						<p>{`Goal: ${selectedGoal}`}</p>
-					</div>
-					<div className="hair-goals-ring">
-						<svg width="120" height="120">
-							<circle cx="60" cy="60" r="40" />
-							<circle className="hair-goals-ring__progress" cx="60" cy="60" r="40" style={ringStyle} />
-						</svg>
-						<div className="hair-goals-ring__label">
-							<span>{`${progress}%`}</span>
-							<small>toward glowy length</small>
+				<div className="hg-wrapper">
+					{/* Goal Edit Modal (Quick) */}
+					{showGoalEdit && (
+						<div className="hgd-modal-overlay" onClick={() => setShowGoalEdit(false)}>
+							<div className="hgd-modal-content compact" onClick={(e) => e.stopPropagation()}>
+								<WeeklyCheckinForm
+									editMode="goal"
+									onComplete={handleGoalEditComplete}
+									onCancel={() => setShowGoalEdit(false)}
+								/>
+							</div>
 						</div>
-					</div>
-					<div className="hair-goals-message">{matchingMessage}</div>
-				</section>
+					)}
 
-				<section className="hair-goals-panel hair-goals-reminder">
-					<div className="hair-goals-panel__header">
-						<h3>Monthly reminder</h3>
-						<p>Auto nudge for trims, toners, and treatments.</p>
-					</div>
-					<div className="hair-goals-reminder__body">
-						<div>
-							<p>Next nudgie: <strong>Ready for trim?</strong></p>
-							<p className="hair-goals-reminder__date">{new Date().toDateString()}</p>
+					{/* Full Check-In Form Modal */}
+					{showCheckinForm && (
+						<div className="hgd-modal-overlay" onClick={() => setShowCheckinForm(false)}>
+							<div className="hgd-modal-content" onClick={(e) => e.stopPropagation()}>
+								<WeeklyCheckinForm
+									editMode="full"
+									onComplete={handleCheckinComplete}
+									onCancel={() => setShowCheckinForm(false)}
+								/>
+							</div>
 						</div>
-						<button
-							type="button"
-							className={`hair-goals-toggle ${reminderEnabled ? "hair-goals-toggle--active" : ""}`}
-							onClick={() => setReminderEnabled((prev) => !prev)}
-						>
-							{reminderEnabled ? "Reminder ON" : "Reminder OFF"}
-						</button>
-					</div>
-					<p className="hair-goals-reminder__hint">Silent buzz. Tap to open curated salon list.</p>
-				</section>
+					)}
 
-				<section className="hair-goals-panel hair-goals-inspiration">
-					<div className="hair-goals-panel__header">
-						<h3>Drag to match inspiration</h3>
-						<p>Long-press heart to see saved AI looks.</p>
-					</div>
-					<div className="hair-goals-inspiration-grid">
-						{LOOKS.map((look) => (
-							<button
-								key={look.id}
-								type="button"
-								className="hair-goals-inspiration-card"
-								draggable
-								onDragStart={() => handleDragStart(look)}
-								onDragEnd={handleDragEnd}
-							>
-								<div className="hair-goals-inspiration-card__badge">♥</div>
-								<div className="hair-goals-inspiration-card__title">{look.label}</div>
-								<div className="hair-goals-inspiration-card__meta">{`${look.time} · ${look.mood}`}</div>
-							</button>
-						))}
-					</div>
-				</section>
-			</div>
-		</PageShell>
+					{/* Weekly Report Popup */}
+					{showReportPopup && (
+						<WeeklyReportPopup
+							weekNumber={reportWeekNumber}
+							onClose={() => setShowReportPopup(false)}
+							onViewFullReport={handleViewFullReport}
+						/>
+					)}
+
+					{step === "goal" && renderGoalSelection()}
+					{step === "upload" && renderUploadScreen()}
+					{step === "progress" && renderProgressTracker()}
+				</div>
+			</PageShell>
+		</HairGoalsErrorBoundary>
+	);
+}
+
+// Wrap with provider
+export default function HairGoalsPage() {
+	return (
+		<HairGoalsProvider>
+			<HairGoalsPageContent />
+		</HairGoalsProvider>
 	);
 }

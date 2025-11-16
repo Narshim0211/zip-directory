@@ -7,7 +7,6 @@ import StyleAdvisorIntro from "../../styleAdvisor/components/StyleAdvisorIntro";
 import HairTryOnCard from "../../styleAdvisor/components/HairTryOnCard";
 import OutfitTryOnCard from "../../styleAdvisor/components/OutfitTryOnCard";
 import StyleQACard from "../../styleAdvisor/components/StyleQACard";
-import BeautyProfileCard from "../../styleAdvisor/components/BeautyProfileCard";
 import "../../styleAdvisor/styleAdvisor.css";
 
 export default function StyleAdvisorPage() {
@@ -25,7 +24,6 @@ export default function StyleAdvisorPage() {
 					<HairTryOnCard />
 					<OutfitTryOnCard />
 					<StyleQACard />
-					<BeautyProfileCard />
 				</div>
 			</StyleAdvisorErrorBoundary>
 		</PageShell>

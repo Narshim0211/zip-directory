@@ -18,11 +18,41 @@
 .tm-task-card__title {
   margin-left: 8px;
 }
+.tm-task-card__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .tm-task-card__badge {
   background: #e0f2fe;
   padding: 2px 8px;
   border-radius: 999px;
   font-size: 0.75rem;
+}
+/* Universal delete button - always visible */
+.tm-task-delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.tm-task-delete-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+.tm-task-delete-btn:active {
+  transform: scale(0.95);
 }
 .tm-task-card__meta {
   margin: 6px 0;
@@ -32,19 +62,31 @@
 .tm-task-card__reminder {
   font-size: 0.8rem;
   color: #2563eb;
-}
-.tm-task-card__actions {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  margin-top: 6px;
 }
-.tm-task-card__actions button {
+.tm-reminder-delete-btn {
+  background: #ef4444;
+  color: white;
   border: none;
-  background: none;
-  color: #2563eb;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+  transition: background 0.2s;
 }
+.tm-reminder-delete-btn:hover {
+  background: #dc2626;
+}
+
 .tm-modal-overlay {
   position: fixed;
   inset: 0;
@@ -87,6 +129,21 @@
   justify-content: flex-end;
   gap: 12px;
   margin-top: 16px;
+}
+.tm-reminder__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+.tm-reminder__fields input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  padding: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #f8fafc;
 }
 .tm-progress {
   display: flex;
@@ -214,9 +271,17 @@
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s;
+  position: relative;
 }
 .tm-weekly-grid__task:hover {
   background: #f9fafb;
+}
+/* Mini delete button for calendar grid views */
+.tm-task-delete-btn--mini {
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  margin-left: auto;
 }
 .tm-weekly-grid__task input[type="checkbox"] {
   cursor: pointer;
@@ -356,6 +421,7 @@
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.2s;
+  position: relative;
 }
 .tm-monthly-grid__task:hover {
   background: #f9fafb;
@@ -388,10 +454,11 @@
   gap: 18px;
 }
 .tm-grid__header {
-  display: flex;
-  justify-content: space-between;
+  display: inline-flex;
+  flex-direction: row;
   align-items: center;
-  margin-bottom: 8px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 .tm-empty {
   color: #94a3b8;
@@ -405,6 +472,24 @@
   padding: 6px 12px;
   border-radius: 999px;
   cursor: pointer;
+}
+.tm-add-task-btn {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  color: #4f46e5;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.tm-add-task-btn:hover {
+  background: #e0e7ff;
+  transform: translateY(-1px);
+}
+.tm-add-task-btn:active {
+  transform: translateY(0px);
 }
 
 /* Error Boundary Styles */

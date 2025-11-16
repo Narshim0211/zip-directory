@@ -33,7 +33,4 @@ router.post(
 
 router.post('/qa', protectVisitor, subscriptionMiddleware, controller.askQuestion);
 
-router.get('/profile', protectVisitor, controller.getProfile);
-router.post('/profile', protectVisitor, controller.saveProfile);
-
 module.exports = router;

@@ -52,7 +52,13 @@ app.use(express.json());
 // DB connection
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => logger.info('MongoDB connected'))
+  .then(() => {
+    logger.info('MongoDB connected');
+    
+    // Start reminder scheduler after DB connection
+    const { startReminderScheduler } = require('./services/reminderScheduler');
+    startReminderScheduler();
+  })
   .catch((err) => logger.error(`MongoDB connection error: ${err.message}`));
 
 // Health check
@@ -142,6 +148,10 @@ app.use('/api/analytics', analyticsRoutes);
 // Goals
 const goalsRoutes = require('./routes/goalsRoutes');
 app.use('/api/goals', goalsRoutes);
+
+// Reminders
+const reminderRoutes = require('./routes/reminderRoutes');
+app.use('/api/reminders', reminderRoutes);
 
 // Style inspiration
 const stylesRoutes = require('./routes/stylesRoutes');

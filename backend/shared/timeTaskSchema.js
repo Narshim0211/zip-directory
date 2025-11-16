@@ -27,6 +27,16 @@ const createTimeTaskSchema = () =>
       reminderContactEmail: { type: String },
       reminderContactPhone: { type: String },
       reminderSentAt: { type: Date },
+      // New reminder structure (preferred)
+      reminder: {
+        time: { type: String }, // HH:MM format
+        email: { type: String },
+        phone: { type: String },
+        sent: { type: Boolean, default: false },
+        sentAt: { type: Date },
+        lastAttemptAt: { type: Date },
+        failureReason: { type: String }
+      },
     },
     { timestamps: true }
   );

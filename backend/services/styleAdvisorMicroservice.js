@@ -114,25 +114,8 @@ const askQuestion = ({ user, question }) =>
     user,
   });
 
-const getProfile = ({ user }) =>
-  callService({
-    method: 'get',
-    path: '/profile',
-    user,
-    data: undefined,
-  });
-
-const saveProfile = ({ user, payload }) =>
-  callService({
-    path: '/profile',
-    data: payload,
-    user,
-  });
-
 module.exports = {
   hairTryOn,
   outfitTryOn,
   askQuestion,
-  getProfile,
-  saveProfile,
 };

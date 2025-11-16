@@ -1,170 +1,656 @@
-.hair-goals-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-	gap: 18px;
+/* Hair Goals Tracker - World-Class UI */
+
+/* Wrapper */
+.hg-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
-.hair-goals-panel {
-	background: #fff;
-	border-radius: 24px;
-	padding: 20px;
-	box-shadow: 0 15px 40px rgba(15, 23, 42, 0.08);
-	border: 1px solid #e5e7eb;
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
+.hg-container {
+  position: relative;
 }
 
-.hair-goals-panel__header h3 {
-	margin: 0;
-	font-size: 1.2rem;
+/* Hero Section */
+.hg-hero {
+  text-align: center;
+  margin-bottom: 48px;
 }
 
-.hair-goals-panel__header p {
-	margin: 4px 0 0;
-	color: #475569;
-	font-size: 0.9rem;
+.hg-hero-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 12px;
 }
 
-.hair-goals-camera {
-	height: 140px;
-	border-radius: 18px;
-	border: 1px solid #d1d5db;
-	background: linear-gradient(140deg, #111, #1f2937);
-	color: #fff;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 8px;
+.hg-hero-subtitle {
+  font-size: 1.1rem;
+  color: #64748b;
+  margin: 0;
 }
 
-.hair-goals-camera__lens {
-	width: 70px;
-	height: 70px;
-	border-radius: 50%;
-	border: 2px dashed rgba(255, 255, 255, 0.6);
+/* Universal Goal Card */
+.hg-universal-card-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 48px;
 }
 
-.hair-goals-camera__text {
-	font-size: 0.9rem;
+.hg-universal-card {
+  max-width: 600px;
+  width: 100%;
+  background: linear-gradient(135deg, #a7f3d0 0%, #fde68a 50%, #fbbf24 100%);
+  border: 3px solid #e5e7eb;
+  border-radius: 32px;
+  padding: 48px 40px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
 }
 
-.hair-goals-select {
-	width: 100%;
-	padding: 12px;
-	border-radius: 12px;
-	border: 1px solid #cbd5f5;
-	font-size: 1rem;
-	font-weight: 600;
-	background: #f8fafc;
+.hg-universal-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
-.hair-goals-ring {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 12px;
+.hg-universal-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+  border-color: #94a3b8;
 }
 
-.hair-goals-ring svg {
-	transform: rotate(-90deg);
+.hg-universal-card:hover::before {
+  opacity: 1;
 }
 
-.hair-goals-ring circle {
-	fill: none;
-	stroke: #e2e8f0;
-	stroke-width: 10;
+.hg-universal-card:active {
+  transform: translateY(-4px) scale(1.01);
 }
 
-.hair-goals-ring__progress {
-	stroke: #6366f1;
-	stroke-linecap: round;
+.hg-universal-icon {
+  font-size: 5rem;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
 }
 
-.hair-goals-ring__label {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	font-size: 1.25rem;
-	font-weight: 600;
+.hg-universal-content {
+  text-align: left;
+  flex: 1;
 }
 
-.hair-goals-ring__label small {
-	font-size: 0.75rem;
-	color: #64748b;
+.hg-universal-label {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+  line-height: 1.2;
 }
 
-.hair-goals-message {
-	font-size: 0.85rem;
-	color: #475569;
-	padding: 0 4px;
+.hg-universal-subtitle {
+  font-size: 1.1rem;
+  color: #475569;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
-.hair-goals-reminder__body {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
+/* Upload Section */
+.hg-upload-section {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
 }
 
-.hair-goals-reminder__date {
-	font-size: 0.85rem;
-	color: #2563eb;
-	margin-top: 4px;
+.hg-section-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px;
 }
 
-.hair-goals-toggle {
-	padding: 10px 16px;
-	border-radius: 999px;
-	border: none;
-	font-weight: 700;
-	color: #fff;
-	background: #e5e7eb;
-	cursor: pointer;
+.hg-section-subtitle {
+  font-size: 1rem;
+  color: #64748b;
+  margin: 0 0 32px;
 }
 
-.hair-goals-toggle--active {
-	background: #22c55e;
+.hg-upload-preview {
+  margin: 32px 0;
 }
 
-.hair-goals-reminder__hint {
-	font-size: 0.85rem;
-	color: #475569;
-	margin: 0;
+.hg-silhouette {
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: 24px;
+  padding: 80px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
-.hair-goals-inspiration-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-	gap: 12px;
+.hg-silhouette-icon {
+  font-size: 4rem;
+  opacity: 0.5;
 }
 
-.hair-goals-inspiration-card {
-	border: 1px solid #e5e7eb;
-	border-radius: 16px;
-	padding: 16px;
-	background: #f8fafc;
-	cursor: grab;
-	font-weight: 600;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	align-items: flex-start;
+.hg-silhouette p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.95rem;
 }
 
-.hair-goals-inspiration-card:active {
-	cursor: grabbing;
+.hg-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  padding: 18px 36px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  margin-top: 24px;
 }
 
-.hair-goals-inspiration-card__badge {
-	font-size: 1.2rem;
+.hg-upload-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
 }
 
-.hair-goals-inspiration-card__title {
-	font-size: 1rem;
+.hg-upload-btn-icon {
+  font-size: 1.5rem;
 }
 
-.hair-goals-inspiration-card__meta {
-	font-size: 0.8rem;
-	color: #475569;
+.hg-back-btn {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  color: #64748b;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  margin-top: 24px;
+  transition: all 0.2s ease;
+}
+
+.hg-back-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+/* Progress Tracker */
+.hg-streak-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}
+
+.hg-progress-header {
+  margin-bottom: 24px;
+}
+
+.hg-goal-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8fafc;
+  padding: 12px 24px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.hg-goal-display-icon {
+  font-size: 1.75rem;
+}
+
+.hg-goal-display-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Progress Bar */
+.hg-progress-section {
+  margin-bottom: 40px;
+}
+
+.hg-progress-bar-container {
+  background: white;
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.hg-progress-bar {
+  width: 100%;
+  height: 24px;
+  background: #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.hg-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  border-radius: 12px;
+  transition: width 0.6s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.hg-progress-label {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Comparison Section */
+.hg-comparison-section {
+  background: white;
+  padding: 32px;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 32px;
+}
+
+.hg-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.hg-photo-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: #f8fafc;
+  border: 2px solid #e5e7eb;
+}
+
+.hg-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hg-photo-label {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.hg-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.hg-compare-btn {
+  margin-top: 24px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.hg-compare-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+/* Slider Comparison */
+.hg-slider-container {
+  position: relative;
+  margin-top: 24px;
+}
+
+.hg-slider-images {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.hg-slider-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.hg-slider-after {
+  z-index: 2;
+}
+
+.hg-slider-control {
+  width: 100%;
+  margin-top: 16px;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  outline: none;
+}
+
+.hg-slider-control::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: #3b82f6;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
+.hg-slider-control::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: #3b82f6;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
+.hg-slider-close {
+  margin-top: 16px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  color: #64748b;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hg-slider-close:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+/* Reminder Hint */
+.hg-reminder-hint {
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 16px;
+  padding: 16px 24px;
+  text-align: center;
+  color: #92400e;
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+
+/* Stickers Section */
+.hg-stickers-section {
+  background: white;
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 32px;
+}
+
+.hg-stickers-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 16px;
+}
+
+.hg-stickers-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.hg-sticker {
+  font-size: 2.5rem;
+  background: #f8fafc;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.hg-sticker:hover {
+  transform: scale(1.1);
+}
+
+/* Confetti Animation */
+.hg-confetti {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.hg-confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  top: -10px;
+  animation: confetti-fall 3s ease-out forwards;
+}
+
+@keyframes confetti-fall {
+  to {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Action Buttons */
+.hg-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  margin-top: 32px;
+}
+
+.hg-add-update-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  padding: 18px 48px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  width: 100%;
+  max-width: 400px;
+}
+
+.hg-add-update-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.hg-reset-btn {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  color: #64748b;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hg-reset-btn:hover {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .hg-hero-title,
+  .hg-goal-label,
+  .hg-section-title,
+  .hg-goal-display-text,
+  .hg-progress-label,
+  .hg-stickers-title {
+    color: #f1f5f9;
+  }
+
+  .hg-hero-subtitle,
+  .hg-section-subtitle {
+    color: #94a3b8;
+  }
+
+  .hg-universal-card {
+    background: linear-gradient(135deg, rgba(167, 243, 208, 0.3) 0%, rgba(253, 230, 138, 0.3) 50%, rgba(251, 191, 36, 0.3) 100%);
+    border-color: #334155;
+  }
+
+  .hg-universal-label {
+    color: #f1f5f9;
+  }
+
+  .hg-universal-subtitle {
+    color: #94a3b8;
+  }
+
+  .hg-silhouette {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  .hg-goal-display,
+  .hg-progress-bar-container,
+  .hg-comparison-section,
+  .hg-stickers-section {
+    background: #1e293b;
+  }
+
+  .hg-photo-card {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  .hg-progress-bar {
+    background: #334155;
+  }
+
+  .hg-back-btn,
+  .hg-slider-close,
+  .hg-reset-btn {
+    background: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+  }
+
+  .hg-back-btn:hover,
+  .hg-slider-close:hover {
+    background: #334155;
+  }
+
+  .hg-sticker {
+    background: #1e293b;
+    border-color: #334155;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hg-wrapper {
+    padding: 16px;
+  }
+
+  .hg-hero-title {
+    font-size: 1.5rem;
+  }
+
+  .hg-universal-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 40px 24px;
+  }
+
+  .hg-universal-content {
+    text-align: center;
+  }
+
+  .hg-universal-label {
+    font-size: 1.5rem;
+  }
+
+  .hg-universal-subtitle {
+    font-size: 1rem;
+  }
+
+  .hg-comparison-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hg-streak-badge {
+    position: static;
+    display: inline-block;
+    margin-bottom: 16px;
+  }
 }

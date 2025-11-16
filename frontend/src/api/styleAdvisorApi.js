@@ -14,6 +14,4 @@ export const outfitTryOn = (formData) => api.post(`${base}/outfit-tryon`, formDa
 
 export const askQuestion = (payload) => api.post(`${base}/qa`, payload);
 
-export const getProfile = () => api.get(`${base}/profile`);
 
-export const saveProfile = (payload) => api.post(`${base}/profile`, payload);

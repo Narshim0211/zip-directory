@@ -4,9 +4,10 @@ const listTasks = async ({ userId, scope, date }) => {
   const query = {
     userId,
     scope,
-    taskDate: date,
   };
-  return VisitorTimeTask.find(query).sort({ createdAt: 1 });
+  
+  const tasks = await VisitorTimeTask.find(query).sort({ createdAt: -1 });
+  return tasks;
 };
 
 const createTask = async ({ userId, payload }) => {

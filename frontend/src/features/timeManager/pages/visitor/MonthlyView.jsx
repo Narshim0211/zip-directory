@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { MonthlyGrid } from "../../components/CalendarGrid";
 import AddTaskModal from "../../components/AddTaskModal";
 import ProgressBar from "../../components/ProgressBar";
+import ReminderList from "../../components/ReminderList";
 import useTimeManagerApi from "../../hooks/useTimeManagerApi";
 import "../../styles/timeManagerNew.css";
+import "../../styles/reminderList.css";
 
 export default function MonthlyView({ role = "visitor" }) {
   const api = useTimeManagerApi(role);
@@ -61,6 +63,23 @@ export default function MonthlyView({ role = "visitor" }) {
     }
   };
 
+  const handleDelete = async (taskId) => {
+    if (!window.confirm("Are you sure you want to delete this task?")) return;
+    try {
+      // Optimistically remove from UI
+      setTasks(prevTasks => prevTasks.filter(t => t._id !== taskId));
+      
+      await api.deleteTask(taskId);
+      
+      // Reload to ensure sync
+      await loadTasks();
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      // Reload on error to restore correct state
+      loadTasks();
+    }
+  };
+
   const handleSubmit = async (payload) => {
     try {
       await api.createTask({
@@ -93,7 +112,36 @@ export default function MonthlyView({ role = "visitor" }) {
     }
   };
 
+  const handleReminderDelete = async (taskId) => {
+    if (!window.confirm("Are you sure you want to delete this reminder?")) return;
+    try {
+      await api.updateTask(taskId, { reminder: null });
+      
+      // Update tasks state immediately to sync UI
+      setTasks(prevTasks =>
+        prevTasks.map(task =>
+          task._id === taskId
+            ? { ...task, reminder: null }
+            : task
+        )
+      );
+      
+      // Also reload from backend to ensure sync
+      await loadTasks();
+    } catch (error) {
+      console.error("Error deleting reminder:", error);
+      // Reload tasks even on error to ensure UI is in sync
+      loadTasks();
+    }
+  };
+
+  const handleReminderEdit = (task) => {
+    setSelectedDate(new Date(task.taskDate));
+    setModalOpen(true);
+  };
+
   const completed = tasks.filter((t) => t.completed).length;
+  const tasksWithReminders = tasks.filter((task) => task.reminder);
   
   const monthNames = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"];
@@ -119,6 +167,14 @@ export default function MonthlyView({ role = "visitor" }) {
         onDateClick={handleDateClick}
         onTaskClick={handleTaskClick}
         onToggleComplete={handleToggleComplete}
+        onDelete={handleDelete}
+        onDeleteReminder={handleReminderDelete}
+      />
+      
+      <ReminderList
+        reminders={tasksWithReminders}
+        onEdit={handleReminderEdit}
+        onDelete={handleReminderDelete}
       />
       
       <AddTaskModal 
