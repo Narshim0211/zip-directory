@@ -38,11 +38,19 @@ const corsOptions = {
     return callback(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cache-Control', 'Pragma'],
+  credentials: true,
   maxAge: 86400,
 };
 
 app.use(cors(corsOptions));
+
+// DEBUG: Log ALL incoming requests
+app.use((req, res, next) => {
+  console.log(`🌐 [REQUEST] ${req.method} ${req.path}`);
+  next();
+});
+
 app.use('/webhooks', stripeWebhookRoutes);
 // Express 5 (path-to-regexp v6): use a RegExp or omit path.
 // Handle preflight for all routes using a RegExp that matches anything.
@@ -129,6 +137,34 @@ try {
 } catch (e) {
   logger.warn('Owner profile routes not loaded:', e.message);
 }
+// Owner booking profile routes
+try {
+  const ownerBookingProfileRoutes = require('./routes/owner/bookingProfileRoutes');
+  app.use('/api/owner', ownerBookingProfileRoutes);
+} catch (e) {
+  logger.warn('Owner booking profile routes not loaded:', e.message);
+}
+// Owner media upload routes
+try {
+  const mediaUploadRoutes = require('./routes/owner/mediaUploadRoutes');
+  app.use('/api/owner/media', mediaUploadRoutes);
+} catch (e) {
+  logger.warn('Owner media upload routes not loaded:', e.message);
+}
+// Owner staff management routes
+try {
+  const staffRoutes = require('./routes/owner/staffRoutes');
+  app.use('/api/owner/staff', staffRoutes);
+} catch (e) {
+  logger.warn('Owner staff routes not loaded:', e.message);
+}
+
+try {
+  const bookingRoutes = require('./routes/owner/bookingRoutes');
+  app.use('/api/owner/bookings', bookingRoutes);
+} catch (e) {
+  logger.warn('Owner booking routes not loaded:', e.message);
+}
 
 // Follow
 const followRoutes = require('./routes/followRoutes');
@@ -182,6 +218,14 @@ app.use('/api/comments', commentRoutes);
 
 const reportRoutes = require('./routes/reportRoutes');
 app.use('/api/comments/reports', reportRoutes);
+
+// Hair Goals: Weekly reports
+const weeklyReportRoutes = require('./routes/weeklyReportRoutes');
+app.use('/api/hair-goals/reports', weeklyReportRoutes);
+
+// Public Booking Routes (no authentication required)
+const publicBookingRoutes = require('./routes/publicBookingRoutes');
+app.use('/api/public', publicBookingRoutes);
 
 // Time Manager: Proxy to Time Microservice
 const { timeProxy } = require('./middleWare/timeProxy');
@@ -289,5 +333,10 @@ const startServer = async (port) => {
 startServer(PORT);
 }
 
-app.use(errorHandler);
+// 404 Handler - Must be after all routes but before error handler
+const { notFoundHandler, errorHandler: globalErrorHandler } = require('./utils/errorHandler');
+app.use(notFoundHandler);
+
+// Global error handler (must be last)
+app.use(globalErrorHandler);
 

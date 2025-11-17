@@ -63,14 +63,13 @@ export function getTrend(weeklyEntries) {
  * @returns {number} - 0-3 score
  */
 export function getConsistency(entry) {
-  if (!entry || !entry.routineTags) return 0;
+  if (!entry) return 0;
+  const count = entry.completedSteps?.length || 0;
   
-  const count = entry.routineTags.length;
-  
-  if (count >= 4) return 3; // Excellent
-  if (count >= 2) return 2; // Good
-  if (count >= 1) return 1; // Fair
-  return 0; // None
+  if (count >= 4) return 3;
+  if (count >= 2) return 2;
+  if (count >= 1) return 1;
+  return 0;
 }
 
 /**
@@ -83,7 +82,6 @@ export function getWeeklyWins(entry) {
   
   const wins = [];
   
-  // Feeling-based wins
   if (entry.hairFeeling >= 4) {
     wins.push('Hair feeling great');
   }
@@ -91,40 +89,27 @@ export function getWeeklyWins(entry) {
     wins.push('Best hair week yet');
   }
   
-  // Routine-based wins
-  const routineCount = entry.routineTags?.length || 0;
-  if (routineCount >= 3) {
-    wins.push('Strong routine consistency');
-  }
-  if (routineCount >= 1) {
-    wins.push('Active hair care');
-  }
-  
-  // Specific routine wins
-  if (entry.routineTags?.includes('No Heat')) {
-    wins.push('Heat-free week');
-  }
-  if (entry.routineTags?.includes('Deep Conditioning')) {
-    wins.push('Deep conditioning done');
-  }
-  if (entry.routineTags?.includes('Oil Massage')) {
-    wins.push('Scalp massage completed');
+  const routineCount = entry.completedSteps?.length || 0;
+  if (routineCount >= 4) {
+    wins.push('Routine on point');
+  } else if (routineCount >= 2) {
+    wins.push('Solid consistency');
+  } else if (routineCount >= 1) {
+    wins.push('Momentum started');
   }
   
-  // Streak wins
+  if (entry.highlightProductName) {
+    wins.push(`Loved ${entry.highlightProductName}`);
+  }
+  
+  if (entry.progressNote && entry.progressNote.length > 20) {
+    wins.push('Documented the journey');
+  }
+  
   if (entry.streak >= 4) {
     wins.push('4+ week streak');
   }
-  if (entry.streak >= 8) {
-    wins.push('2-month consistency');
-  }
   
-  // Reflection wins
-  if (entry.reflection && entry.reflection.length > 10) {
-    wins.push('Documented progress');
-  }
-  
-  // Return top 3 wins
   return wins.slice(0, 3);
 }
 
@@ -136,49 +121,42 @@ export function getWeeklyWins(entry) {
 export function getNextWeekFocus(entry) {
   if (!entry) return "Start your first weekly check-in";
   
-  const { goal, hairFeeling, routineTags } = entry;
-  const routineCount = routineTags?.length || 0;
+  const { goal, hairFeeling, completedSteps } = entry;
+  const routineCount = completedSteps?.length || 0;
   
-  // Based on feeling
   if (hairFeeling <= 2) {
-    return "Try a deep conditioning treatment this week";
+    return "Hydrate deeply and add a nourishing mask this week";
   }
   
-  // Based on routine consistency
   if (routineCount === 0) {
-    return "Pick 1-2 actions from your routine list";
+    return "Complete at least 2 routine steps";
   }
   if (routineCount === 1) {
-    return "Add one more routine action for better results";
+    return "Layer in one more action for better results";
   }
   
-  // Goal-based recommendations
   if (goal) {
     const lowerGoal = goal.toLowerCase();
     
     if (lowerGoal.includes("frizz")) {
-      return "Focus on silk pillowcase and oil treatments";
+      return "Prioritize anti-frizz serums and silk pillowcases";
     }
     if (lowerGoal.includes("grow")) {
-      return "Scalp massage + protective styling this week";
+      return "Double down on scalp massage + oiling";
     }
-    if (lowerGoal.includes("heat") || lowerGoal.includes("damage")) {
-      return "Keep avoiding heat + add hair mask";
+    if (lowerGoal.includes("damage") || lowerGoal.includes("heat")) {
+      return "Avoid heat styling and add bonding masks";
     }
-    if (lowerGoal.includes("shine") || lowerGoal.includes("dull")) {
-      return "Oil treatment + hydrating products";
-    }
-    if (lowerGoal.includes("dry") || lowerGoal.includes("moisture")) {
-      return "Deep conditioning + leave-in treatment";
+    if (lowerGoal.includes("shine")) {
+      return "Use glossing products + finishing oil";
     }
   }
   
-  // Default
   if (hairFeeling >= 4) {
-    return "Keep doing what you are doing!";
+    return "Keep repeating what worked this week!";
   }
   
-  return "Try one new hair care action this week";
+  return "Keep experimenting with one new care step";
 }
 
 /**
@@ -191,12 +169,12 @@ export function getPastNotes(weeklyEntries, currentWeek) {
   if (!weeklyEntries || weeklyEntries.length === 0) return [];
   
   return weeklyEntries
-    .filter(e => e.weekNumber < currentWeek && e.reflection)
+    .filter(e => e.weekNumber < currentWeek && e.progressNote)
     .sort((a, b) => b.weekNumber - a.weekNumber)
     .slice(0, 3)
     .map(e => ({
       week: e.weekNumber,
-      note: e.reflection,
+      note: e.progressNote,
     }));
 }
 
@@ -241,12 +219,11 @@ export function generateWeeklyReport(entry, allEntries = []) {
     photoUri: entry.photoUri,
     goal: entry.goal,
     goalWhy: entry.goalWhy,
-    routineTags: entry.routineTags || [],
-    routineNote: entry.routineNote,
+    completedSteps: entry.completedSteps || [],
     hairFeeling: entry.hairFeeling,
     hairWord: getHairWord(entry.hairFeeling),
     feelingEmoji: getFeelingEmoji(entry.hairFeeling),
-    reflection: entry.reflection,
+    note: entry.progressNote,
     streak: entry.streak || getStreak(allEntries),
     trend: getTrend(allEntries),
     consistency: getConsistency(entry),
@@ -272,7 +249,7 @@ export function getLatestSummary(weeklyEntries) {
     feelingEmoji: getFeelingEmoji(latest.hairFeeling),
     hairWord: getHairWord(latest.hairFeeling),
     streak: latest.streak || getStreak(weeklyEntries),
-    routineCount: latest.routineTags?.length || 0,
+    routineCount: latest.completedSteps?.length || 0,
     hasPhoto: !!latest.photoUri,
   };
 }

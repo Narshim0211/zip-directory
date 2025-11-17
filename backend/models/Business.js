@@ -84,6 +84,80 @@ const businessSchema = new mongoose.Schema(
         required: false,
       },
     },
+    // 🔗 Public Booking Profile Fields
+    bookingSlug: {
+      type: String,
+      unique: true,
+      sparse: true, // allows null/undefined, but enforces uniqueness when present
+      trim: true,
+      lowercase: true,
+      match: /^[a-z0-9-]+$/, // only lowercase letters, numbers, and hyphens
+    },
+    logoUrl: {
+      type: String,
+      default: "",
+    },
+    coverPhotoUrl: {
+      type: String,
+      default: "",
+    },
+    bio: {
+      type: String,
+      maxlength: 2000,
+      default: "",
+    },
+    photos: [{
+      url: { type: String, required: true },
+      caption: { type: String, default: "" },
+      uploadedAt: { type: Date, default: Date.now },
+    }],
+    videos: [{
+      url: { type: String, required: true },
+      thumbnail: { type: String, default: "" },
+      caption: { type: String, default: "" },
+      uploadedAt: { type: Date, default: Date.now },
+    }],
+    displayServices: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Service", // references service IDs to show on public page
+    }],
+    // Contact information for public profile
+    phone: {
+      type: String,
+      default: "",
+    },
+    email: {
+      type: String,
+      default: "",
+    },
+    // Public profile visibility
+    isPublicProfileActive: {
+      type: Boolean,
+      default: false,
+    },
+    // Staff members (no login required - owner manages all)
+    staff: [{
+      name: { type: String, required: true },
+      role: { type: String, default: "" }, // Stylist, Colorist, etc.
+      photoUrl: { type: String, default: "" },
+      serviceIds: [{ type: mongoose.Schema.Types.ObjectId }], // Services this staff can perform
+      weeklySchedule: {
+        monday: [{ start: String, end: String }],
+        tuesday: [{ start: String, end: String }],
+        wednesday: [{ start: String, end: String }],
+        thursday: [{ start: String, end: String }],
+        friday: [{ start: String, end: String }],
+        saturday: [{ start: String, end: String }],
+        sunday: [{ start: String, end: String }],
+      },
+      isActive: { type: Boolean, default: true },
+      createdAt: { type: Date, default: Date.now },
+    }],
+    // Booking settings
+    allowCustomerChooseStaff: {
+      type: Boolean,
+      default: false, // If false, system auto-assigns staff
+    },
   },
   { timestamps: true }
 );
@@ -94,6 +168,7 @@ businessSchema.index({ city: 1, category: 1, status: 1 });
 businessSchema.index({ state: 1, city: 1, zip: 1 });
 businessSchema.index({ location: "2dsphere" });
 businessSchema.index({ businessType: 1 });
+businessSchema.index({ bookingSlug: 1 }); // fast lookup for public booking pages
 
 // ⚙️ Virtual population (get reviews automatically)
 businessSchema.virtual("reviews", {

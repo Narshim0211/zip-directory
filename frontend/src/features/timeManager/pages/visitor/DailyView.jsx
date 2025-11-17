@@ -10,18 +10,26 @@ import "../../styles/reminderList.css";
 const SESSIONS = ["morning", "afternoon", "evening"];
 
 export default function DailyView({ role = "visitor" }) {
+  console.log(`🎯 [DailyView] Component mounted with role: ${role}`);
+  
   const api = useTimeManagerApi(role);
+  console.log(`🔧 [DailyView] API hook initialized:`, api);
+  
   const [tasks, setTasks] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadTasks = async () => {
+    console.log('🔄 [FRONTEND] Loading daily tasks for role:', role);
     setLoading(true);
     try {
       const data = await api.fetchDaily(new Date().toISOString().split("T")[0]);
-      setTasks(Array.isArray(data) ? data : []);
+      console.log('📥 [FRONTEND] Received tasks:', data);
+      const tasksArray = Array.isArray(data) ? data : [];
+      console.log(`✅ [FRONTEND] Setting ${tasksArray.length} tasks in state`);
+      setTasks(tasksArray);
     } catch (error) {
-      console.error("Daily load error", error.response?.data || error.message);
+      console.error("❌ [FRONTEND] Daily load error", error.response?.data || error.message);
     } finally {
       setLoading(false);
     }
@@ -61,9 +69,29 @@ export default function DailyView({ role = "visitor" }) {
   };
 
   const handleAdd = async (payload) => {
-    await api.createDaily(payload);
-    setShowModal(false);
-    loadTasks();
+    console.log('🎯 [DailyView.handleAdd] START - Creating task with role:', role);
+    console.log('📦 [DailyView.handleAdd] Payload:', JSON.stringify(payload, null, 2));
+    console.log('🔍 [DailyView.handleAdd] API object:', api);
+    console.log('🔍 [DailyView.handleAdd] api.createDaily function:', typeof api.createDaily);
+    
+    if (!api || !api.createDaily) {
+      console.error('❌ [DailyView.handleAdd] CRITICAL: API or createDaily is undefined!');
+      alert('Error: API not initialized properly. Check console for details.');
+      return;
+    }
+    
+    try {
+      console.log('📤 [DailyView.handleAdd] Calling api.createDaily...');
+      const result = await api.createDaily(payload);
+      console.log('✅ [DailyView.handleAdd] Task created successfully:', result);
+      setShowModal(false);
+      await loadTasks();
+    } catch (error) {
+      console.error('❌ [DailyView.handleAdd] Failed to create task:', error);
+      console.error('❌ [DailyView.handleAdd] Error response:', error.response?.data);
+      console.error('❌ [DailyView.handleAdd] Error message:', error.message);
+      alert(`Failed to create task: ${error.response?.data?.message || error.message}`);
+    }
   };
 
   const handleReminderDelete = async (taskId) => {
@@ -108,7 +136,11 @@ export default function DailyView({ role = "visitor" }) {
               <h4>{session}</h4>
               <button 
                 className="tm-add-task-btn"
-                onClick={() => setShowModal(true)}
+                onClick={() => {
+                  console.log('🖱️ [DailyView] Add Task button clicked for session:', session);
+                  console.log('🔍 [DailyView] Current role:', role);
+                  setShowModal(true);
+                }}
               >
                 + Add Task
               </button>

@@ -91,10 +91,10 @@ export default function WeeklyView({ role = "visitor" }) {
 
   const handleSubmit = async (payload) => {
     try {
-      await api.createTask({
+      await api.createWeekly({
         ...payload,
         taskDate: selectedDate.toISOString(),
-        scopeTag: 'weekly'
+        scope: 'weekly'
       });
       setModalOpen(false);
       await loadTasks();

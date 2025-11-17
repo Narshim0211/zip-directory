@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { HelmetProvider } from 'react-helmet-async';
 import LandingPage from "./components/LandingPage";
 import AdminDashboard from "./components/AdminDashboard";
 import BusinessDetails from "./components/BusinessDetails";
@@ -9,11 +10,13 @@ import Register from "./components/Register";
 import ResetPassword from "./components/ResetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import VisitorProfile from "./visitor/pages/VisitorProfile";
 import ToolkitPage from "./features/toolkit/pages/ToolkitPage";
 import StyleAdvisorPage from "./features/toolkit/pages/StyleAdvisorPage";
 import HairGoalsPage from "./features/toolkit/pages/HairGoalsPage";
-import WeeklyReportsPage from "./features/toolkit/pages/WeeklyReportsPage";
+import HairGoalsPhotoTimelinePage from "./features/toolkit/pages/HairGoalsPhotoTimelinePage";
+import WeeklyReportPage from "./features/toolkit/pages/WeeklyReportPage";
+import HairGoalsJourneyHistoryPage from "./features/toolkit/pages/HairGoalsJourneyHistoryPage";
+import HairGoalsJourneyDetailPage from "./features/toolkit/pages/HairGoalsJourneyDetailPage";
 import TimeManagerToolkitPage from "./features/toolkit/pages/TimeManagerToolkitPage";
 import VisitorProfileEditPage from "./visitor/pages/VisitorProfileEditPage";
 import VisitorHome from "./visitor/pages/VisitorHome";
@@ -41,7 +44,11 @@ import "./App.css";
 import TimeManagerPage from "./features/timeManager/pages/TimeManagerPage";
 import TimeManagerOwnerPage from "./features/timeManager/pages/owner/TimeManagerOwnerPage";
 import OwnerProfilePage from "./pages/owner/Profile";
+import BookingPublicProfile from "./pages/owner/BookingPublicProfile";
 import OwnerBookingManager from "./pages/owner/BookingManager";
+import StaffManagement from "./pages/owner/StaffManagement";
+import PublicProfile from "./pages/PublicProfile";
+import PublicBooking from "./pages/PublicBooking";
 import MicroservicesRoutes from "./routes/MicroservicesRoutes";
 
 const LandingOrRedirect = () => {
@@ -69,6 +76,10 @@ function Frame() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          
+          {/* Public Booking Profile & Booking Pages */}
+          <Route path="/profile/:slug" element={<PublicProfile />} />
+          <Route path="/book/:slug" element={<PublicBooking />} />
         </Route>
 
         <Route path="/profile" element={<Navigate to="/visitor/profile" replace />} />
@@ -89,13 +100,16 @@ function Frame() {
           <Route path="explore" element={<VisitorPage />} />
           <Route path="surveys" element={<VisitorSurveys />} />
           <Route path="notifications" element={<VisitorNotifications />} />
-          <Route path="toolkit">
-            <Route index element={<ToolkitPage />} />
-            <Route path="time/*" element={<TimeManagerToolkitPage />} />
-            <Route path="style-advisor" element={<StyleAdvisorPage />} />
-            <Route path="goals" element={<HairGoalsPage />} />
-            <Route path="goals/reports" element={<WeeklyReportsPage />} />
-          </Route>
+            <Route path="toolkit">
+              <Route index element={<ToolkitPage />} />
+              <Route path="time/*" element={<TimeManagerToolkitPage />} />
+              <Route path="style-advisor" element={<StyleAdvisorPage />} />
+              <Route path="goals" element={<HairGoalsPage />} />
+              <Route path="goals/photos" element={<HairGoalsPhotoTimelinePage />} />
+              <Route path="goals/history" element={<HairGoalsJourneyHistoryPage />} />
+              <Route path="goals/history/:journeyId" element={<HairGoalsJourneyDetailPage />} />
+              <Route path="goals/report/:reportId" element={<WeeklyReportPage />} />
+            </Route>
           <Route path="profile" element={<VisitorProfilePage />} />
           <Route path="profile/edit" element={<VisitorProfileEditPage />} />
           <Route path="time/*" element={<TimeManagerPage />} />
@@ -105,21 +119,25 @@ function Frame() {
         <Route
           path="/owner/*"
           element={
-            <ProtectedRoute
-              roles={["owner", "admin"]}
-              element={<OwnerLayout />}
-            />
+            <ErrorBoundary fallbackTitle="Owner Dashboard Error" fallbackMessage="There was an error loading the owner dashboard. Other sections should still work.">
+              <ProtectedRoute
+                roles={["owner", "admin"]}
+                element={<OwnerLayout />}
+              />
+            </ErrorBoundary>
           }
         >
-          <Route index element={<Dashboard />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="my-business" element={<MyBusiness />} />
-          <Route path="explore" element={<ExploreOwner />} />
-          <Route path="surveys" element={<Surveys />} />
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="profile/me" element={<OwnerProfilePage />} />
-          <Route path="time/*" element={<TimeManagerOwnerPage />} />
-          <Route path="booking" element={<OwnerBookingManager />} />
+          <Route index element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
+          <Route path="dashboard" element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
+          <Route path="my-business" element={<ErrorBoundary><MyBusiness /></ErrorBoundary>} />
+          <Route path="explore" element={<ErrorBoundary><ExploreOwner /></ErrorBoundary>} />
+          <Route path="surveys" element={<ErrorBoundary><Surveys /></ErrorBoundary>} />
+          <Route path="notifications" element={<ErrorBoundary><Notifications /></ErrorBoundary>} />
+          <Route path="profile/me" element={<ErrorBoundary><OwnerProfilePage /></ErrorBoundary>} />
+          <Route path="booking/public-profile" element={<ErrorBoundary fallbackTitle="Booking Profile Error"><BookingPublicProfile /></ErrorBoundary>} />
+          <Route path="booking/staff" element={<ErrorBoundary><StaffManagement /></ErrorBoundary>} />
+          <Route path="time/*" element={<ErrorBoundary><TimeManagerOwnerPage /></ErrorBoundary>} />
+          <Route path="booking" element={<ErrorBoundary><OwnerBookingManager /></ErrorBoundary>} />
         </Route>
 
         <Route path="/admin" element={<ProtectedRoute roles={["admin"]} element={<AdminDashboard />} />} />
@@ -129,16 +147,18 @@ function Frame() {
         <Route 
           path="/microservices/*" 
           element={
-            <ProtectedRoute 
-              roles={["owner", "visitor", "admin"]} 
-              element={<MicroservicesRoutes />} 
-            />
+            <ErrorBoundary fallbackTitle="Service Error" fallbackMessage="This service is temporarily unavailable.">
+              <ProtectedRoute 
+                roles={["owner", "visitor", "admin"]} 
+                element={<MicroservicesRoutes />} 
+              />
+            </ErrorBoundary>
           } 
         />
 
         {/* V2 Profile Routes - Facebook Style */}
-        <Route path="/o/:slug" element={<OwnerProfilePageV2 />} />
-        <Route path="/v/:slug" element={<VisitorProfilePageV2 />} />
+        <Route path="/o/:slug" element={<ErrorBoundary><OwnerProfilePageV2 /></ErrorBoundary>} />
+        <Route path="/v/:slug" element={<ErrorBoundary><VisitorProfilePageV2 /></ErrorBoundary>} />
 
         {/* Legacy Profile Routes (for reference) */}
         <Route path="/o-legacy/:slug" element={<PublicOwnerProfile />} />
@@ -153,11 +173,13 @@ function Frame() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Frame />
-      </Router>
-    </AuthProvider>
+    <HelmetProvider>
+      <AuthProvider>
+        <Router>
+          <Frame />
+        </Router>
+      </AuthProvider>
+    </HelmetProvider>
   );
 }
 

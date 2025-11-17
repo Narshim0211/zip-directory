@@ -1,0 +1,513 @@
+.owner-public-profile {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #F7F9FD;
+  min-height: 100vh;
+}
+
+.profile-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.profile-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1B1E28;
+  margin-bottom: 0.5rem;
+}
+
+.profile-subtitle {
+  color: #5F6368;
+  font-size: 1.125rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 4rem;
+  font-size: 1.125rem;
+  color: #5F6368;
+}
+
+/* Alerts */
+.alert {
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.alert-error {
+  background: #FEE2E2;
+  border: 2px solid #FCA5A5;
+  color: #991B1B;
+}
+
+.alert-success {
+  background: #D1FAE5;
+  border: 2px solid #6EE7B7;
+  color: #065F46;
+}
+
+/* Card Layout */
+.profile-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s;
+}
+
+.profile-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.profile-card h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1B1E28;
+  margin-bottom: 0.75rem;
+}
+
+.profile-card h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.help-text {
+  color: #6B7280;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* Profile Sections */
+.profile-section {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-section h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.section-description {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+/* Toggle Button */
+.btn-toggle {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 2px solid #ccc;
+  background: white;
+  color: #666;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-toggle.active {
+  background: #4caf50;
+  border-color: #4caf50;
+  color: white;
+}
+
+.btn-toggle:hover {
+  opacity: 0.8;
+}
+
+/* Public URL Box */
+.public-url-box {
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.public-url-box strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.public-url-box a {
+  color: #2196f3;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.public-url-box a:hover {
+  text-decoration: underline;
+}
+
+/* Input Groups */
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-group label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.input-group input,
+.input-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.input-group input:focus,
+.input-group textarea:focus {
+  outline: none;
+  border-color: #2196f3;
+}
+
+.input-group input:disabled,
+.input-group textarea:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+/* Slug Input */
+.slug-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.slug-prefix {
+  background: #f5f5f5;
+  padding: 0.75rem;
+  color: #666;
+  font-weight: 600;
+  border-right: 1px solid #ddd;
+}
+
+.slug-input-wrapper input {
+  flex: 1;
+  border: none;
+  padding: 0.75rem;
+}
+
+.slug-input-wrapper input:focus {
+  border: none;
+}
+
+.error-text {
+  display: block;
+  color: #c33;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.char-count {
+  display: block;
+  text-align: right;
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 0.25rem;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #2196f3;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #1976d2;
+}
+
+.btn-secondary {
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+
+/* Add Media Form */
+.add-media-form {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.add-media-form input {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+/* Media Grid */
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.media-item {
+  position: relative;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f9f9f9;
+}
+
+.media-item img,
+.media-item video {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.media-caption {
+  padding: 0.5rem;
+  font-size: 0.85rem;
+  color: #666;
+  background: white;
+}
+
+.btn-remove {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: background 0.2s;
+}
+
+.btn-remove:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+/* Booking Link Display */
+.booking-link-display {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.booking-link-input {
+  flex: 1;
+  padding: 0.875rem 1rem;
+  border: 2px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #1B1E28;
+  font-family: monospace;
+  background: #F9FAFB;
+}
+
+.btn-copy {
+  padding: 0.875rem 1.5rem !important;
+  background: #10B981 !important;
+  white-space: nowrap;
+}
+
+/* Branding Grid */
+.branding-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.branding-item {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Contact Grid */
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Services List */
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.service-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 2px solid #E5E7EB;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.service-checkbox:hover {
+  border-color: #2563EB;
+  background: #F9FAFB;
+}
+
+.service-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.service-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.service-name {
+  font-weight: 600;
+  color: #1B1E28;
+}
+
+.service-details {
+  font-size: 0.875rem;
+  color: #6B7280;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #6B7280;
+  background: #F9FAFB;
+  border-radius: 8px;
+  border: 2px dashed #E5E7EB;
+}
+
+/* Caption Input */
+.caption-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+/* Profile Actions */
+.profile-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  padding: 2rem 0;
+  flex-wrap: wrap;
+}
+
+.btn-large {
+  min-width: 220px;
+  font-size: 1.125rem;
+  padding: 1rem 2rem !important;
+}
+
+/* Input Fields */
+.textarea-large {
+  min-height: 150px;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.slug-input {
+  flex: 1;
+  font-family: monospace;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .owner-public-profile {
+    padding: 1rem;
+  }
+
+  .booking-link-display {
+    flex-direction: column;
+  }
+
+  .branding-grid,
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .media-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .profile-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-large {
+    width: 100%;
+  }
+}

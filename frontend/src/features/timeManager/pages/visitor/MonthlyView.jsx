@@ -82,10 +82,10 @@ export default function MonthlyView({ role = "visitor" }) {
 
   const handleSubmit = async (payload) => {
     try {
-      await api.createTask({
+      await api.createMonthly({
         ...payload,
         taskDate: selectedDate.toISOString(),
-        scopeTag: 'monthly'
+        scope: 'monthly'
       });
       setModalOpen(false);
       await loadTasks();

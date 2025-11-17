@@ -2,7 +2,7 @@ const cron = require("node-cron");
 const OwnerTimeTask = require("../models/Task");
 
 const sendReminder = async (task) => {
-  console.log(`Owner reminder for ${task.title} at ${task.reminderTime}`);
+  console.log(`Reminder: ${task.title} scheduled for ${task.reminderTime}`);
   task.reminderDelivered = true;
   task.reminderSentAt = new Date();
   await task.save();

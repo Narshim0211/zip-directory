@@ -10,7 +10,10 @@ export const STORAGE_KEYS = {
   START_DATE: 'startDate',
   CURRENT_STREAK: 'currentStreak',
   GOAL: 'selectedGoal',
+  ROUTINE_STEPS: 'routineSteps',
+  PRODUCTS: 'products',
   PHOTOS: 'photos',
+  JOURNEY_HISTORY: 'journeyHistory',
   PROGRESS: 'progress',
   STICKERS: 'unlockedStickers',
   STREAK: 'streak',
@@ -136,4 +139,47 @@ export function hasHairGoalsData(userId = 'default') {
   } catch {
     return false;
   }
+}
+
+/**
+ * Helpers for journey history + shared datasets
+ */
+export function loadRoutineSteps(userId = 'default') {
+  return loadField('ROUTINE_STEPS', userId) || [];
+}
+
+export function saveRoutineSteps(steps, userId = 'default') {
+  saveField('ROUTINE_STEPS', steps, userId);
+}
+
+export function loadProducts(userId = 'default') {
+  return loadField('PRODUCTS', userId) || [];
+}
+
+export function saveProducts(products, userId = 'default') {
+  saveField('PRODUCTS', products, userId);
+}
+
+export function loadPhotos(userId = 'default') {
+  return loadField('PHOTOS', userId) || [];
+}
+
+export function savePhotos(photos, userId = 'default') {
+  saveField('PHOTOS', photos, userId);
+}
+
+export function loadJourneyHistory(userId = 'default') {
+  const history = loadField('JOURNEY_HISTORY', userId);
+  return Array.isArray(history) ? history : [];
+}
+
+export function saveJourneyHistory(history, userId = 'default') {
+  saveField('JOURNEY_HISTORY', history, userId);
+}
+
+export function appendJourneyHistoryEntry(entry, userId = 'default') {
+  const history = loadJourneyHistory(userId);
+  history.unshift(entry);
+  saveJourneyHistory(history, userId);
+  return history;
 }

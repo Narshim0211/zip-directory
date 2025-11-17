@@ -197,16 +197,21 @@
 }
 .tm-weekly-grid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  align-items: stretch;
 }
 .tm-weekly-grid__day {
   border: 1px solid #e5e7eb;
   border-radius: 16px;
-  padding: 12px;
+  padding: 22px;
   background: #fff;
-  min-height: 180px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   transition: box-shadow 0.2s;
+  overflow: hidden;
 }
 .tm-weekly-grid__day:hover {
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -218,10 +223,12 @@
 .tm-weekly-grid__header {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
   border-bottom: 1px solid #e5e7eb;
+  font-size: 1rem;
+  font-weight: 600;
 }
 .tm-weekly-grid__header > div {
   display: flex;
@@ -260,21 +267,29 @@
 .tm-weekly-grid__tasks {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 .tm-weekly-grid__task {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 6px 8px;
-  border-radius: 6px;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
   position: relative;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  min-height: 56px;
 }
 .tm-weekly-grid__task:hover {
-  background: #f9fafb;
+  background: #f3f4f6;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
 }
 /* Mini delete button for calendar grid views */
 .tm-task-delete-btn--mini {
@@ -291,8 +306,10 @@
 .tm-weekly-grid__task span {
   flex: 1;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-overflow: unset;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
 }
 .tm-task-completed {
   text-decoration: line-through;
@@ -319,16 +336,16 @@
 .tm-monthly-grid {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 16px;
   background: #fff;
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 16px;
+  padding: 20px;
   border: 1px solid #e5e7eb;
 }
 .tm-monthly-grid__header {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px;
+  gap: 16px;
   margin-bottom: 8px;
   padding-bottom: 8px;
   border-bottom: 2px solid #e5e7eb;
@@ -343,18 +360,19 @@
 .tm-monthly-grid__row {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px;
+  gap: 16px;
 }
 .tm-monthly-grid__cell {
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  min-height: 100px;
-  padding: 8px;
+  border-radius: 14px;
+  min-height: 200px;
+  padding: 18px;
   background: #fff;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  transition: box-shadow 0.2s;
+  gap: 12px;
+  transition: all 0.2s;
+  overflow: hidden;
 }
 .tm-monthly-grid__cell:hover {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -374,15 +392,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #e5e7eb;
 }
 .tm-monthly-grid__date {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 1rem;
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
   transition: background 0.2s;
 }
 .tm-monthly-grid__date:hover {
@@ -409,34 +428,43 @@
 .tm-monthly-grid__tasks {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 0.75rem;
-  overflow: hidden;
+  gap: 10px;
+  font-size: 0.85rem;
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 4px;
 }
 .tm-monthly-grid__task {
   display: flex;
-  gap: 4px;
-  align-items: center;
-  padding: 4px;
-  border-radius: 4px;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
   position: relative;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  min-height: 50px;
 }
 .tm-monthly-grid__task:hover {
-  background: #f9fafb;
+  background: #f3f4f6;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
 }
 .tm-monthly-grid__task input[type="checkbox"] {
   cursor: pointer;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
 }
 .tm-monthly-grid__task span {
   flex: 1;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-overflow: unset;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
 }
 .tm-reminder-toggle {
   display: flex;
@@ -555,4 +583,75 @@
 }
 .tm-error-boundary__btn:hover {
   background: #b91c1c;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN FOR WEEKLY/MONTHLY GRIDS
+   ======================================== */
+
+/* Tablet and below */
+@media (max-width: 1024px) {
+  .tm-weekly-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    padding-bottom: 0;
+  }
+  
+  .tm-weekly-grid__day {
+    min-height: 300px;
+  }
+  
+  .tm-monthly-grid {
+    padding: 16px;
+  }
+
+  .tm-monthly-grid__cell {
+    min-height: 180px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .tm-weekly-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .tm-weekly-grid__day {
+    min-height: 280px;
+    padding: 18px;
+  }
+  
+  .tm-monthly-grid__cell {
+    min-height: 160px;
+    padding: 12px;
+  }
+  
+  .tm-monthly-grid__task {
+    font-size: 0.8rem;
+    padding: 8px 10px;
+    min-height: 42px;
+  }
+  
+  .tm-weekly-grid__task {
+    font-size: 0.85rem;
+    padding: 12px 14px;
+    min-height: 48px;
+  }
+}
+
+/* Large screens - make grids even more spacious */
+@media (min-width: 1440px) {
+  .tm-weekly-grid {
+    gap: 16px;
+  }
+  
+  .tm-weekly-grid__day {
+    min-height: 360px;
+    padding: 24px;
+  }
+  
+  .tm-monthly-grid__cell {
+    min-height: 240px;
+    padding: 16px;
+  }
 }

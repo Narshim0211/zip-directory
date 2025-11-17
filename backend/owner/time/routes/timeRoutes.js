@@ -18,7 +18,7 @@ router.get("/weekly", protectOwner, weeklyController.getWeeklyTasks);
 router.post("/weekly", protectOwner, validateWeeklyTask, checkValidationResult, weeklyController.createWeeklyTask);
 
 router.get("/monthly", protectOwner, monthlyController.getMonthlyTasks);
-router.post("/monthly", protectOwner, validateMonthlyTask, checkValidationResult, monthlyController.createMonthlyTask);
+router.post("/monthly", protectOwner, validateWeeklyTask, checkValidationResult, monthlyController.createMonthlyTask);
 
 router.get("/reminders", protectOwner, reminderController.getPendingReminders);
 router.put("/reminders/:id", protectOwner, reminderController.toggleReminder);

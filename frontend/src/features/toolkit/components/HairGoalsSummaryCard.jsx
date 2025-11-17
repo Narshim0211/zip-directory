@@ -28,7 +28,8 @@ export default function HairGoalsSummaryCard({ onEditGoal, onFinishCheckin, onAd
   const hasGoal = currentEntry.goal;
   const hasPhoto = currentEntry.photoUri;
   const hasFeeling = currentEntry.hairFeeling;
-  const isComplete = hasGoal && hasPhoto && hasFeeling;
+  const routineCount = currentEntry.completedSteps?.length || 0;
+  const isComplete = hasGoal && hasFeeling;
   
   return (
     <div className="hgd-summary-card">
@@ -64,11 +65,11 @@ export default function HairGoalsSummaryCard({ onEditGoal, onFinishCheckin, onAd
         )}
 
         {/* Routine Section */}
-        {currentEntry.routineTags && currentEntry.routineTags.length > 0 && (
+        {routineCount > 0 && (
           <div className="hgd-summary-section">
             <span className="hgd-summary-label">🧴 Routine</span>
             <p className="hgd-summary-text">
-              {currentEntry.routineTags.join(', ')}
+              {routineCount} step{routineCount > 1 ? 's' : ''} completed
             </p>
           </div>
         )}
@@ -95,7 +96,7 @@ export default function HairGoalsSummaryCard({ onEditGoal, onFinishCheckin, onAd
         {hasGoal && !isComplete && (
           <>
             <button className="hgd-btn-primary" onClick={onFinishCheckin}>
-              Finish Check-In
+              Log Progress
             </button>
             {!hasPhoto && (
               <button className="hgd-btn-secondary" onClick={onAddPhoto}>
@@ -107,7 +108,7 @@ export default function HairGoalsSummaryCard({ onEditGoal, onFinishCheckin, onAd
         
         {isComplete && (
           <button className="hgd-btn-primary full-width" onClick={onViewReport}>
-            View This Week's Report
+            View This Week's Summary
           </button>
         )}
       </div>

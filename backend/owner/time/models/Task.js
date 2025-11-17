@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { createTimeTaskSchema } = require("../../../shared/timeTaskSchema");
 
-const taskSchema = createTimeTaskSchema();
+const ownerTimeTaskSchema = createTimeTaskSchema();
 
-module.exports = mongoose.model("OwnerTimeTask", taskSchema, "owner_time_tasks");
+module.exports = mongoose.model("OwnerTimeTask", ownerTimeTaskSchema, "owner_time_tasks");

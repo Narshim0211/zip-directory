@@ -14,6 +14,17 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  
+  // Disable caching for GET requests to ensure fresh data
+  if (config.method === 'get') {
+    config.headers['Cache-Control'] = 'no-cache';
+    config.headers['Pragma'] = 'no-cache';
+  }
+  
+  // DEBUG: Log every request
+  console.log(`🌐 [AXIOS] ${config.method.toUpperCase()} ${config.baseURL}${config.url}`);
+  console.log('   Params:', config.params);
+  
   return config;
 });
 

@@ -23,7 +23,13 @@ async function processReminders() {
   const todayEnd = new Date(todayStart);
   todayEnd.setDate(todayEnd.getDate() + 1);
 
-  console.log(`🔍 Checking reminders at ${currentTime}...`);
+  console.log(`\n======================================`);
+  console.log(`🔍 [REMINDER CRON] Running at ${now.toISOString()}`);
+  console.log(`⏰ Current time (HH:MM): ${currentTime}`);
+  console.log(`📅 Date range: ${todayStart.toISOString()} to ${todayEnd.toISOString()}`);
+  console.log(`🔑 SendGrid configured: ${!!process.env.SENDGRID_API_KEY}`);
+  console.log(`🔑 Sender email: ${process.env.SENDER_EMAIL || 'NOT SET'}`);
+  console.log(`======================================\n`);
 
   try {
     // Query both visitor and owner tasks
@@ -41,12 +47,25 @@ async function processReminders() {
 
     const allTasks = [...visitorTasks, ...ownerTasks];
 
+    console.log(`📊 Database query results:`);
+    console.log(`   - Visitor tasks found: ${visitorTasks.length}`);
+    console.log(`   - Owner tasks found: ${ownerTasks.length}`);
+    console.log(`   - Total tasks to process: ${allTasks.length}`);
+
     if (allTasks.length === 0) {
-      console.log(`✓ No reminders to send at ${currentTime}`);
+      console.log(`✓ No reminders to send at ${currentTime}\n`);
       return;
     }
 
-    console.log(`📬 Found ${allTasks.length} reminder(s) to send`);
+    console.log(`\n📬 Found ${allTasks.length} reminder(s) to send:\n`);
+    allTasks.forEach((task, i) => {
+      console.log(`   ${i + 1}. "${task.title}" (ID: ${task._id})`);
+      console.log(`      - Email: ${task.reminder.email || 'none'}`);
+      console.log(`      - Phone: ${task.reminder.phone || 'none'}`);
+      console.log(`      - Time: ${task.reminder.time}`);
+      console.log(`      - Sent: ${task.reminder.sent}`);
+    });
+    console.log('');
 
     // Process each reminder
     for (const task of allTasks) {

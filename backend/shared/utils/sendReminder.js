@@ -18,6 +18,8 @@ if (process.env.TWILIO_SID && process.env.TWILIO_TOKEN) {
  * @returns {Promise<Object>} Result with success status and details
  */
 async function sendReminder(task) {
+  console.log(`\n🚀 [sendReminder] Starting for task: "${task.title}" (${task._id})`);
+  
   const results = {
     email: { sent: false, error: null },
     sms: { sent: false, error: null },
@@ -25,13 +27,22 @@ async function sendReminder(task) {
 
   // Check if reminder exists
   if (!task.reminder) {
+    console.log(`❌ [sendReminder] No reminder configured for task ${task._id}`);
     return { success: false, error: "No reminder configured" };
   }
 
   const { email, phone } = task.reminder;
+  console.log(`📧 Email recipient: ${email || 'NONE'}`);
+  console.log(`📱 Phone recipient: ${phone || 'NONE'}`);
+  console.log(`🔑 SENDGRID_API_KEY present: ${!!process.env.SENDGRID_API_KEY}`);
+  console.log(`🔑 SENDER_EMAIL: ${process.env.SENDER_EMAIL || 'NOT SET'}`);
 
   // Send Email
+  console.log(`\n📧 [EMAIL] Attempting to send email...`);
+  console.log(`   - Condition check: email=${!!email}, SENDGRID_API_KEY=${!!process.env.SENDGRID_API_KEY}`);
+  
   if (email && process.env.SENDGRID_API_KEY) {
+    console.log(`✓ Email conditions met, preparing message...`);
     try {
       const msg = {
         to: email,
@@ -66,18 +77,34 @@ async function sendReminder(task) {
         `,
       };
 
-      await sgMail.send(msg);
+      console.log(`📤 Sending email to ${email}...`);
+      const sendResult = await sgMail.send(msg);
       results.email.sent = true;
-      console.log(`✅ Email reminder sent to ${email} for task: ${task.title}`);
+      console.log(`✅ [EMAIL SUCCESS] Email sent to ${email}`);
+      console.log(`   - Task: ${task.title}`);
+      console.log(`   - SendGrid response:`, sendResult?.[0]?.statusCode || 'OK');
     } catch (error) {
       results.email.error = error.message;
-      console.error(`❌ Failed to send email to ${email}:`, error.message);
+      console.error(`❌ [EMAIL FAILED] Error sending email to ${email}`);
+      console.error(`   - Error message: ${error.message}`);
+      console.error(`   - Error code: ${error.code || 'N/A'}`);
+      console.error(`   - Full error:`, error.response?.body || error);
     }
+  } else {
+    console.log(`⏭️  Email skipped (email=${!!email}, SENDGRID_API_KEY=${!!process.env.SENDGRID_API_KEY})`);
   }
 
   // Send SMS
+  console.log(`\n📱 [SMS] Attempting to send SMS...`);
+  console.log(`   - Condition check: phone=${!!phone}, twilioClient=${!!twilioClient}, TWILIO_PHONE=${!!process.env.TWILIO_PHONE}`);
+  console.log(`   - TWILIO_SID: ${process.env.TWILIO_SID ? 'SET' : 'NOT SET'}`);
+  console.log(`   - TWILIO_TOKEN: ${process.env.TWILIO_TOKEN ? 'SET' : 'NOT SET'}`);
+  console.log(`   - TWILIO_PHONE: ${process.env.TWILIO_PHONE || 'NOT SET'}`);
+  
   if (phone && twilioClient && process.env.TWILIO_PHONE) {
+    console.log(`✓ SMS conditions met, sending message...`);
     try {
+      console.log(`📤 Sending SMS to ${phone}...`);
       const message = await twilioClient.messages.create({
         to: phone,
         from: process.env.TWILIO_PHONE,
@@ -85,19 +112,36 @@ async function sendReminder(task) {
       });
 
       results.sms.sent = true;
-      console.log(`✅ SMS reminder sent to ${phone} for task: ${task.title} (SID: ${message.sid})`);
+      console.log(`✅ [SMS SUCCESS] SMS sent to ${phone}`);
+      console.log(`   - Task: ${task.title}`);
+      console.log(`   - Message SID: ${message.sid}`);
+      console.log(`   - Status: ${message.status}`);
     } catch (error) {
       results.sms.error = error.message;
-      console.error(`❌ Failed to send SMS to ${phone}:`, error.message);
+      console.error(`❌ [SMS FAILED] Error sending SMS to ${phone}`);
+      console.error(`   - Error message: ${error.message}`);
+      console.error(`   - Error code: ${error.code || 'N/A'}`);
+      console.error(`   - Full error:`, error);
     }
+  } else {
+    console.log(`⏭️  SMS skipped (phone=${!!phone}, twilioClient=${!!twilioClient}, TWILIO_PHONE=${!!process.env.TWILIO_PHONE})`);
   }
 
   // Determine overall success
   const emailAttempted = !!email && !!process.env.SENDGRID_API_KEY;
-  const smsAttempted = !!phone && !!twilioClient;
+  const smsAttempted = !!phone && !!twilioClient && !!process.env.TWILIO_PHONE;
 
-  const success =
-    (emailAttempted ? results.email.sent : true) && (smsAttempted ? results.sms.sent : true);
+  // Success if:
+  // - SMS was attempted and sent successfully, OR
+  // - Email was attempted and sent successfully, OR
+  // - At least one method succeeded when both were attempted
+  const success = results.sms.sent || results.email.sent;
+
+  console.log(`\n📊 [FINAL RESULT]`);
+  console.log(`   - Email attempted: ${emailAttempted}, sent: ${results.email.sent}`);
+  console.log(`   - SMS attempted: ${smsAttempted}, sent: ${results.sms.sent}`);
+  console.log(`   - Overall success: ${success}`);
+  console.log(`======================================\n`);
 
   return {
     success,

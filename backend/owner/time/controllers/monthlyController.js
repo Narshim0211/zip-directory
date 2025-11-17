@@ -2,6 +2,9 @@ const taskService = require("../services/taskService");
 
 const getMonthlyTasks = async (req, res, next) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "Authentication required" });
+    }
     const today = new Date();
     const targetMonth = Number(req.query.month) || today.getMonth() + 1;
     const targetYear = Number(req.query.year) || today.getFullYear();
@@ -15,12 +18,16 @@ const getMonthlyTasks = async (req, res, next) => {
     });
     res.json(tasks);
   } catch (error) {
+    console.error("Monthly tasks error", error);
     next(error);
   }
 };
 
 const createMonthlyTask = async (req, res, next) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "Authentication required" });
+    }
     const payload = {
       scope: "monthly",
       taskDate: new Date(req.body.taskDate),

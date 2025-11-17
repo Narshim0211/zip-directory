@@ -13,6 +13,7 @@ const MONTHS = [
 ];
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const TASK_PREVIEW_LIMIT = 4;
 
 export default function MonthlyPlanner({ role = 'visitor' }) {
   const api = usePlannerApi({ role });
@@ -265,10 +266,35 @@ export default function MonthlyPlanner({ role = 'visitor' }) {
                         className={`tm-calendar__cell ${hasTasksClass} ${todayClass}`}
                         onClick={() => openInspector(cell.dateStr)}
                       >
-                        <div className="tm-calendar__day-number">{cell.day}</div>
-                        {cell.tasks.length > 0 && (
-                          <div className="tm-calendar__task-count">{cell.tasks.length} task{cell.tasks.length > 1 ? 's' : ''}</div>
-                        )}
+                        <div className="tm-calendar__cell-content">
+                          <div className="tm-calendar__cell-top">
+                            <span className="tm-calendar__day-number">{cell.day}</span>
+                            {cell.tasks.length > 0 && (
+                              <span className="tm-calendar__task-count">
+                                {cell.tasks.length} task{cell.tasks.length > 1 ? 's' : ''}
+                              </span>
+                            )}
+                          </div>
+                          <div className="tm-calendar__tasks">
+                            {cell.tasks.length === 0 ? (
+                              <span className="tm-calendar__empty">No tasks</span>
+                            ) : (
+                              cell.tasks.slice(0, TASK_PREVIEW_LIMIT).map(task => (
+                                <div
+                                  key={task._id || `${cell.dateStr}-${task.title}`}
+                                  className="tm-calendar__task-preview"
+                                >
+                                  {task.title}
+                                </div>
+                              ))
+                            )}
+                          </div>
+                          {cell.tasks.length > TASK_PREVIEW_LIMIT && (
+                            <div className="tm-calendar__more">
+                              +{cell.tasks.length - TASK_PREVIEW_LIMIT} more
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}

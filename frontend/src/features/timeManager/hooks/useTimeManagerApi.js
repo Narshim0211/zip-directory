@@ -5,8 +5,19 @@ export default function useTimeManagerApi(role = "visitor") {
   const prefix = role === "owner" ? "owner" : "visitor";
   const endpoint = `${prefix}/time-manager`;
 
+  console.log(`🔧 [useTimeManagerApi] Initialized with role="${role}", endpoint="${endpoint}"`);
+
   const fetchDaily = useCallback(
-    (date) => api.get(`${endpoint}/daily`, { params: { date } }).then((r) => r.data),
+    (date) => {
+      console.log(`📥 [API] GET ${endpoint}/daily?date=${date}`);
+      // Add timestamp to prevent caching
+      return api.get(`${endpoint}/daily`, { 
+        params: { 
+          date,
+          _t: Date.now()  // Cache buster
+        } 
+      }).then((r) => r.data);
+    },
     [endpoint]
   );
   const fetchWeekly = useCallback(
@@ -18,7 +29,10 @@ export default function useTimeManagerApi(role = "visitor") {
     [endpoint]
   );
   const createDaily = useCallback(
-    (payload) => api.post(`${endpoint}/daily`, payload).then((r) => r.data),
+    (payload) => {
+      console.log(`📤 [API] POST ${endpoint}/daily`, payload);
+      return api.post(`${endpoint}/daily`, payload).then((r) => r.data);
+    },
     [endpoint]
   );
   const createWeekly = useCallback(

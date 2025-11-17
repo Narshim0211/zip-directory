@@ -38,10 +38,16 @@ export default function AddTaskModal({ open, onClose, onSave, initial }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    console.log('🚀 [AddTaskModal.handleSubmit] Form submitted');
+    console.log('🔍 [AddTaskModal.handleSubmit] onSave function:', typeof onSave);
+    
     // Validate form
     if (!validateForm()) {
+      console.log('❌ [AddTaskModal.handleSubmit] Form validation failed');
       return;
     }
+    
+    console.log('✅ [AddTaskModal.handleSubmit] Form validation passed');
     
     setIsSubmitting(true);
     
@@ -61,8 +67,10 @@ export default function AddTaskModal({ open, onClose, onSave, initial }) {
           : null,
       };
       
-      console.log("SUBMITTED DATA:", payload);
+      console.log("📦 [AddTaskModal.handleSubmit] SUBMITTED DATA:", payload);
+      console.log("📤 [AddTaskModal.handleSubmit] Calling onSave...");
       await onSave(payload);
+      console.log("✅ [AddTaskModal.handleSubmit] onSave completed successfully");
       
       // Reset form on success
       setTitle("");
