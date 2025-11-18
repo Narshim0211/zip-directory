@@ -6,7 +6,35 @@ const bookingService = require('../services/bookingService');
 
 class BookingController {
   /**
-   * Get available slots
+   * Get available slots for public booking (NO AUTH REQUIRED)
+   * GET /api/public/availability
+   */
+  async getPublicAvailability(req, res, next) {
+    try {
+      const { serviceId, staffId, date } = req.query;
+
+      if (!serviceId || !staffId || !date) {
+        return res.status(400).json({
+          success: false,
+          message: 'serviceId, staffId, and date are required',
+        });
+      }
+
+      const slots = await bookingService.calculateAvailability(serviceId, staffId, date);
+
+      res.status(200).json({
+        success: true,
+        date,
+        count: slots.length,
+        data: slots,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get available slots (authenticated)
    * GET /api/bookings/availability
    */
   async getAvailableSlots(req, res, next) {

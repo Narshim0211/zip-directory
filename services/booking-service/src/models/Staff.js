@@ -4,8 +4,8 @@ const staffSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      unique: true,
+      required: false, // Optional - staff may not have user account yet
+      sparse: true, // Allows multiple null values for unique index
       index: true,
     },
     ownerId: {
@@ -91,6 +91,13 @@ const staffSchema = new mongoose.Schema(
       type: String,
       default: 'America/New_York',
     },
+    // 🔗 Services this staff can perform (two-way linking)
+    serviceIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Service',
+      },
+    ],
   },
   {
     timestamps: true,
@@ -101,6 +108,7 @@ const staffSchema = new mongoose.Schema(
 staffSchema.index({ ownerId: 1, isActive: 1 });
 staffSchema.index({ businessId: 1, isActive: 1 });
 staffSchema.index({ email: 1 });
+staffSchema.index({ serviceIds: 1 }); // For querying staff by service
 
 // Virtual for full name
 staffSchema.virtual('fullName').get(function () {

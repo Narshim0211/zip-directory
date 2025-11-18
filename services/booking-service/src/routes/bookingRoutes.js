@@ -23,6 +23,11 @@ router.get('/health', (req, res) => {
 
 // ==================== Service Routes ====================
 
+// Public endpoints (no auth required) - For public booking page
+router.get('/public/services/owner/:ownerId', serviceController.getOwnerServices);
+router.get('/public/services/business/:businessId', serviceController.getBusinessServices);
+router.get('/public/services/:serviceId/staff', serviceController.getServiceStaff);
+
 // Search services (public)
 router.get('/services/search', validateToken, serviceController.searchServices);
 
@@ -35,7 +40,7 @@ router.get('/services/:id', validateToken, serviceController.getServiceById);
 router.patch('/services/:id', validateToken, requireRole(['owner', 'admin']), serviceController.updateService);
 router.delete('/services/:id', validateToken, requireRole(['owner', 'admin']), serviceController.deleteService);
 
-// Owner and business services
+// Owner and business services (authenticated)
 router.get('/services/owner/:ownerId', validateToken, serviceController.getOwnerServices);
 router.get('/services/business/:businessId', validateToken, serviceController.getBusinessServices);
 
@@ -68,7 +73,10 @@ router.delete('/staff/exceptions/:exceptionId', validateToken, requireRole(['own
 
 // ==================== Booking Routes ====================
 
-// Availability
+// Public availability (no auth required) - For public booking page
+router.get('/public/availability', bookingController.getPublicAvailability);
+
+// Availability (authenticated)
 router.get('/bookings/availability', validateToken, bookingController.getAvailableSlots);
 
 // Statistics

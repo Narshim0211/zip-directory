@@ -1,6 +1,9 @@
 const Business = require('../models/Business');
 const Booking = require('../models/Booking');
 const { AppError } = require('../utils/errorHandler');
+const axios = require('axios');
+
+const BOOKING_SERVICE_URL = process.env.BOOKING_SERVICE_URL || 'http://localhost:6002';
 
 /**
  * Generate highlights based on business data (keyword matching)
@@ -113,11 +116,34 @@ exports.getBookingPage = async (req, res, next) => {
       bookingSlug: slug,
       isPublicProfileActive: true 
     }).select(
-      'name logoUrl services phone email address city state'
+      'name logoUrl services phone email address city state owner'
     );
 
     if (!business) {
       throw new AppError('SALON_NOT_FOUND', 'Booking link not active or does not exist.', 404);
+    }
+
+    // Fetch services from booking microservice
+    let services = [];
+    try {
+      if (business.owner) {
+        const serviceResponse = await axios.get(
+          `${BOOKING_SERVICE_URL}/api/public/services/owner/${business.owner}`,
+          {
+            timeout: 5000,
+            validateStatus: (status) => status < 500, // Don't throw on 4xx errors
+          }
+        );
+        
+        if (serviceResponse.data && serviceResponse.data.data) {
+          // Filter only active services
+          services = serviceResponse.data.data.filter(service => service.isActive !== false);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching services from booking service:', error.message);
+      // Fallback to embedded services if microservice is unavailable
+      services = business.services || [];
     }
 
     // Format response
@@ -125,7 +151,7 @@ exports.getBookingPage = async (req, res, next) => {
       businessId: business._id,
       name: business.name,
       logo: business.logoUrl,
-      services: business.services || [],
+      services: services,
       contact: {
         phone: business.phone,
         email: business.email,
@@ -158,34 +184,53 @@ exports.getStaffBySlug = async (req, res, next) => {
     const business = await Business.findOne({ 
       bookingSlug: slug,
       isPublicProfileActive: true 
-    }).select('staff allowCustomerChooseStaff');
+    }).select('owner allowCustomerChooseStaff');
 
     if (!business) {
       throw new AppError('PROFILE_NOT_FOUND', 'This booking page does not exist or is not active.', 404);
     }
 
-    // Filter active staff
-    let activeStaff = (business.staff || []).filter(s => s.isActive);
-
-    // If serviceId provided, filter by staff who can perform that service
-    if (serviceId) {
-      activeStaff = activeStaff.filter(s => 
-        s.serviceIds.some(id => id.toString() === serviceId)
-      );
+    // 🔄 Fetch staff from booking microservice
+    let staffList = [];
+    try {
+      if (serviceId) {
+        // Get staff for specific service
+        const staffResponse = await axios.get(
+          `${BOOKING_SERVICE_URL}/api/public/services/${serviceId}/staff`,
+          { timeout: 5000 }
+        );
+        staffList = staffResponse.data?.data || [];
+      } else {
+        // Get all staff for owner (no service filter)
+        const staffResponse = await axios.get(
+          `${BOOKING_SERVICE_URL}/api/staff/owner/${business.owner}`,
+          {
+            timeout: 5000,
+            validateStatus: (status) => status < 500,
+          }
+        );
+        staffList = (staffResponse.data?.data || []).filter(s => s.isActive);
+      }
+    } catch (error) {
+      console.error('Error fetching staff from booking service:', error.message);
+      // Return empty array if microservice fails
+      staffList = [];
     }
 
-    // Return minimal staff info
-    const staffList = activeStaff.map(s => ({
+    // Format staff response
+    const formattedStaff = staffList.map(s => ({
       _id: s._id,
-      name: s.name,
-      role: s.role,
-      photoUrl: s.photoUrl,
+      name: `${s.firstName} ${s.lastName}`,
+      firstName: s.firstName,
+      lastName: s.lastName,
+      photoUrl: s.avatarUrl,
+      specialties: s.specialties || [],
     }));
 
     res.json({
       success: true,
       data: {
-        staff: staffList,
+        staff: formattedStaff,
         allowCustomerChooseStaff: business.allowCustomerChooseStaff,
       },
     });
@@ -204,65 +249,42 @@ exports.getAvailability = async (req, res, next) => {
     const { slug } = req.params;
     const { serviceId, staffId, date } = req.query;
 
-    if (!date) {
-      throw new AppError('VALIDATION_ERROR', 'Date is required.', 400);
+    if (!date || !serviceId || !staffId) {
+      throw new AppError('VALIDATION_ERROR', 'serviceId, staffId, and date are required.', 400);
     }
 
-    // Find business
+    // Find business to validate slug
     const business = await Business.findOne({ 
       bookingSlug: slug,
       isPublicProfileActive: true 
-    }).select('staff services');
+    }).select('_id');
 
     if (!business) {
       throw new AppError('PROFILE_NOT_FOUND', 'This booking page does not exist or is not active.', 404);
     }
 
-    // Get day of week from date
-    const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'lowercase' });
-
+    // 🔄 Fetch availability from booking microservice
     let availableSlots = [];
-
-    if (staffId && staffId !== 'any') {
-      // Get specific staff availability
-      const staff = business.staff.id(staffId);
-      
-      if (!staff || !staff.isActive) {
-        throw new AppError('STAFF_NOT_FOUND', 'Selected staff member is not available.', 404);
-      }
-
-      // Get that day's schedule
-      const daySchedule = staff.weeklySchedule[dayOfWeek] || [];
-      
-      for (const slot of daySchedule) {
-        if (slot.start && slot.end) {
-          availableSlots.push(...generateTimeSlots(slot.start, slot.end, 30)); // 30-min intervals
+    try {
+      const availabilityResponse = await axios.get(
+        `${BOOKING_SERVICE_URL}/api/public/availability`,
+        {
+          params: { serviceId, staffId, date },
+          timeout: 10000,
         }
-      }
-    } else {
-      // Get availability from any active staff who can perform the service
-      const activeStaff = business.staff.filter(s => 
-        s.isActive && 
-        (!serviceId || s.serviceIds.some(id => id.toString() === serviceId))
       );
-
-      const allSlots = new Set();
       
-      for (const staff of activeStaff) {
-        const daySchedule = staff.weeklySchedule[dayOfWeek] || [];
-        for (const slot of daySchedule) {
-          if (slot.start && slot.end) {
-            const slots = generateTimeSlots(slot.start, slot.end, 30);
-            slots.forEach(s => allSlots.add(s));
-          }
-        }
+      availableSlots = availabilityResponse.data?.data || [];
+    } catch (error) {
+      console.error('Error fetching availability from booking service:', error.message);
+      
+      if (error.response?.status === 404) {
+        throw new AppError('RESOURCE_NOT_FOUND', 'Service or staff not found.', 404);
       }
       
-      availableSlots = Array.from(allSlots).sort();
+      // Return empty slots if microservice fails
+      availableSlots = [];
     }
-
-    // TODO: Subtract existing bookings from available slots
-    // This would require a Booking model query
 
     res.json({
       success: true,

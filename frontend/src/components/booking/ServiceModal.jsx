@@ -23,6 +23,11 @@ const ServiceModal = ({ isOpen, onClose, onSave, service = null, staff = [] }) =
 
   useEffect(() => {
     if (service) {
+      // Handle staffIds - might be populated objects or just IDs
+      const staffIds = (service.staffIds || []).map(staff => 
+        typeof staff === 'string' ? staff : staff._id
+      );
+      
       setFormData({
         name: service.name || '',
         description: service.description || '',
@@ -31,7 +36,7 @@ const ServiceModal = ({ isOpen, onClose, onSave, service = null, staff = [] }) =
         price: service.price || 0,
         depositRequired: service.depositRequired || false,
         depositPercentage: service.depositPercentage || 25,
-        staffIds: service.staffIds || [],
+        staffIds,
         isActive: service.isActive !== undefined ? service.isActive : true,
       });
     }

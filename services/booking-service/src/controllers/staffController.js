@@ -10,6 +10,8 @@ class StaffController {
    * POST /api/staff
    */
   async createStaff(req, res, next) {
+    console.log("📥 Incoming Create Staff Request:", req.body);
+    
     try {
       const { ownerId, userId, role } = req.user;
       const effectiveOwnerId = role === 'owner' ? (ownerId || userId) : null;
@@ -27,8 +29,9 @@ class StaffController {
         success: true,
         data: staff,
       });
-    } catch (error) {
-      next(error);
+    } catch (err) {
+      console.log("❌ STAFF VALIDATION ERROR:", err);
+      next(err);
     }
   }
 

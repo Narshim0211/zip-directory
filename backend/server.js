@@ -151,20 +151,8 @@ try {
 } catch (e) {
   logger.warn('Owner media upload routes not loaded:', e.message);
 }
-// Owner staff management routes
-try {
-  const staffRoutes = require('./routes/owner/staffRoutes');
-  app.use('/api/owner/staff', staffRoutes);
-} catch (e) {
-  logger.warn('Owner staff routes not loaded:', e.message);
-}
-
-try {
-  const bookingRoutes = require('./routes/owner/bookingRoutes');
-  app.use('/api/owner/bookings', bookingRoutes);
-} catch (e) {
-  logger.warn('Owner booking routes not loaded:', e.message);
-}
+// NOTE: Old staff and booking routes removed - now using microservice architecture
+// All booking/staff operations go through /api/booking-service/* proxy
 
 // Follow
 const followRoutes = require('./routes/followRoutes');

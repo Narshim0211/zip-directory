@@ -247,6 +247,25 @@ class ServiceController {
   }
 
   /**
+   * Get staff for a specific service (PUBLIC - for booking page)
+   * GET /api/public/services/:serviceId/staff
+   */
+  async getServiceStaff(req, res, next) {
+    try {
+      const { serviceId } = req.params;
+      const staff = await serviceService.getStaffForService(serviceId);
+
+      res.status(200).json({
+        success: true,
+        count: staff.length,
+        data: staff,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * Search services
    * GET /api/services/search
    */

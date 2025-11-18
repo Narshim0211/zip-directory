@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
+import ErrorBoundary from '../components/Shared/ErrorBoundary';
 import '../styles/publicBooking.css';
 
-export default function PublicBooking() {
+function PublicBooking() {
   const { slug } = useParams();
   const navigate = useNavigate();
   
@@ -65,9 +66,13 @@ export default function PublicBooking() {
   const loadStaffForService = async (serviceId) => {
     try {
       const response = await axios.get(`/public/staff/${slug}?serviceId=${serviceId}`);
-      setStaff(response.data.data.staff || []);
-      setAllowCustomerChooseStaff(response.data.data.allowCustomerChooseStaff || false);
-      return response.data.data.allowCustomerChooseStaff;
+      const staffData = response.data.data.staff || [];
+      setStaff(staffData);
+      
+      // Always allow customer to choose staff (required for new system)
+      setAllowCustomerChooseStaff(staffData.length > 0);
+      
+      return staffData.length > 0;
     } catch (err) {
       console.error('Error loading staff:', err);
       setStaff([]);
@@ -77,18 +82,15 @@ export default function PublicBooking() {
   };
 
   const loadAvailableSlots = async () => {
-    if (!selectedDate || !selectedService) return;
+    if (!selectedDate || !selectedService || !selectedStaff) return;
 
     try {
       setLoadingSlots(true);
       const params = new URLSearchParams({
         date: selectedDate,
         serviceId: selectedService._id,
+        staffId: selectedStaff, // Staff is now required
       });
-
-      if (selectedStaff && selectedStaff !== 'any') {
-        params.append('staffId', selectedStaff);
-      }
 
       const response = await axios.get(`/public/availability/${slug}?${params.toString()}`);
       setAvailableSlots(response.data.data.slots || []);
@@ -107,19 +109,20 @@ export default function PublicBooking() {
     setSelectedTime('');
     
     // Load staff for this service
-    const shouldShowStaff = await loadStaffForService(service._id);
+    const hasStaff = await loadStaffForService(service._id);
     
-    // If staff selection is enabled and staff exist, go to staff step
-    if (shouldShowStaff && staff.length > 0) {
+    // Always require staff selection in new system
+    if (hasStaff) {
       setStep(2);
     } else {
-      // Skip staff selection, go directly to date/time
-      setStep(3);
+      // Show error if no staff available
+      alert('No staff available for this service. Please contact the salon.');
     }
   };
 
   const handleStaffSelect = (staffMember) => {
-    setSelectedStaff(staffMember === 'any' ? 'any' : staffMember._id);
+    // Store staff ID (required for new system)
+    setSelectedStaff(staffMember._id);
     setSelectedDate('');
     setSelectedTime('');
     setStep(3);
@@ -303,7 +306,7 @@ export default function PublicBooking() {
           </div>
         )}
 
-        {/* Step 2: Staff Selection (Conditional) */}
+        {/* Step 2: Staff Selection (Required) */}
         {step === 2 && allowCustomerChooseStaff && (
           <div className="booking-step">
             <div className="selected-service-banner">
@@ -312,23 +315,11 @@ export default function PublicBooking() {
             </div>
             
             <h2>Choose Your Stylist</h2>
+            <p style={{ color: '#666', marginBottom: '1rem' }}>
+              Select a staff member to see available times
+            </p>
             
             <div className="staff-selection">
-              {/* Any Staff Option */}
-              <div
-                className="staff-card any-staff"
-                onClick={() => handleStaffSelect('any')}
-              >
-                <div className="staff-photo">
-                  <div className="staff-avatar-placeholder">👤</div>
-                </div>
-                <div className="staff-info">
-                  <h3>Any Available Staff</h3>
-                  <p className="staff-role">First available stylist</p>
-                </div>
-                <button className="btn btn-select">Select</button>
-              </div>
-
               {/* Staff Members */}
               {staff.map((staffMember) => (
                 <div
@@ -608,5 +599,14 @@ export default function PublicBooking() {
         )}
       </div>
     </div>
+  );
+}
+
+// Wrap with ErrorBoundary for graceful error handling
+export default function PublicBookingWithErrorBoundary(props) {
+  return (
+    <ErrorBoundary>
+      <PublicBooking {...props} />
+    </ErrorBoundary>
   );
 }

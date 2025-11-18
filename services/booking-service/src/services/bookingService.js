@@ -14,6 +14,114 @@ const { startOfDay, endOfDay, addMinutes } = require('date-fns');
 
 class BookingService {
   /**
+   * Calculate availability for public booking page
+   * Generates time slots based on staff working hours and existing bookings
+   */
+  async calculateAvailability(serviceId, staffId, date) {
+    try {
+      // 1. Fetch service and staff
+      const [service, staff] = await Promise.all([
+        Service.findById(serviceId),
+        Staff.findById(staffId),
+      ]);
+
+      if (!service) {
+        throw new AppError('Service not found', 404, 'SERVICE_NOT_FOUND');
+      }
+
+      if (!staff || !staff.isActive) {
+        throw new AppError('Staff not found or inactive', 404, 'STAFF_NOT_FOUND');
+      }
+
+      // 2. Parse date and get day of week
+      const targetDate = new Date(date);
+      const dayOfWeek = targetDate.toLocaleDateString('en-US', { weekday: 'lowercase' });
+
+      // 3. Check if staff works on this day
+      const daySchedule = staff.workingHours[dayOfWeek];
+      if (!daySchedule || !daySchedule.enabled) {
+        logger.info('Staff not working on this day', { staffId, date, dayOfWeek });
+        return [];
+      }
+
+      // 4. Generate time slots based on working hours
+      const slots = this._generateSlots(
+        daySchedule.start,
+        daySchedule.end,
+        service.duration
+      );
+
+      // 5. Get existing bookings for this staff on this date
+      const existingBookings = await Booking.find({
+        staffId,
+        status: { $in: ['pending', 'confirmed', 'in_progress'] },
+        startTime: {
+          $gte: startOfDay(targetDate),
+          $lte: endOfDay(targetDate),
+        },
+      }).select('startTime endTime');
+
+      // 6. Filter out booked slots
+      const availableSlots = slots.filter((slot) => {
+        const slotTime = new Date(`${date}T${slot}`);
+        const slotEnd = addMinutes(slotTime, service.duration);
+
+        // Check if this slot conflicts with any existing booking
+        return !existingBookings.some((booking) => {
+          return (
+            (slotTime >= booking.startTime && slotTime < booking.endTime) ||
+            (slotEnd > booking.startTime && slotEnd <= booking.endTime) ||
+            (slotTime <= booking.startTime && slotEnd >= booking.endTime)
+          );
+        });
+      });
+
+      logger.info('Calculated availability', {
+        serviceId,
+        staffId,
+        date,
+        totalSlots: slots.length,
+        availableSlots: availableSlots.length,
+      });
+
+      return availableSlots;
+    } catch (error) {
+      logger.error('Failed to calculate availability', {
+        error: error.message,
+        serviceId,
+        staffId,
+        date,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Helper: Generate time slots between start and end time
+   * @private
+   */
+  _generateSlots(startTime, endTime, serviceDuration) {
+    const slots = [];
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const [endHour, endMin] = endTime.split(':').map(Number);
+
+    let currentMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+
+    // Use 30-minute intervals or service duration, whichever is smaller
+    const slotInterval = Math.min(30, serviceDuration);
+
+    while (currentMinutes + serviceDuration <= endMinutes) {
+      const hours = Math.floor(currentMinutes / 60);
+      const minutes = currentMinutes % 60;
+      slots.push(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`);
+      currentMinutes += slotInterval;
+    }
+
+    return slots;
+  }
+
+  /**
    * Get available time slots for a service with a specific staff member
    */
   async getAvailableSlots(serviceId, staffId, date) {

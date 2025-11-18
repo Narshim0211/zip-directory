@@ -14,10 +14,14 @@ class StaffService {
    */
   async createStaff(ownerId, staffData) {
     try {
-      // Check if staff already exists
-      const existing = await Staff.findOne({ userId: staffData.userId });
+      // Check if staff already exists by email (more reliable than userId)
+      const existing = await Staff.findOne({ 
+        email: staffData.email,
+        ownerId 
+      });
+      
       if (existing) {
-        throw new AppError('Staff member already exists', 400, 'STAFF_EXISTS');
+        throw new AppError('Staff member with this email already exists', 400, 'STAFF_EXISTS');
       }
 
       const staff = await Staff.create({
