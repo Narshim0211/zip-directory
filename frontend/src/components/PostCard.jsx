@@ -1,5 +1,6 @@
 import React from 'react';
-import IdentityBadge from './Shared/IdentityBadge';
+import IdentityBadge from './SharedComponents/IdentityBadge';
+import { PostEngagementBar } from './engagement';
 
 const PostCard = ({ post }) => (
   <div className="post-card">
@@ -11,7 +12,9 @@ const PostCard = ({ post }) => (
     <div className="post-card__footer">
       <span>{(post.comments || []).length} comments</span>
     </div>
+    <PostEngagementBar postId={post._id || post.id} />
   </div>
 );
 
 export default PostCard;
+

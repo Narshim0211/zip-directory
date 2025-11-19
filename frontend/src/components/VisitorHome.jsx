@@ -4,6 +4,7 @@ import followService from '../visitor/services/followService';
 import FeedPostCard from '../visitor/components/FeedPostCard';
 import FeedSurveyCard from '../visitor/components/FeedSurveyCard';
 import SearchSection from '../visitor/components/SearchSection';
+import CreateSurveyModal from './CreateSurveyModal';
 import '../styles/visitorHomePage.css';
 
 const VisitorHome = () => {
@@ -11,6 +12,7 @@ const VisitorHome = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [followingOwners, setFollowingOwners] = useState([]);
+  const [showSurveyModal, setShowSurveyModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,6 +40,19 @@ const VisitorHome = () => {
     };
     fetchData();
   }, []);
+
+  const handleCreateSurvey = async (surveyData) => {
+    try {
+      // Visitors don't have a specific create endpoint yet, use generic API
+      await v1Client.visitor.surveys.create(surveyData);
+      // Refresh feed
+      const feedResponse = await v1Client.feed.getFeed({ limit: 30 });
+      setFeed(feedResponse.items || []);
+    } catch (err) {
+      console.error('Failed to create survey:', err);
+      throw err;
+    }
+  };
 
   return (
     <div className="visitor-home-page">
@@ -78,6 +93,23 @@ const VisitorHome = () => {
           })}
         </div>
       </div>
+
+      {/* Floating Create Button */}
+      <button
+        className="fab"
+        onClick={() => setShowSurveyModal(true)}
+        title="Create Survey"
+      >
+        +
+      </button>
+
+      {/* Create Survey Modal */}
+      <CreateSurveyModal
+        isOpen={showSurveyModal}
+        onClose={() => setShowSurveyModal(false)}
+        onSubmit={handleCreateSurvey}
+        role="visitor"
+      />
     </div>
   );
 };

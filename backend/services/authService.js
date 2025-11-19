@@ -9,7 +9,7 @@ const signToken = (payload) =>
 
 const NAME_REGEX = /^[A-Za-z\-\' ]{2,50}$/;
 
-async function register({ firstName, lastName, email, password, role }) {
+async function register({ firstName, lastName, email, password, role, newsletterOptIn }) {
   if (!firstName || !lastName || !email || !password) {
     const err = new Error('firstName, lastName, email and password are required');
     err.status = 400;
@@ -29,7 +29,19 @@ async function register({ firstName, lastName, email, password, role }) {
   }
 
   const name = `${firstName} ${lastName}`.trim();
-  const user = new User({ name, firstName, lastName, email, password, role });
+  const userData = { name, firstName, lastName, email, password, role };
+  
+  // Handle newsletter opt-in based on role
+  if (newsletterOptIn === true) {
+    userData.newsletter = {};
+    if (role === 'visitor') {
+      userData.newsletter.hairTips = true;
+    } else if (role === 'owner') {
+      userData.newsletter.businessGrowth = true;
+    }
+  }
+  
+  const user = new User(userData);
   await user.save();
   // create corresponding profile right away for owner/visitor
   try {

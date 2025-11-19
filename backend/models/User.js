@@ -63,9 +63,23 @@ const userSchema = new mongoose.Schema(
     stripeSubscriptionId: {
       type: String,
     },
+    newsletter: {
+      hairTips: {
+        type: Boolean,
+        default: false,
+      },
+      businessGrowth: {
+        type: Boolean,
+        default: false,
+      },
+    },
   },
   { timestamps: true }
 );
+
+// Index for efficient newsletter subscriber queries
+userSchema.index({ 'newsletter.hairTips': 1, role: 1 });
+userSchema.index({ 'newsletter.businessGrowth': 1, role: 1 });
 
 // ✅ Automatically hash password
 userSchema.pre("save", async function (next) {

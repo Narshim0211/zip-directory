@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import api from '../api/axios';
 import FollowButton from './FollowButton';
-import IdentityBadge from './Shared/IdentityBadge';
+import IdentityBadge from './SharedComponents/IdentityBadge';
+import { SurveyEngagementBar } from './engagement';
 import '../styles/surveyCard.css';
 
 const SurveyCard = ({ survey, onVote, showFollow, following, onFollow }) => {
@@ -67,8 +68,10 @@ const SurveyCard = ({ survey, onVote, showFollow, following, onFollow }) => {
           );
         })}
       </div>
+      <SurveyEngagementBar surveyId={surveyId} />
     </div>
   );
 };
 
 export default SurveyCard;
+

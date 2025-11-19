@@ -18,6 +18,7 @@ const ownerItems = [
     ]
   },
   { label: 'Notifications', path: '/owner/notifications' },
+  { label: 'Support & Feedback', path: '/owner/feedback' },
 ];
 
 export default function OwnerSidebar() {

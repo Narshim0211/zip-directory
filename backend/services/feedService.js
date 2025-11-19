@@ -1,6 +1,7 @@
 const Post = require('../models/Post');
 const Survey = require('../models/Survey');
 const Follow = require('../models/Follow');
+const OwnerPost = require('../models/OwnerPost');
 const OwnerProfile = require('../models/OwnerProfile');
 const VisitorProfile = require('../models/VisitorProfile');
 
@@ -159,20 +160,37 @@ exports.getFeedForVisitor = async (userId, options = {}) => {
 };
 
 /**
- * Build unified feed for v1 API (all posts and surveys, sorted by date)
+ * Build unified feed for v1 API with smart ranking
+ * Prioritizes content from followed users
  */
-exports.buildFeed = async ({ limit = 30 }) => {
+exports.buildFeed = async ({ limit = 30, userId = null, userRole = null }) => {
   try {
+    let followedUserIds = [];
+
+    // Get list of users that current user follows
+    if (userId) {
+      if (userRole === 'visitor') {
+        const VisitorFollow = require('../models/VisitorFollow');
+        const follows = await VisitorFollow.find({ followerUserId: userId }).lean();
+        followedUserIds = follows.map(f => String(f.targetId));
+      } else if (userRole === 'owner') {
+        const OwnerFollow = require('../models/OwnerFollow');
+        const follows = await OwnerFollow.find({ followerUserId: userId }).lean();
+        followedUserIds = follows.map(f => String(f.targetOwnerId));
+      }
+    }
+
+    // Fetch all posts and surveys
     const [posts, surveys] = await Promise.all([
       Post.find({ visibleToVisitors: true })
         .populate('author', 'name email avatarUrl role')
         .populate('business', 'name city category businessType')
         .sort({ createdAt: -1 })
-        .limit(limit),
+        .limit(limit * 2), // Fetch more to ensure enough content after filtering
       Survey.find({ visibleToVisitors: true, isActive: true })
         .populate('author', 'name email avatarUrl')
         .sort({ createdAt: -1 })
-        .limit(limit),
+        .limit(limit * 2),
     ]);
 
     let items = [
@@ -180,18 +198,143 @@ exports.buildFeed = async ({ limit = 30 }) => {
       ...surveys.map(mapSurvey),
     ];
 
-    // attach identity objects
+    // Attach identity objects
     items = await attachIdentities(items);
 
-    // Sort by createdAt descending
-    items.sort((a, b) => new Date(b.data.createdAt) - new Date(a.data.createdAt));
+    // Separate followed vs non-followed content
+    const followedItems = [];
+    const otherItems = [];
 
-    return items.slice(0, limit);
+    for (const item of items) {
+      const authorId = String(item.data.author?._id || item.data.author);
+      if (followedUserIds.includes(authorId)) {
+        followedItems.push(item);
+      } else {
+        otherItems.push(item);
+      }
+    }
+
+    // Sort each group by date
+    followedItems.sort((a, b) => new Date(b.data.createdAt) - new Date(a.data.createdAt));
+    otherItems.sort((a, b) => new Date(b.data.createdAt) - new Date(a.data.createdAt));
+
+    // Prioritize followed content first, then others
+    const rankedFeed = [...followedItems, ...otherItems];
+
+    return rankedFeed.slice(0, limit);
   } catch (error) {
     console.error('Build feed error:', error);
     return [];
   }
 };
 
-  // export helper for other controllers to attach identities
-  module.exports.attachIdentities = attachIdentities;
+/**
+ * Build owner-specific feed with role-aware filtering
+ * Owners see:
+ * 1. Posts from followed owners (prioritized)
+ * 2. Surveys from followed owners/visitors (prioritized)
+ * 3. Global owner posts
+ * 4. Global surveys
+ */
+exports.buildOwnerFeed = async ({ limit = 30, userId }) => {
+  try {
+    // Get owners that this owner follows (owners can only follow other owners)
+    const followedOwnerIds = await Follow.find({ 
+      followerId: userId,
+      followerRole: 'owner',
+      followingRole: 'owner'
+    }).distinct('followingId');
+
+    const followedOwnerIdsStr = followedOwnerIds.map(id => String(id));
+
+    // Fetch owner posts (both followed and global)
+    const [followedOwnerPosts, globalOwnerPosts] = await Promise.all([
+      OwnerPost.find({ 
+        ownerId: { $in: followedOwnerIds },
+        visibility: 'public'
+      })
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean(),
+      
+      OwnerPost.find({ 
+        ownerId: { $nin: followedOwnerIds },
+        visibility: 'public'
+      })
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean(),
+    ]);
+
+    // Fetch all surveys (visitors + owners)
+    const allSurveys = await Survey.find({
+      isActive: true,
+      visibility: 'public'
+    })
+      .sort({ createdAt: -1 })
+      .limit(limit * 2)
+      .lean();
+
+    // Separate followed vs non-followed surveys
+    const followedSurveys = [];
+    const globalSurveys = [];
+
+    for (const survey of allSurveys) {
+      const authorId = String(survey.author);
+      if (followedOwnerIdsStr.includes(authorId)) {
+        followedSurveys.push(survey);
+      } else {
+        globalSurveys.push(survey);
+      }
+    }
+
+    // Map to feed item format
+    const followedPostItems = followedOwnerPosts.map(p => ({
+      type: 'post',
+      data: { ...p, author: p.ownerId }
+    }));
+
+    const globalPostItems = globalOwnerPosts.map(p => ({
+      type: 'post',
+      data: { ...p, author: p.ownerId }
+    }));
+
+    const followedSurveyItems = followedSurveys.map(s => ({
+      type: 'survey',
+      data: s
+    }));
+
+    const globalSurveyItems = globalSurveys.map(s => ({
+      type: 'survey',
+      data: s
+    }));
+
+    // Combine: Followed content first, then global
+    let feedItems = [
+      ...followedPostItems,
+      ...followedSurveyItems,
+      ...globalPostItems,
+      ...globalSurveyItems,
+    ];
+
+    // Attach identity objects
+    feedItems = await attachIdentities(feedItems);
+
+    // Sort by date within each priority group, then combine
+    const followed = feedItems.slice(0, followedPostItems.length + followedSurveyItems.length)
+      .sort((a, b) => new Date(b.data.createdAt) - new Date(a.data.createdAt));
+    
+    const global = feedItems.slice(followedPostItems.length + followedSurveyItems.length)
+      .sort((a, b) => new Date(b.data.createdAt) - new Date(a.data.createdAt));
+
+    const rankedFeed = [...followed, ...global];
+
+    return rankedFeed.slice(0, limit);
+  } catch (error) {
+    console.error('Build owner feed error:', error);
+    return [];
+  }
+};
+
+// export helper for other controllers to attach identities
+module.exports.attachIdentities = attachIdentities;

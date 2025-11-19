@@ -313,3 +313,44 @@
 .feed-card:nth-child(3) { animation-delay: 0.1s; }
 .feed-card:nth-child(4) { animation-delay: 0.15s; }
 .feed-card:nth-child(5) { animation-delay: 0.2s; }
+
+/* Floating Action Button (FAB) */
+.fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+  font-size: 32px;
+  font-weight: 300;
+  border: none;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fab:hover {
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6);
+}
+
+.fab:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 768px) {
+  .fab {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 56px;
+    height: 56px;
+    font-size: 28px;
+  }
+}

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api/axios';
-import IdentityBadge from '../components/Shared/IdentityBadge';
+import IdentityBadge from '../components/SharedComponents/IdentityBadge';
 import FollowButton from '../components/FollowButton';
-import ProfileTabs from '../components/Shared/ProfileTabs';
-import AboutCard from '../components/Shared/AboutCard';
+import ProfileTabs from '../components/SharedComponents/ProfileTabs';
+import AboutCard from '../components/SharedComponents/AboutCard';
 import { useAuth } from '../context/AuthContext';
 
 export default function PublicVisitorProfile() {
@@ -136,3 +136,4 @@ export default function PublicVisitorProfile() {
     </div>
   );
 }
+

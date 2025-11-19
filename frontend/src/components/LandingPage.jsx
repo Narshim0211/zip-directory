@@ -1,29 +1,149 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import SearchHero from "./SearchHero";
 import "../styles/HomePage.css";
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const handleSearch = (city, category) => {
+  const [searchParams, setSearchParams] = useState({
+    city: '',
+    zip: '',
+    category: 'All Categories',
+  });
+
+  const categories = [
+    'All Categories',
+    'Salon',
+    'Spa',
+    'Barbershop',
+    'Freelance Stylist',
+  ];
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setSearchParams((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleDirectorySearch = (e) => {
+    e.preventDefault();
+
+    if (!searchParams.city.trim()) {
+      alert('Please enter a city');
+      return;
+    }
+
     const params = new URLSearchParams();
-    if (city) params.set("city", city);
-    if (category) params.set("category", category);
-    navigate(`/explore?${params.toString()}`);
+    params.append('city', searchParams.city.trim());
+    
+    if (searchParams.zip.trim()) {
+      params.append('zip', searchParams.zip.trim());
+    }
+    
+    if (searchParams.category !== 'All Categories') {
+      params.append('category', searchParams.category);
+    }
+
+    navigate(`/directory/search?${params.toString()}`);
   };
 
   return (
     <div className="home-page">
-      <section className="home-hero">
-        <div className="hero-content">
-          <h1>Find the best salons near you</h1>
-          <p>Search by city and category to discover trusted professionals.</p>
-          <SearchHero onSearch={handleSearch} />
-          <div style={{ marginTop: 16 }}>
-            <Link to="/register?role=owner" className="btn add">Join as a Business</Link>
-          </div>
+      {/* Header with Logo */}
+      <header style={{
+        backgroundColor: '#ffffff',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        padding: '16px 5%',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <h1 style={{
+            fontSize: '28px',
+            fontWeight: 800,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            margin: 0,
+            cursor: 'pointer'
+          }}>
+            SalonHub
+          </h1>
         </div>
-      </section>
+      </header>
+
+      {/* Directory Search Section */}
+      <div className="directory-landing__hero" style={{ padding: '60px 5%', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+        <h1 className="directory-landing__title" style={{ color: '#fff', textAlign: 'center', fontSize: '42px', marginBottom: '16px' }}>
+          Find Your Perfect Salon or Spa
+        </h1>
+        <p className="directory-landing__subtitle" style={{ color: 'rgba(255,255,255,0.9)', textAlign: 'center', fontSize: '18px', marginBottom: '40px' }}>
+          Discover salons, spas, and stylists near you
+        </p>
+
+        <form className="directory-search-form" onSubmit={handleDirectorySearch} style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div className="directory-search-form__fields" style={{ display: 'flex', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            <div className="directory-search-form__field" style={{ flex: '1 1 200px' }}>
+              <label htmlFor="city" style={{ display: 'block', color: '#fff', marginBottom: '8px', fontWeight: 600 }}>City *</label>
+              <input
+                type="text"
+                id="city"
+                name="city"
+                placeholder="Enter city"
+                value={searchParams.city}
+                onChange={handleInputChange}
+                required
+                style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', fontSize: '16px' }}
+              />
+            </div>
+
+            <div className="directory-search-form__field" style={{ flex: '1 1 200px' }}>
+              <label htmlFor="zip" style={{ display: 'block', color: '#fff', marginBottom: '8px', fontWeight: 600 }}>ZIP Code</label>
+              <input
+                type="text"
+                id="zip"
+                name="zip"
+                placeholder="Enter ZIP"
+                value={searchParams.zip}
+                onChange={handleInputChange}
+                maxLength="5"
+                style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', fontSize: '16px' }}
+              />
+            </div>
+
+            <div className="directory-search-form__field" style={{ flex: '1 1 200px' }}>
+              <label htmlFor="category" style={{ display: 'block', color: '#fff', marginBottom: '8px', fontWeight: 600 }}>Category</label>
+              <select
+                id="category"
+                name="category"
+                value={searchParams.category}
+                onChange={handleInputChange}
+                style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', fontSize: '16px' }}
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" className="directory-search-form__button" style={{ width: '100%', padding: '16px', background: '#fff', color: '#667eea', border: 'none', borderRadius: '8px', fontSize: '18px', fontWeight: 700, cursor: 'pointer' }}>
+            Search Businesses
+          </button>
+        </form>
+      </div>
 
       {/* Per PRD: no News Feed on Landing */}
 

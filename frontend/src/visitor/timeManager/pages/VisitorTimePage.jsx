@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import ErrorBoundary from '../../../shared/timeManager/components/ErrorBoundary';
-import TaskCard from '../../../shared/timeManager/components/TaskCard';
+import ErrorBoundary from '../../../SharedComponents/timeManager/components/ErrorBoundary';
+import TaskCard from '../../../SharedComponents/timeManager/components/TaskCard';
 import useVisitorPlanner from '../hooks/useVisitorPlanner';
 import './VisitorTimePage.css';
 
@@ -340,3 +340,4 @@ const VisitorTimePage = () => {
 };
 
 export default VisitorTimePage;
+

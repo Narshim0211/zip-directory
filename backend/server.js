@@ -63,9 +63,28 @@ mongoose
   .then(() => {
     logger.info('MongoDB connected');
     
-    // Start reminder scheduler after DB connection
-    const { startReminderScheduler } = require('./services/reminderScheduler');
-    startReminderScheduler();
+    // Start reminder schedulers after DB connection (wrapped in try-catch)
+    try {
+      const { startVisitorReminderCron } = require('./visitor/time/cron/reminderCron');
+      const { startOwnerReminderCron } = require('./owner/time/cron/reminderCron');
+      
+      startVisitorReminderCron();
+      startOwnerReminderCron();
+      logger.info('Reminder schedulers started');
+    } catch (err) {
+      logger.warn('Reminder schedulers failed to start:', err.message);
+    }
+    
+    // Verify email service configuration (non-blocking, suppressed)
+    try {
+      const { verifyEmailService } = require('./services/emailService');
+      verifyEmailService().catch(err => {
+        // Silently log - don't let this crash the server
+        logger.warn('Email service verification skipped (non-critical)');
+      });
+    } catch (err) {
+      logger.warn('Email service initialization skipped');
+    }
   })
   .catch((err) => logger.error(`MongoDB connection error: ${err.message}`));
 
@@ -103,6 +122,9 @@ app.use('/api/feed', feedRoutes);
 const v1FeedRoutes = require('./routes/v1/feedRoutes');
 app.use('/api/v1/feed', v1FeedRoutes);
 
+const v1UserRoutes = require('./routes/v1/userRoutes');
+app.use('/api/v1/users', v1UserRoutes);
+
 const v1VisitorSurveyRoutes = require('./routes/v1/visitor/surveyRoutes');
 app.use('/api/v1/visitor/surveys', v1VisitorSurveyRoutes);
 
@@ -112,6 +134,9 @@ app.use('/api/v1/owner/surveys', v1OwnerSurveyRoutes);
 const v1OwnerPostRoutes = require('./routes/v1/owner/postRoutes');
 app.use('/api/v1/owner/posts', v1OwnerPostRoutes);
 
+const v1OwnerFollowRoutes = require('./routes/v1/owner/followRoutes');
+app.use('/api/v1/owner/follow', v1OwnerFollowRoutes);
+
 // V1 owner profiles (public + owner)
 const v1OwnerProfilesRoutes = require('./routes/v1/ownerProfiles.routes');
 app.use('/api/v1/owner-profiles', v1OwnerProfilesRoutes);
@@ -119,6 +144,16 @@ app.use('/api/v1/owner-profiles', v1OwnerProfilesRoutes);
 // V1 visitor profiles
 const v1VisitorProfilesRoutes = require('./routes/v1/visitorProfiles.routes');
 app.use('/api/v1/visitor-profiles', v1VisitorProfilesRoutes);
+
+// V1 Analytics (Engagement Metrics System)
+const analyticsRoutes = require('./modules/analytics');
+app.use('/api/v1/analytics', analyticsRoutes);
+
+// Directory Routes (Public Soft Profiles + Visitor Full Profiles)
+const publicDirectoryRoutes = require('./routes/directory/publicDirectory.routes');
+const visitorBusinessRoutes = require('./routes/directory/visitorBusiness.routes');
+app.use('/api/public/directory', publicDirectoryRoutes);
+app.use('/api/visitor/business', visitorBusinessRoutes);
 
 // V2 API routes (Facebook-style profiles)
 const v2OwnerProfilesRoutes = require('./routes/v2/ownerProfiles.routes');
@@ -165,9 +200,6 @@ app.use('/api/profile', profileResolverRoutes);
 // Posts & Comments
 const postRoutes = require('./routes/postRoutes');
 app.use('/api/posts', postRoutes);
-
-const analyticsRoutes = require('./routes/analyticsRoutes');
-app.use('/api/analytics', analyticsRoutes);
 
 // Goals
 const goalsRoutes = require('./routes/goalsRoutes');
@@ -220,13 +252,6 @@ const { timeProxy } = require('./middleWare/timeProxy');
 app.use('/api/visitor/time', timeProxy('/visitor/time'));
 app.use('/api/owner/time', timeProxy('/owner/time'));
 
-// Import reminder cron functions before calling them
-const { startVisitorReminderCron } = require('./visitor/time/cron/reminderCron');
-const { startOwnerReminderCron } = require('./owner/time/cron/reminderCron');
-
-startVisitorReminderCron();
-startOwnerReminderCron();
-
 // Notifications
 const { initNotificationSocket } = require('./services/notificationSocket');
 const notificationRoutes = require('./routes/notificationRoutes');
@@ -243,6 +268,30 @@ app.use('/api/booking-service', bookingProxyRoutes);
 
 const paymentProxyRoutes = require('./routes/paymentProxyRoutes');
 app.use('/api/payment-service', paymentProxyRoutes);
+
+// Feedback Routes (Visitor, Owner, Admin)
+const visitorFeedbackRoutes = require('./routes/visitor/feedbackRoutes');
+app.use('/api/visitor/feedback', visitorFeedbackRoutes);
+
+const ownerFeedbackRoutes = require('./routes/owner/feedbackRoutes');
+app.use('/api/owner/feedback', ownerFeedbackRoutes);
+
+const adminFeedbackRoutes = require('./routes/admin/feedbackRoutes');
+app.use('/api/admin/feedback', adminFeedbackRoutes);
+
+// Newsletter Routes (Visitor, Owner, Admin)
+const visitorNewsletterRoutes = require('./routes/visitor/newsletterRoutes');
+app.use('/api/visitor/newsletter', visitorNewsletterRoutes);
+
+const ownerNewsletterRoutes = require('./routes/owner/newsletterRoutes');
+app.use('/api/owner/newsletter', ownerNewsletterRoutes);
+
+const adminNewsletterRoutes = require('./routes/admin/newsletterRoutes');
+app.use('/api/admin/newsletters', adminNewsletterRoutes);
+
+// Public Newsletter Routes (no authentication required - unsubscribe)
+const publicNewsletterRoutes = require('./routes/publicRoutes');
+app.use('/api/newsletter', publicNewsletterRoutes);
 
 // Dev-only: Seed an admin user if missing
 if (process.env.NODE_ENV !== 'production') {
@@ -283,48 +332,58 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-
-// Start server (export app for Vercel serverless)
-const PORT = Number(process.env.PORT || 5000);
-if (process.env.VERCEL) {
-  module.exports = app; // Vercel will handle the serverless function
-} else {
-const createServerInstance = () => {
-  const server = http.createServer(app);
-  initNotificationSocket(server, rawOrigins);
-  return server;
-};
-
-const startServer = async (port) => {
-  const freePort = await detectPort(port);
-  if (freePort !== port) {
-    logger.warn(`Port ${port} already in use, switching to ${freePort}.`);
-  }
-
-  const server = createServerInstance();
-  const handleError = (err) => {
-    if (err.code === "EADDRINUSE") {
-      logger.error(`Port ${freePort} became unavailable.`);
-    } else {
-      logger.error("Unexpected server error", err);
-    }
-    process.exit(1);
-  };
-
-  server.once("error", handleError);
-  server.listen(freePort, () => {
-    server.off("error", handleError);
-    logger.info(`Server running on http://localhost:${freePort}`);
-  });
-};
-
-startServer(PORT);
-}
-
 // 404 Handler - Must be after all routes but before error handler
 const { notFoundHandler, errorHandler: globalErrorHandler } = require('./utils/errorHandler');
 app.use(notFoundHandler);
 
 // Global error handler (must be last)
 app.use(globalErrorHandler);
+
+// Start server (export app for Vercel serverless)
+const PORT = Number(process.env.PORT || 5000);
+if (process.env.VERCEL) {
+  module.exports = app; // Vercel will handle the serverless function
+} else {
+  const createServerInstance = () => {
+    const server = http.createServer(app);
+    initNotificationSocket(server, rawOrigins);
+    return server;
+  };
+
+  const startServer = async (port) => {
+    const freePort = await detectPort(port);
+    if (freePort !== port) {
+      logger.warn(`Port ${port} already in use, switching to ${freePort}.`);
+    }
+
+    const server = createServerInstance();
+    const handleError = (err) => {
+      if (err.code === "EADDRINUSE") {
+        logger.error(`Port ${freePort} became unavailable.`);
+      } else {
+        logger.error("Unexpected server error", err);
+      }
+      process.exit(1);
+    };
+
+    server.once("error", handleError);
+    server.listen(freePort, () => {
+      server.off("error", handleError);
+      logger.info(`Server running on http://localhost:${freePort}`);
+    });
+  };
+
+  startServer(PORT);
+}
+
+// Global process error handlers
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit the process - just log the error
+});
+
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', error);
+  // Don't exit the process - just log the error
+});
 

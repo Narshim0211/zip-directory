@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import IdentityBadge from "../../components/Shared/IdentityBadge";
+import IdentityBadge from "../../components/SharedComponents/IdentityBadge";
 import FollowButton from "../../components/FollowButton";
 import v1Client from "../../api/v1";
 

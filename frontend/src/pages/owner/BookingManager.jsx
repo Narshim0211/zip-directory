@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Navigate } from 'react-router-dom';
-import ErrorBoundary from '../../components/Shared/ErrorBoundary';
+import ErrorBoundary from '../../components/SharedComponents/ErrorBoundary';
 import bookingService from '../../api/bookingService';
 import ServiceModal from '../../components/booking/ServiceModal';
 import StaffModal from '../../components/booking/StaffModal';
@@ -707,3 +707,4 @@ const StaffCard = ({ staff, onEdit, onDelete }) => (
 );
 
 export default BookingManager;
+

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import SurveyCard from "./SurveyCard";
 import SurveyCreateForm from "./SurveyCreateForm";
-import ErrorBoundary from "./Shared/ErrorBoundary";
+import ErrorBoundary from "./SharedComponents/ErrorBoundary";
 import { fetchSurveysFeed } from "../api/surveys";
 import visitorApi from "../api/visitor";
 import "../styles/surveysPage.css";
@@ -159,3 +159,4 @@ const SurveysPage = () => {
 };
 
 export default SurveysPage;
+

@@ -40,4 +40,20 @@ const adminOnly = (req, res, next) => {
   }
 };
 
-module.exports = { protect, adminOnly };
+const visitorOnly = (req, res, next) => {
+  if (req.user && req.user.role === "visitor") {
+    next();
+  } else {
+    res.status(403).json({ message: "Access denied: Visitors only" });
+  }
+};
+
+const ownerOnly = (req, res, next) => {
+  if (req.user && req.user.role === "owner") {
+    next();
+  } else {
+    res.status(403).json({ message: "Access denied: Business owners only" });
+  }
+};
+
+module.exports = { protect, adminOnly, visitorOnly, ownerOnly };

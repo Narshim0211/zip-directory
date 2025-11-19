@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import SurveyCreateForm from "./SurveyCreateForm";
 import SurveyCard from "./SurveyCard";
-import ErrorBoundary from "./Shared/ErrorBoundary";
+import ErrorBoundary from "./SharedComponents/ErrorBoundary";
 import ownerApi from "../api/owner";
 import "../styles/ownerSurveysPage.css";
 
@@ -95,3 +95,4 @@ const OwnerSurveysPage = () => {
 };
 
 export default OwnerSurveysPage;
+

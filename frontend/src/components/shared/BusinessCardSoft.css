@@ -1,0 +1,116 @@
+/* Business Card Soft Profile Styles */
+.business-card-soft {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+}
+
+.business-card-soft:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.business-card-soft__image {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.business-card-soft__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.business-card-soft__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(102, 126, 234, 0.95);
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.business-card-soft__content {
+  padding: 20px;
+}
+
+.business-card-soft__name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.business-card-soft__location {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9375rem;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+.location-icon {
+  font-size: 1rem;
+}
+
+.business-card-soft__category {
+  margin-bottom: 16px;
+}
+
+.category-badge {
+  display: inline-block;
+  background: #f3f4f6;
+  color: #374151;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.business-card-soft__cta {
+  width: 100%;
+  padding: 12px;
+  background: #667eea;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.business-card-soft__cta:hover {
+  background: #5568d3;
+}
+
+.business-card-soft__cta:active {
+  transform: scale(0.98);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .business-card-soft__image {
+    height: 180px;
+  }
+
+  .business-card-soft__content {
+    padding: 16px;
+  }
+
+  .business-card-soft__name {
+    font-size: 1.125rem;
+  }
+}

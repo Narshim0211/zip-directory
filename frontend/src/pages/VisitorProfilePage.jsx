@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import ProfileHeader from '../components/Shared/ProfileHeader';
-import ProfileTabs from '../components/Shared/ProfileTabs';
-import ProfileFeed from '../components/Shared/ProfileFeed';
-import CreateSection from '../components/Shared/CreateSection';
-import AboutCard from '../components/Shared/AboutCard';
-import ErrorBoundary from '../components/Shared/ErrorBoundary';
+import ProfileHeader from '../components/SharedComponents/ProfileHeader';
+import ProfileTabs from '../components/SharedComponents/ProfileTabs';
+import ProfileFeed from '../components/SharedComponents/ProfileFeed';
+import CreateSection from '../components/SharedComponents/CreateSection';
+import AboutCard from '../components/SharedComponents/AboutCard';
+import ErrorBoundary from '../components/SharedComponents/ErrorBoundary';
 import '../styles/designSystem.css';
 
 /**
@@ -200,3 +200,4 @@ const VisitorProfilePage = () => {
 };
 
 export default VisitorProfilePage;
+

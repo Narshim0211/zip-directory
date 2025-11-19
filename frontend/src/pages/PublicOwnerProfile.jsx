@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
-import IdentityBadge from '../components/Shared/IdentityBadge';
+import IdentityBadge from '../components/SharedComponents/IdentityBadge';
 import FollowButton from '../components/FollowButton';
 import PostCard from '../components/PostCard';
-import ProfileTabs from '../components/Shared/ProfileTabs';
-import AboutCard from '../components/Shared/AboutCard';
+import ProfileTabs from '../components/SharedComponents/ProfileTabs';
+import AboutCard from '../components/SharedComponents/AboutCard';
 import { useAuth } from '../context/AuthContext';
 
 export default function PublicOwnerProfile() {
@@ -168,3 +168,4 @@ export default function PublicOwnerProfile() {
     </div>
   );
 }
+

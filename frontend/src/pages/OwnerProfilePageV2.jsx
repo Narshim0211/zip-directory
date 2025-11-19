@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import ProfileHeader from '../components/Shared/ProfileHeader';
-import ProfileTabs from '../components/Shared/ProfileTabs';
-import ProfileFeed from '../components/Shared/ProfileFeed';
-import CreateSection from '../components/Shared/CreateSection';
-import AboutCard from '../components/Shared/AboutCard';
-import ErrorBoundary from '../components/Shared/ErrorBoundary';
+import ProfileHeader from '../components/SharedComponents/ProfileHeader';
+import ProfileTabs from '../components/SharedComponents/ProfileTabs';
+import ProfileFeed from '../components/SharedComponents/ProfileFeed';
+import CreateSection from '../components/SharedComponents/CreateSection';
+import AboutCard from '../components/SharedComponents/AboutCard';
+import ErrorBoundary from '../components/SharedComponents/ErrorBoundary';
+import { ProfileInsightBar } from '../components/engagement';
+import v1Client from '../api/v1';
 import '../styles/designSystem.css';
 
 const API_BASE = '/api/v2/owner-profiles';
@@ -23,6 +25,7 @@ const OwnerProfilePageV2 = () => {
   const [feedLoading, setFeedLoading] = useState(false);
   const [nextCursor, setNextCursor] = useState(null);
   const [featuredBusinesses, setFeaturedBusinesses] = useState([]);
+  const [followStats, setFollowStats] = useState({ followers: 0, following: 0 });
 
   // Check if viewing own profile by /me route
   const viewingOwnProfile = slug === 'me';
@@ -46,11 +49,31 @@ const OwnerProfilePageV2 = () => {
         // Check follow status if not own profile
         if (!viewingOwnProfile && user && String(user._id) !== String(data.userId)) {
           try {
-            const { data: followData } = await axios.get(`${API_BASE}/${data._id}/is-following`);
-            setIsFollowing(followData.following);
+            // Use new owner follow system if current user is owner
+            if (user.role === 'owner') {
+              const followData = await v1Client.owner.checkFollowStatus(data.userId);
+              setIsFollowing(followData.isFollowing);
+            } else {
+              // Visitor checking owner profile - use profile API
+              const { data: followData } = await axios.get(`${API_BASE}/${data._id}/is-following`);
+              setIsFollowing(followData.following);
+            }
           } catch (err) {
             console.error('Failed to check follow status:', err);
           }
+        }
+
+        // Fetch follower/following stats from OwnerProfile
+        try {
+          // Get followers count (owners following this owner)
+          const followersData = await v1Client.owner.getFollowers({ limit: 1 });
+          const followingData = await v1Client.owner.getFollowing({ limit: 1 });
+          setFollowStats({
+            followers: followersData.total || 0,
+            following: followingData.total || 0
+          });
+        } catch (err) {
+          console.error('Failed to fetch follow stats:', err);
         }
       } catch (error) {
         console.error('Failed to load profile:', error);
@@ -116,8 +139,15 @@ const OwnerProfilePageV2 = () => {
   // Follow/Unfollow handlers
   const handleFollow = async () => {
     try {
-      await axios.post(`${API_BASE}/${profile._id}/follow`);
+      // Use new owner follow system if current user is owner
+      if (user?.role === 'owner') {
+        await v1Client.owner.followOwner(profile.userId);
+      } else {
+        // Visitor following owner - use profile API
+        await axios.post(`${API_BASE}/${profile._id}/follow`);
+      }
       setIsFollowing(true);
+      setFollowStats(prev => ({ ...prev, followers: prev.followers + 1 }));
       setProfile(prev => ({
         ...prev,
         counts: { ...prev.counts, followers: (prev.counts?.followers || 0) + 1 }
@@ -129,8 +159,15 @@ const OwnerProfilePageV2 = () => {
 
   const handleUnfollow = async () => {
     try {
-      await axios.delete(`${API_BASE}/${profile._id}/follow`);
+      // Use new owner follow system if current user is owner
+      if (user?.role === 'owner') {
+        await v1Client.owner.unfollowOwner(profile.userId);
+      } else {
+        // Visitor unfollowing owner - use profile API
+        await axios.delete(`${API_BASE}/${profile._id}/follow`);
+      }
       setIsFollowing(false);
+      setFollowStats(prev => ({ ...prev, followers: Math.max(prev.followers - 1, 0) }));
       setProfile(prev => ({
         ...prev,
         counts: { ...prev.counts, followers: Math.max((prev.counts?.followers || 0) - 1, 0) }
@@ -192,7 +229,7 @@ const OwnerProfilePageV2 = () => {
     <div className="profile-page">
       <ErrorBoundary>
         <ProfileHeader
-          profile={profile}
+          profile={{ ...profile, followStats }}
           role="owner"
           isOwnProfile={isOwnProfile}
           isFollowing={isFollowing}
@@ -215,6 +252,9 @@ const OwnerProfilePageV2 = () => {
               role="owner"
               businesses={featuredBusinesses}
             />
+            {!isOwnProfile && profile?.userId && (
+              <ProfileInsightBar ownerId={profile.userId} />
+            )}
           </div>
         </ErrorBoundary>
       ) : (
@@ -244,3 +284,4 @@ const OwnerProfilePageV2 = () => {
 };
 
 export default OwnerProfilePageV2;
+

@@ -1,5 +1,5 @@
 import React from "react";
-import IdentityBadge from "../../components/Shared/IdentityBadge";
+import IdentityBadge from "../../components/SharedComponents/IdentityBadge";
 import FollowButton from "../../components/FollowButton";
 
 export default function FeedPostCard({ post, followingOwners = [] }) {
@@ -25,3 +25,4 @@ export default function FeedPostCard({ post, followingOwners = [] }) {
     </article>
   );
 }
+

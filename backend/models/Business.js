@@ -177,4 +177,71 @@ businessSchema.virtual("reviews", {
   foreignField: "business",
 });
 
+/**
+ * 🌍 UNIVERSAL BEHAVIOR ENFORCEMENT
+ * 
+ * These helper methods ensure ALL businesses in the directory follow
+ * the same access rules:
+ * - Soft profiles: Public, no auth required, limited data
+ * - Full profiles: Auth required, complete data (excluding owner-only fields)
+ * 
+ * NO per-business custom logic or exceptions unless explicitly flagged
+ * in future versions.
+ */
+
+/**
+ * Returns soft profile data (public, non-sensitive fields only)
+ * Used by: /api/public/directory/search
+ * Access: Public (no authentication)
+ * 
+ * @returns {Object} Soft profile with name, city, category, image, location
+ */
+businessSchema.methods.toSoftProfileJSON = function() {
+  return {
+    id: this._id,
+    name: this.name,
+    city: this.city,
+    zip: this.zip,
+    category: this.category,
+    heroImage: this.coverPhotoUrl || this.logoUrl || '',
+    location: this.location
+  };
+};
+
+/**
+ * Returns full profile data (all visitor-safe fields)
+ * Used by: /api/visitor/business/:id/full
+ * Access: Private (authenticated visitors only)
+ * 
+ * @returns {Object} Full profile with contact info, services, hours, etc.
+ */
+businessSchema.methods.toFullProfileJSON = function() {
+  return {
+    id: this._id,
+    name: this.name,
+    city: this.city,
+    state: this.state,
+    zip: this.zip,
+    address: this.address,
+    category: this.category,
+    businessType: this.businessType,
+    description: this.description,
+    images: this.images || [],
+    logoUrl: this.logoUrl,
+    coverPhotoUrl: this.coverPhotoUrl,
+    services: this.services || [],
+    specialties: this.specialties || [],
+    location: this.location,
+    phone: this.phone || '',
+    email: this.email || '',
+    website: this.website || '',
+    socialLinks: this.socialLinks || {},
+    hours: this.hours || {},
+    ratingAverage: this.ratingAverage || 0,
+    ratingsCount: this.ratingsCount || 0,
+    createdAt: this.createdAt,
+    updatedAt: this.updatedAt
+  };
+};
+
 module.exports = mongoose.model("Business", businessSchema);

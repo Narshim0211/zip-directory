@@ -11,6 +11,7 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('visitor');
+  const [newsletterOptIn, setNewsletterOptIn] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,10 +30,10 @@ const Register = () => {
       // Debug logs to surface why submission might fail before network
       // (Check DevTools Console for these entries)
       // eslint-disable-next-line no-console
-      console.log('Register submit payload', { firstName, lastName, email, role });
+      console.log('Register submit payload', { firstName, lastName, email, role, newsletterOptIn });
       // eslint-disable-next-line no-console
       console.log('useAuth.register type', typeof register);
-      const data = await register({ firstName, lastName, email, password, role });
+      const data = await register({ firstName, lastName, email, password, role, newsletterOptIn });
       if (data.role === 'admin') navigate('/admin');
       else if (data.role === 'owner') navigate('/dashboard/owner');
       else navigate('/visitor/home');
@@ -117,6 +118,52 @@ const Register = () => {
           <option value="visitor">Visitor</option>
           <option value="owner">Owner</option>
         </select>
+      </div>
+
+      <div className="auth-field" style={{ marginTop: '1rem' }}>
+        <label style={{ 
+          display: 'flex', 
+          alignItems: 'flex-start', 
+          cursor: 'pointer',
+          fontSize: '0.95rem',
+          fontWeight: 'normal'
+        }}>
+          <input
+            type="checkbox"
+            checked={newsletterOptIn}
+            onChange={(e) => setNewsletterOptIn(e.target.checked)}
+            style={{ 
+              marginRight: '0.75rem', 
+              marginTop: '0.25rem',
+              cursor: 'pointer',
+              width: '18px',
+              height: '18px'
+            }}
+          />
+          <span>
+            {role === 'visitor' ? (
+              <>
+                <strong>Stay Inspired</strong>
+                <br />
+                <span style={{ fontSize: '0.875rem', color: '#666' }}>
+                  Send me hair care tips and glow-up guides (1–2 emails per month)
+                </span>
+              </>
+            ) : (
+              <>
+                <strong>Grow Your Salon</strong>
+                <br />
+                <span style={{ fontSize: '0.875rem', color: '#666' }}>
+                  Send me business growth tips and platform updates (1–2 emails per month)
+                </span>
+              </>
+            )}
+            <br />
+            <span style={{ fontSize: '0.8rem', color: '#888', fontStyle: 'italic' }}>
+              No spam. Unsubscribe anytime from your profile.
+            </span>
+          </span>
+        </label>
       </div>
     </AuthForm>
   );

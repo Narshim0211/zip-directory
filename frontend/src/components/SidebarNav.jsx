@@ -8,6 +8,7 @@ const navItems = [
   { label: "Survey", path: "/visitor/surveys", icon: "S" },
   { label: "Notifications", path: "/visitor/notifications", icon: "N" },
   { label: "My Toolkit", path: "/visitor/toolkit", icon: "T" },
+  { label: "Feedback", path: "/visitor/feedback", icon: "💬" },
   { label: "Profile", path: "/visitor/profile", icon: "P" },
 ];
 

@@ -20,6 +20,7 @@ import HairGoalsJourneyDetailPage from "./features/toolkit/pages/HairGoalsJourne
 import TimeManagerToolkitPage from "./features/toolkit/pages/TimeManagerToolkitPage";
 import VisitorProfileEditPage from "./visitor/pages/VisitorProfileEditPage";
 import VisitorHome from "./visitor/pages/VisitorHome";
+import VisitorFeedback from "./visitor/pages/VisitorFeedback";
 import NewsList from "./components/NewsList";
 import NewsDetail from "./components/NewsDetail";
 import RecentActivity from "./components/RecentActivity";
@@ -28,6 +29,7 @@ import VisitorSurveys from "./visitor/pages/VisitorSurveys";
 import OwnerLayout from "./layouts/OwnerLayout";
 import VisitorLayout from "./visitor/layouts/VisitorLayout";
 import Dashboard from "./pages/owner/Dashboard";
+import OwnerHome from "./pages/owner/OwnerHome";
 import MyBusiness from "./pages/owner/MyBusiness";
 import ExploreOwner from "./pages/owner/ExploreOwner";
 import Surveys from "./pages/owner/Surveys";
@@ -36,10 +38,12 @@ import PublicLayout from "./layouts/PublicLayout";
 import PublicOwnerProfile from "./pages/PublicOwnerProfile";
 import OwnerProfilePageV2 from "./pages/OwnerProfilePageV2";
 import EditOwnerProfile from "./pages/EditOwnerProfile";
+import DirectorySearchResults from "./pages/public/DirectorySearchResults";
+import VisitorBusinessProfile from "./pages/visitor/BusinessProfile";
 import PublicVisitorProfile from "./pages/PublicVisitorProfile";
 import VisitorProfilePageV2 from "./pages/VisitorProfilePageV2";
 import VisitorProfilePage from "./pages/VisitorProfilePage";
-import ErrorBoundary from "./components/Shared/ErrorBoundary";
+import ErrorBoundary from './components/SharedComponents/ErrorBoundary';
 import "./App.css";
 import TimeManagerPage from "./features/timeManager/pages/TimeManagerPage";
 import TimeManagerOwnerPage from "./features/timeManager/pages/owner/TimeManagerOwnerPage";
@@ -47,15 +51,18 @@ import OwnerProfilePage from "./pages/owner/Profile";
 import BookingPublicProfile from "./pages/owner/BookingPublicProfile";
 import OwnerBookingManager from "./pages/owner/BookingManager";
 import StaffManagement from "./pages/owner/StaffManagement";
+import OwnerFeedback from "./pages/owner/OwnerFeedback";
 import PublicProfile from "./pages/PublicProfile";
 import PublicBooking from "./pages/PublicBooking";
 import MicroservicesRoutes from "./routes/MicroservicesRoutes";
+import VisitorNewsletterSettings from "./visitor/pages/VisitorNewsletterSettings";
+import OwnerNewsletterSettings from "./pages/owner/OwnerNewsletterSettings";
 
 const LandingOrRedirect = () => {
   const { user } = useAuth();
   if (!user) return <LandingPage />;
   if (user.role === "visitor") return <Navigate to="/visitor/home" replace />;
-  if (user.role === "owner") return <Navigate to="/owner/dashboard" replace />;
+  if (user.role === "owner") return <Navigate to="/owner/home" replace />;
   if (user.role === "admin") return <Navigate to="/admin" replace />;
   return <LandingPage />;
 };
@@ -80,6 +87,9 @@ function Frame() {
           {/* Public Booking Profile & Booking Pages */}
           <Route path="/profile/:slug" element={<PublicProfile />} />
           <Route path="/book/:slug" element={<PublicBooking />} />
+          
+          {/* Public Directory Search Results (Search form is on landing page) */}
+          <Route path="/directory/search" element={<DirectorySearchResults />} />
         </Route>
 
         <Route path="/profile" element={<Navigate to="/visitor/profile" replace />} />
@@ -98,8 +108,11 @@ function Frame() {
           <Route index element={<VisitorHome />} />
           <Route path="home" element={<VisitorHome />} />
           <Route path="explore" element={<VisitorPage />} />
+          <Route path="business/:id" element={<VisitorBusinessProfile />} />
           <Route path="surveys" element={<VisitorSurveys />} />
           <Route path="notifications" element={<VisitorNotifications />} />
+          <Route path="feedback" element={<VisitorFeedback />} />
+          <Route path="settings/newsletter" element={<VisitorNewsletterSettings />} />
             <Route path="toolkit">
               <Route index element={<ToolkitPage />} />
               <Route path="time/*" element={<TimeManagerToolkitPage />} />
@@ -127,7 +140,8 @@ function Frame() {
             </ErrorBoundary>
           }
         >
-          <Route index element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
+          <Route index element={<ErrorBoundary><OwnerHome /></ErrorBoundary>} />
+          <Route path="home" element={<ErrorBoundary><OwnerHome /></ErrorBoundary>} />
           <Route path="dashboard" element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
           <Route path="my-business" element={<ErrorBoundary><MyBusiness /></ErrorBoundary>} />
           <Route path="explore" element={<ErrorBoundary><ExploreOwner /></ErrorBoundary>} />
@@ -138,6 +152,8 @@ function Frame() {
           <Route path="booking/staff" element={<ErrorBoundary><StaffManagement /></ErrorBoundary>} />
           <Route path="time/*" element={<ErrorBoundary><TimeManagerOwnerPage /></ErrorBoundary>} />
           <Route path="booking" element={<ErrorBoundary><OwnerBookingManager /></ErrorBoundary>} />
+          <Route path="feedback" element={<ErrorBoundary><OwnerFeedback /></ErrorBoundary>} />
+          <Route path="settings/newsletter" element={<ErrorBoundary><OwnerNewsletterSettings /></ErrorBoundary>} />
         </Route>
 
         <Route path="/admin" element={<ProtectedRoute roles={["admin"]} element={<AdminDashboard />} />} />

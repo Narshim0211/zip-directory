@@ -1,0 +1,146 @@
+/**
+ * Profile Insight Bar Styles
+ * Clean, minimal, X/Twitter-inspired analytics display
+ */
+
+.profile-insight-bar {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-insight-bar.loading,
+.profile-insight-bar.error {
+  background: #f8f9fa;
+  text-align: center;
+  padding: 15px;
+}
+
+.insight-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.insight-icon {
+  font-size: 20px;
+}
+
+.insight-title {
+  flex: 1;
+}
+
+.insight-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.metric {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.metric:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.metric-icon {
+  font-size: 24px;
+  min-width: 32px;
+  text-align: center;
+}
+
+.metric-label {
+  flex: 1;
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+}
+
+.metric-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #667eea;
+  min-width: 50px;
+  text-align: right;
+}
+
+.metric.secondary {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.metric.secondary .metric-label {
+  font-size: 13px;
+  color: #777;
+}
+
+.metric.secondary .metric-value {
+  font-size: 16px;
+  color: #999;
+}
+
+.insight-loading,
+.insight-error {
+  color: #666;
+  font-size: 14px;
+  padding: 10px;
+}
+
+.insight-error {
+  color: #e74c3c;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-insight-bar {
+    padding: 16px;
+    margin: 16px 0;
+  }
+
+  .metric {
+    padding: 10px 12px;
+  }
+
+  .metric-label {
+    font-size: 13px;
+  }
+
+  .metric-value {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .metric {
+    flex-wrap: wrap;
+  }
+
+  .metric-icon {
+    font-size: 20px;
+  }
+
+  .metric-label {
+    flex: 1 1 100%;
+    order: 1;
+  }
+
+  .metric-value {
+    order: 2;
+    margin-left: auto;
+  }
+}

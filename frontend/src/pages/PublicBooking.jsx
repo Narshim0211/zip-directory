@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
-import ErrorBoundary from '../components/Shared/ErrorBoundary';
+import ErrorBoundary from '../components/SharedComponents/ErrorBoundary';
 import '../styles/publicBooking.css';
 
 function PublicBooking() {
@@ -610,3 +610,4 @@ export default function PublicBookingWithErrorBoundary(props) {
     </ErrorBoundary>
   );
 }
+

@@ -18,23 +18,28 @@ const ProfileHeader = ({
     bio,
     followersCount = 0,
     followingCount = 0,
-    counts = {}
+    counts = {},
+    followStats = null
   } = profile;
 
   const fullName = `${firstName} ${lastName}`;
   const displayHandle = handle ? `@${handle}` : '';
 
+  // Use followStats if provided (from v1 API), otherwise fall back to profile counts
+  const effectiveFollowers = followStats?.followers ?? (counts.followers || followersCount);
+  const effectiveFollowing = followStats?.following ?? (counts.following || followingCount);
+
   // Stats based on role
   const stats = role === 'owner'
     ? [
-        { label: 'Followers', value: counts.followers || followersCount },
-        { label: 'Following', value: counts.following || followingCount },
+        { label: 'Followers', value: effectiveFollowers },
+        { label: 'Following', value: effectiveFollowing },
         { label: 'Posts', value: counts.posts || 0 },
         { label: 'Surveys', value: counts.surveys || 0 }
       ]
     : [
-        { label: 'Followers', value: followersCount },
-        { label: 'Following', value: followingCount },
+        { label: 'Followers', value: effectiveFollowers },
+        { label: 'Following', value: effectiveFollowing },
         { label: 'Surveys', value: profile.surveysCount || 0 }
       ];
 
