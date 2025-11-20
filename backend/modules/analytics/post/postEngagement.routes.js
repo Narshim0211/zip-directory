@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const postController = require('./postEngagement.controller');
+const { protect } = require('../../../middleWare/authMiddleware');
 
 /**
  * Post Engagement Routes
@@ -12,7 +13,7 @@ const postController = require('./postEngagement.controller');
 router.post('/view/:postId', postController.recordView);
 
 // Add/update a reaction (authenticated users only)
-router.post('/react/:postId', postController.addReaction);
+router.post('/react/:postId', protect, postController.addReaction);
 
 // Get post engagement metrics (public - anyone can see)
 router.get('/:postId', postController.getEngagement);

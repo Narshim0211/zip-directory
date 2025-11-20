@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const OwnerProfile = require('../models/OwnerProfile');
 const VisitorProfile = require('../models/VisitorProfile');
+const followService = require('./followService');
 
 /**
  * Profile Resolver Service
@@ -46,6 +47,9 @@ async function resolveProfileByHandle(handle) {
       .select('bio location interests');
   }
 
+  // Get follow counts from the new Follow model
+  const followCounts = await followService.getCounts(user._id);
+
   // Build unified profile response
   const profile = {
     userId: user._id,
@@ -64,7 +68,15 @@ async function resolveProfileByHandle(handle) {
     socialMedia: roleProfile?.socialMedia || null,
     location: roleProfile?.location || null,
     interests: roleProfile?.interests || null,
-    featuredBusinesses: roleProfile?.featuredBusinesses || null
+    featuredBusinesses: roleProfile?.featuredBusinesses || null,
+
+    // Standardized stats object
+    stats: {
+      followers: followCounts.followersCount || 0,
+      following: followCounts.followingCount || 0,
+      surveys: 0, // TODO: Add survey count
+      posts: 0    // TODO: Add post count
+    }
   };
 
   return profile;
@@ -87,6 +99,24 @@ async function getProfileById(userId) {
     return null;
   }
 
+  // Try to find role-specific profile data
+  let roleProfile = null;
+  let profileType = 'basic'; // Track profile type for frontend
+
+  if (user.role === 'owner') {
+    roleProfile = await OwnerProfile.findOne({ userId: user._id })
+      .select('bio website socialMedia location');
+    if (roleProfile) profileType = 'owner';
+  } else if (user.role === 'visitor') {
+    roleProfile = await VisitorProfile.findOne({ userId: user._id })
+      .select('bio location interests');
+    if (roleProfile) profileType = 'visitor';
+  }
+
+  // Get follow counts from the new Follow model
+  const followCounts = await followService.getCounts(user._id);
+
+  // Return profile with available data (fallback to basic User data)
   return {
     userId: user._id,
     role: user.role,
@@ -94,9 +124,29 @@ async function getProfileById(userId) {
     slug: user.slug || user.handle,
     firstName: user.firstName,
     lastName: user.lastName,
+    email: user.email, // Include email for fallback profiles
     displayName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.handle,
     avatarUrl: user.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.firstName || 'U')}`,
-    createdAt: user.createdAt
+    createdAt: user.createdAt,
+
+    // Role-specific data (may be null for old accounts)
+    bio: roleProfile?.bio || null,
+    website: roleProfile?.website || null,
+    socialMedia: roleProfile?.socialMedia || null,
+    location: roleProfile?.location || null,
+    interests: roleProfile?.interests || null,
+
+    // Standardized stats object
+    stats: {
+      followers: followCounts.followersCount || 0,
+      following: followCounts.followingCount || 0,
+      surveys: 0, // TODO: Add survey count
+      posts: 0    // TODO: Add post count
+    },
+
+    // Metadata for frontend
+    profileType, // 'owner', 'visitor', or 'basic' (fallback)
+    isFallbackProfile: !roleProfile // True if using basic User data only
   };
 }
 

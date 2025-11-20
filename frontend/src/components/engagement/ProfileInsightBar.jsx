@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { profileAnalytics } from '../../api/analytics';
+import { getProfileInsights } from '../../api/engagementApi';
 import './ProfileInsightBar.css';
 
 /**
@@ -9,11 +9,7 @@ import './ProfileInsightBar.css';
  * NO duplication - used ONLY on business listing pages
  */
 const ProfileInsightBar = ({ ownerId }) => {
-  const [insights, setInsights] = useState({
-    today: 0,
-    last7Days: 0,
-    total: 0
-  });
+  const [insights, setInsights] = useState({ todayVisits: 0, last7Days: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -26,11 +22,12 @@ const ProfileInsightBar = ({ ownerId }) => {
     const fetchInsights = async () => {
       try {
         setLoading(true);
-        const response = await profileAnalytics.getInsights(ownerId);
+        const response = await getProfileInsights(ownerId);
         
-        if (response.success) {
-          setInsights(response.data);
-        }
+        setInsights({
+          todayVisits: response.todayVisits ?? 0,
+          last7Days: response.last7Days ?? 0
+        });
       } catch (err) {
         console.error('Error fetching profile insights:', err);
         setError('Unable to load analytics');
@@ -73,7 +70,7 @@ const ProfileInsightBar = ({ ownerId }) => {
         <div className="metric">
           <span className="metric-icon">👁</span>
           <span className="metric-label">Total Profile Visits Today</span>
-          <span className="metric-value">{insights.today}</span>
+          <span className="metric-value">{insights.todayVisits}</span>
         </div>
         
         <div className="metric">
@@ -81,14 +78,6 @@ const ProfileInsightBar = ({ ownerId }) => {
           <span className="metric-label">Total Profile Visits (Last 7 Days)</span>
           <span className="metric-value">{insights.last7Days}</span>
         </div>
-        
-        {insights.total > 0 && (
-          <div className="metric secondary">
-            <span className="metric-icon">✨</span>
-            <span className="metric-label">All Time</span>
-            <span className="metric-value">{insights.total}</span>
-          </div>
-        )}
       </div>
     </div>
   );

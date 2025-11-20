@@ -58,9 +58,10 @@ exports.addReaction = async (req, res, next) => {
 exports.getEngagement = async (req, res, next) => {
   try {
     const { postId } = req.params;
-    
-    const result = await postEngagementService.getEngagement(postId);
-    
+    const userId = req.user?._id || null; // Optional: if logged in, return their reaction
+
+    const result = await postEngagementService.getEngagement(postId, userId);
+
     res.status(200).json(result);
   } catch (error) {
     logger.error(`Fetching post engagement failed: ${error.message}`);

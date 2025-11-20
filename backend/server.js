@@ -1,3 +1,10 @@
+// Load environment variables FIRST before anything else
+require('dotenv').config();
+
+// Force override MONGO_URI to ensure it's correct
+process.env.MONGO_URI = 'mongodb+srv://Vercel-Admin-MoodTrackerapp:Mood%40123@moodtrackerapp.doviekn.mongodb.net/?appName=MoodTrackerapp';
+console.log('🔍 DEBUG: MONGO_URI =', process.env.MONGO_URI);
+
 const express = require('express');
 const detectPort = require('detect-port');
 const http = require('http');
@@ -6,7 +13,6 @@ const mongoose = require('mongoose');
 const User = require('./models/User');
 const logger = require('./utils/logger');
 const errorHandler = require('./middleWare/errorMiddleware');
-require('dotenv').config();
 const stripeWebhookRoutes = require('./routes/stripeWebhookRoutes');
 
 // Middleware
@@ -137,6 +143,14 @@ app.use('/api/v1/owner/posts', v1OwnerPostRoutes);
 const v1OwnerFollowRoutes = require('./routes/v1/owner/followRoutes');
 app.use('/api/v1/owner/follow', v1OwnerFollowRoutes);
 
+// Unified Follow Routes (works for all user types)
+const v1FollowRoutes = require('./routes/v1/followRoutes');
+app.use('/api/v1/follow', v1FollowRoutes);
+
+// Unified Profile Resolver Routes (works for all user types)
+const profileResolverRoutes = require('./routes/profileResolverRoutes');
+app.use('/api/profile', profileResolverRoutes);
+
 // V1 owner profiles (public + owner)
 const v1OwnerProfilesRoutes = require('./routes/v1/ownerProfiles.routes');
 app.use('/api/v1/owner-profiles', v1OwnerProfilesRoutes);
@@ -189,13 +203,9 @@ try {
 // NOTE: Old staff and booking routes removed - now using microservice architecture
 // All booking/staff operations go through /api/booking-service/* proxy
 
-// Follow
-const followRoutes = require('./routes/followRoutes');
-app.use('/api/follow', followRoutes);
-
-// Profile Resolver (unified profile lookup across roles)
-const profileResolverRoutes = require('./routes/profileResolverRoutes');
-app.use('/api/profile', profileResolverRoutes);
+// Legacy follow routes removed - now using unified v1 follow routes at /api/v1/follow
+// const followRoutes = require('./routes/followRoutes');
+// app.use('/api/follow', followRoutes);
 
 // Posts & Comments
 const postRoutes = require('./routes/postRoutes');

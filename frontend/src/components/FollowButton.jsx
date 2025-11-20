@@ -1,44 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import api from '../api/axios';
+import React from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useFollow } from '../context/FollowContext';
 
+/**
+ * FollowButton - Uses global follow state from FollowContext
+ *
+ * When this button is clicked, ALL posts/surveys from the same user
+ * will automatically update to show "Following" state.
+ *
+ * No more inconsistent follow states across the feed!
+ */
 const FollowButton = ({ targetId, targetType, initialFollowing = false, onChange }) => {
-  const [following, setFollowing] = useState(initialFollowing);
-  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const { isFollowing, toggleFollow, loading } = useFollow();
 
-  useEffect(() => {
-    setFollowing(initialFollowing);
-  }, [initialFollowing]);
+  // Don't show follow button if not logged in or if it's the user's own content
+  if (!user || !targetId || user._id === targetId) {
+    return null;
+  }
+
+  // Read follow state from global context (not local state)
+  const following = isFollowing(targetId);
 
   const toggle = async () => {
     if (loading) return;
-    setLoading(true);
-    try {
-      if (following) {
-        // call v1 profile endpoints when targetType provided
-        if (targetType === 'owner') {
-          await api.delete(`/v1/owner-profiles/${targetId}/follow`);
-        } else if (targetType === 'visitor') {
-          await api.delete(`/v1/visitor-profiles/${targetId}/follow`);
-        } else {
-          await api.delete(`/follow/unfollow/${targetId}`);
-        }
-        setFollowing(false);
-        onChange?.(targetId, false);
-      } else {
-        if (targetType === 'owner') {
-          await api.post(`/v1/owner-profiles/${targetId}/follow`);
-        } else if (targetType === 'visitor') {
-          await api.post(`/v1/visitor-profiles/${targetId}/follow`);
-        } else {
-          await api.post(`/follow/follow/${targetId}`);
-        }
-        setFollowing(true);
-        onChange?.(targetId, true);
-      }
-    } catch (error) {
-      console.error('Follow error', error);
-    } finally {
-      setLoading(false);
+
+    const result = await toggleFollow(targetId);
+
+    if (result.success) {
+      // Call onChange callback if provided
+      onChange?.(targetId, !following);
+    } else {
+      // Show error to user
+      alert(result.error || 'Failed to update follow status');
     }
   };
 

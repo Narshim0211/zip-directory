@@ -1,16 +1,22 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import IdentityBadge from "../../components/SharedComponents/IdentityBadge";
 import FollowButton from "../../components/FollowButton";
+import SurveyEngagementBar from "../../components/engagement/SurveyEngagementBar";
 import v1Client from "../../api/v1";
 
-export default function FeedSurveyCard({ survey, followingOwners = [] }) {
+/**
+ * FeedSurveyCard - Survey card for visitor feed
+ *
+ * Follow state is now managed globally by FollowContext.
+ * No more local follow state - all surveys from same user update together!
+ */
+export default function FeedSurveyCard({ survey }) {
   const [voting, setVoting] = useState(false);
   const [selected, setSelected] = useState(null);
   const [voted, setVoted] = useState(false);
   const [localSurvey, setLocalSurvey] = useState(survey);
   const [error, setError] = useState("");
-
-  const isFollowing = Boolean(followingOwners.find((owner) => String(owner._id) === String(survey.author?._id)));
 
   const submitVote = async () => {
     if (!selected || voting) return;
@@ -45,16 +51,33 @@ export default function FeedSurveyCard({ survey, followingOwners = [] }) {
       <header className="feed-card__header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
           <div>
-            <IdentityBadge identity={survey.identity} author={survey.author} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Link
+                to={`/profile/${survey.author?._id}`}
+                state={{ from: 'feed' }}
+                style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}
+              >
+                <IdentityBadge identity={survey.identity} author={survey.author} />
+              </Link>
+              <span style={{
+                display: 'inline-block',
+                padding: '2px 8px',
+                fontSize: '11px',
+                fontWeight: '600',
+                borderRadius: '4px',
+                backgroundColor: survey.author?.role === 'owner' ? '#dbeafe' : '#f3e8ff',
+                color: survey.author?.role === 'owner' ? '#1e40af' : '#6b21a8',
+                textTransform: 'uppercase'
+              }}>
+                {survey.author?.role === 'owner' ? 'Owner' : 'Visitor'}
+              </span>
+            </div>
             <p style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>{new Date(localSurvey.createdAt).toLocaleString()}</p>
           </div>
-          {survey.identity && (
-            <FollowButton
-              targetId={survey.identity.profileId}
-              targetType={survey.identity.role}
-              initialFollowing={isFollowing}
-            />
-          )}
+          <FollowButton
+            targetId={survey.author?._id}
+            targetType={survey.author?.role || 'owner'}
+          />
         </div>
       </header>
       <p className="feed-card__content">{localSurvey.question}</p>
@@ -109,6 +132,11 @@ export default function FeedSurveyCard({ survey, followingOwners = [] }) {
       )}
 
       {error && <p className="feed-card__error">{error}</p>}
+
+      {/* Engagement metrics always visible */}
+      <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #eee' }}>
+        <SurveyEngagementBar surveyId={localSurvey._id} />
+      </div>
     </article>
   );
 }

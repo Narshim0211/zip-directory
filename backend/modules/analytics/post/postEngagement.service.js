@@ -1,4 +1,5 @@
 const PostEngagement = require('./postEngagement.model');
+const Reaction = require('../../../models/Reaction');
 const logger = require('../../../utils/logger');
 
 /**
@@ -16,14 +17,14 @@ class PostEngagementService {
       if (!postId) {
         throw new Error('Post ID is required');
       }
-      
+
       const engagement = await PostEngagement.incrementViews(postId, userId);
-      
+
       logger.info(`Post view recorded: ${postId}`);
-      
+
       return {
         success: true,
-        data: this.formatEngagementData(engagement)
+        data: await this.formatEngagementData(engagement, userId)
       };
     } catch (error) {
       logger.error(`Error recording post view: ${error.message}`);
@@ -39,18 +40,18 @@ class PostEngagementService {
       if (!postId || !userId || !reactionType) {
         throw new Error('Post ID, User ID, and Reaction Type are required');
       }
-      
+
       if (!['like', 'love'].includes(reactionType)) {
         throw new Error('Invalid reaction type. Must be "like" or "love"');
       }
-      
+
       const engagement = await PostEngagement.addReaction(postId, userId, reactionType);
-      
+
       logger.info(`Post reaction added: ${postId} - ${reactionType} by ${userId}`);
-      
+
       return {
         success: true,
-        data: this.formatEngagementData(engagement)
+        data: await this.formatEngagementData(engagement, userId)
       };
     } catch (error) {
       logger.error(`Error adding post reaction: ${error.message}`);
@@ -61,50 +62,56 @@ class PostEngagementService {
   /**
    * Get post engagement metrics
    */
-  async getEngagement(postId) {
+  async getEngagement(postId, userId = null) {
     try {
       if (!postId) {
         throw new Error('Post ID is required');
       }
-      
+
       let engagement = await PostEngagement.findOne({ postId });
-      
+
+      // Get reactions from new Reaction model
+      const reactionCounts = await Reaction.getReactionCounts(postId, 'post');
+      const userReaction = userId ? await Reaction.getUserReaction(userId, postId, 'post') : null;
+
       if (!engagement) {
-        // Return zeros if no analytics exist yet
+        // Return zeros for views if no analytics exist yet
         return {
           success: true,
           data: {
             views: 0,
-            reactions: {
-              like: 0,
-              love: 0,
-              total: 0
-            }
+            reactions: reactionCounts,
+            userReaction: userReaction
           }
         };
       }
-      
+
       return {
         success: true,
-        data: this.formatEngagementData(engagement)
+        data: {
+          views: engagement.views,
+          reactions: reactionCounts,
+          userReaction: userReaction
+        }
       };
     } catch (error) {
       logger.error(`Error fetching post engagement: ${error.message}`);
       throw error;
     }
   }
-  
+
   /**
    * Helper to format engagement data consistently
    */
-  formatEngagementData(engagement) {
+  async formatEngagementData(engagement, userId = null) {
+    // Get reactions from new Reaction model
+    const reactionCounts = await Reaction.getReactionCounts(engagement.postId, 'post');
+    const userReaction = userId ? await Reaction.getUserReaction(userId, engagement.postId, 'post') : null;
+
     return {
       views: engagement.views,
-      reactions: {
-        like: engagement.reactions.like,
-        love: engagement.reactions.love,
-        total: engagement.reactions.like + engagement.reactions.love
-      }
+      reactions: reactionCounts,
+      userReaction: userReaction
     };
   }
 }

@@ -10,25 +10,43 @@ const User = require('../models/User');
  * @returns {Promise<Object>} Follow document or error
  */
 const follow = async (followerId, targetId, followerRole, targetRole) => {
+  // 🔍 DEBUG LOGGING
+  console.log('[followService.follow] Called with:');
+  console.log('  followerId:', followerId);
+  console.log('  targetId:', targetId);
+  console.log('  followerRole:', followerRole);
+  console.log('  targetRole:', targetRole);
+
   // Permission check: Owner CANNOT follow Visitor
-  if (!Follow.canFollow(followerRole, targetRole)) {
+  const canFollowResult = Follow.canFollow(followerRole, targetRole);
+  console.log('[followService.follow] canFollow result:', canFollowResult);
+
+  if (!canFollowResult) {
+    console.log('❌ [followService.follow] Permission denied - Owners cannot follow Visitors');
     throw new Error('Owners cannot follow Visitors');
   }
 
   // Check if already following (use new fields first, fallback to legacy)
+  console.log('[followService.follow] Checking if already following...');
   const exists = await Follow.findOne({
     $or: [
       { followerId, followingId: targetId },
       { follower: followerId, following: targetId }
     ]
   });
+  console.log('[followService.follow] Already following?', !!exists);
 
   if (exists) {
-    return { message: 'Already following', alreadyFollowing: true };
+    console.log('✅ [followService.follow] Already following - returning existing');
+    return {
+      alreadyFollowing: true,
+      follow: exists
+    };
   }
 
   // Create follow with both new and legacy fields for backward compatibility
-  return Follow.create({
+  console.log('[followService.follow] Creating new follow relationship...');
+  const newFollow = await Follow.create({
     followerId,
     followingId: targetId,
     followerRole,
@@ -36,8 +54,14 @@ const follow = async (followerId, targetId, followerRole, targetRole) => {
     // Legacy fields
     follower: followerId,
     following: targetId,
-    relationType: `${followerRole}-${targetRole}`
+    relationType: `${followerRole}_to_${targetRole}` // Fixed: use underscores, not hyphens
   });
+  console.log('✅ [followService.follow] Follow created successfully:', newFollow._id);
+  console.log('[DEBUG] NEW FOLLOW RECORD:', JSON.stringify(newFollow, null, 2));
+  return {
+    alreadyFollowing: false,
+    follow: newFollow
+  };
 };
 
 /**
@@ -110,6 +134,8 @@ const isFollowing = async (followerId, targetId) => {
  * @returns {Promise<Object>} { followingCount, followersCount }
  */
 const getFollowStats = async (userId) => {
+  console.log('[DEBUG] getCounts called for:', userId);
+
   const [followingCount, followersCount] = await Promise.all([
     Follow.countDocuments({
       $or: [{ followerId: userId }, { follower: userId }]
@@ -119,7 +145,21 @@ const getFollowStats = async (userId) => {
     })
   ]);
 
+  console.log('[DEBUG] followingCount from DB:', followingCount);
+  console.log('[DEBUG] followersCount from DB:', followersCount);
+  console.log('[DEBUG] Returning object:', { followingCount, followersCount });
+
   return { followingCount, followersCount };
+};
+
+/**
+ * Get follower/following counts for profile display
+ * This is the same as getFollowStats but with clearer naming for profile use
+ * @param {ObjectId} userId - ID of user
+ * @returns {Promise<Object>} { followersCount, followingCount }
+ */
+const getCounts = async (userId) => {
+  return getFollowStats(userId);
 };
 
 module.exports = {
@@ -128,5 +168,6 @@ module.exports = {
   getFollowing,
   getFollowers,
   isFollowing,
-  getFollowStats
+  getFollowStats,
+  getCounts
 };

@@ -83,9 +83,10 @@ exports.addReaction = async (req, res, next) => {
 exports.getEngagement = async (req, res, next) => {
   try {
     const { surveyId } = req.params;
-    
-    const result = await surveyEngagementService.getEngagement(surveyId);
-    
+    const userId = req.user?._id || null; // Optional: if logged in, return their reaction
+
+    const result = await surveyEngagementService.getEngagement(surveyId, userId);
+
     res.status(200).json(result);
   } catch (error) {
     logger.error(`Fetching survey engagement failed: ${error.message}`);

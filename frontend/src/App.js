@@ -10,6 +10,7 @@ import Register from "./components/Register";
 import ResetPassword from "./components/ResetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { FollowProvider } from "./context/FollowContext";
 import ToolkitPage from "./features/toolkit/pages/ToolkitPage";
 import StyleAdvisorPage from "./features/toolkit/pages/StyleAdvisorPage";
 import HairGoalsPage from "./features/toolkit/pages/HairGoalsPage";
@@ -57,6 +58,7 @@ import PublicBooking from "./pages/PublicBooking";
 import MicroservicesRoutes from "./routes/MicroservicesRoutes";
 import VisitorNewsletterSettings from "./visitor/pages/VisitorNewsletterSettings";
 import OwnerNewsletterSettings from "./pages/owner/OwnerNewsletterSettings";
+import ProfilePageWrapper from "./pages/ProfilePageWrapper";
 
 const LandingOrRedirect = () => {
   const { user } = useAuth();
@@ -83,9 +85,9 @@ function Frame() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          
-          {/* Public Booking Profile & Booking Pages */}
-          <Route path="/profile/:slug" element={<PublicProfile />} />
+
+          {/* Public Booking Profile & Booking Pages - Use /booking-profile to avoid conflict with /profile/:userId */}
+          <Route path="/booking-profile/:slug" element={<PublicProfile />} />
           <Route path="/book/:slug" element={<PublicBooking />} />
           
           {/* Public Directory Search Results (Search form is on landing page) */}
@@ -172,7 +174,10 @@ function Frame() {
           } 
         />
 
-        {/* V2 Profile Routes - Facebook Style */}
+        {/* Unified Profile Route - World-class Instagram-style */}
+        <Route path="/profile/:userId" element={<ErrorBoundary><ProfilePageWrapper /></ErrorBoundary>} />
+
+        {/* V2 Profile Routes - Facebook Style (Legacy) */}
         <Route path="/o/:slug" element={<ErrorBoundary><OwnerProfilePageV2 /></ErrorBoundary>} />
         <Route path="/v/:slug" element={<ErrorBoundary><VisitorProfilePageV2 /></ErrorBoundary>} />
 
@@ -191,9 +196,11 @@ function App() {
   return (
     <HelmetProvider>
       <AuthProvider>
-        <Router>
-          <Frame />
-        </Router>
+        <FollowProvider>
+          <Router>
+            <Frame />
+          </Router>
+        </FollowProvider>
       </AuthProvider>
     </HelmetProvider>
   );

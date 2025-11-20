@@ -1,92 +1,145 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
 import v1Client from '../../api/v1';
-import followService from '../../visitor/services/followService';
-import OwnerHomeHeader from '../../components/owner/OwnerHomeHeader';
-import CreateContentSection from '../../components/owner/CreateContentSection';
-import UnifiedFeed from '../../components/SharedComponents/UnifiedFeed';
-import ErrorBoundary from '../../components/SharedComponents/ErrorBoundary';
-import './OwnerHome.css';
+import FeedPostCard from '../../visitor/components/FeedPostCard';
+import FeedSurveyCard from '../../visitor/components/FeedSurveyCard';
+import SearchSection from '../../visitor/components/SearchSection';
+import CreateSurveyModal from '../../components/CreateSurveyModal';
+import CreatePostModal from '../../components/CreatePostModal';
+import '../../styles/ownerHome.css';
 
 /**
  * OwnerHome Page
  * Main home page for owner accounts with social feed
- * Separate from owner dashboard (business analytics)
+ * Same UX as Visitor Home but for owners
+ *
+ * Follow state is now managed globally by FollowContext - no need to fetch it here!
  */
 const OwnerHome = () => {
-  const { user } = useAuth();
   const [feed, setFeed] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [followingOwners, setFollowingOwners] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showSurveyModal, setShowSurveyModal] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
 
-  const loadFeed = async () => {
-    try {
+  useEffect(() => {
+    const fetchData = async () => {
       setLoading(true);
-      setError(null);
-
-      // Fetch owner-specific feed
-      const feedResponse = await v1Client.feed.getOwnerFeed({ limit: 30 });
-      setFeed(feedResponse.items || []);
-
-      // Fetch following list (optional - for UI state)
       try {
-        const following = await followService.getFollowing();
-        setFollowingOwners(following.filter((item) => item.role === 'owner'));
-      } catch (followErr) {
-        console.warn('Could not fetch following list:', followErr);
-        setFollowingOwners([]);
+        // Fetch feed - same feed system as visitor
+        const feedResponse = await v1Client.feed.getFeed({ limit: 30 });
+        setFeed(feedResponse.items || []);
+      } catch (err) {
+        console.error('Feed loading failed', err);
+        setError('Unable to load your feed right now.');
+      } finally {
+        setLoading(false);
       }
+    };
+    fetchData();
+  }, []);
+
+  const handleCreateSurvey = async (surveyData) => {
+    try {
+      await v1Client.owner.surveys.create(surveyData);
+      // Refresh feed
+      const feedResponse = await v1Client.feed.getFeed({ limit: 30 });
+      setFeed(feedResponse.items || []);
     } catch (err) {
-      console.error('Failed to load feed:', err);
-      setError('Unable to load your feed. Please try again.');
-    } finally {
-      setLoading(false);
+      console.error('Failed to create survey:', err);
+      throw err;
     }
   };
 
-  useEffect(() => {
-    loadFeed();
-  }, []);
-
-  const handleContentCreated = async (contentType) => {
-    console.log(`${contentType} created, refreshing feed...`);
-    // Refresh feed after creating content
-    await loadFeed();
+  const handleCreatePost = async (postData) => {
+    try {
+      await v1Client.owner.posts.create(postData);
+      // Refresh feed
+      const feedResponse = await v1Client.feed.getFeed({ limit: 30 });
+      setFeed(feedResponse.items || []);
+    } catch (err) {
+      console.error('Failed to create post:', err);
+      throw err;
+    }
   };
 
   return (
-    <ErrorBoundary>
-      <div className="owner-home-page">
-        <div className="owner-home-page__container">
-          <ErrorBoundary>
-            <OwnerHomeHeader />
-          </ErrorBoundary>
+    <div className="owner-home-page">
+      <div className="owner-home-page__container">
+        <header className="owner-home-page__hero">
+          <h1 className="owner-home-page__title">SalonHub Owner</h1>
+          <p className="owner-home-page__subtitle">
+            Connect with other salon owners, share insights, and grow your business.
+          </p>
+        </header>
 
-          <ErrorBoundary>
-            <CreateContentSection onContentCreated={handleContentCreated} />
-          </ErrorBoundary>
+        <SearchSection />
 
-          <div className="owner-home-page__feed-section">
-            <h2 className="owner-home-page__feed-title">Community Feed</h2>
-            <p className="owner-home-page__feed-subtitle">
-              Latest posts and surveys from owners and visitors you follow
-            </p>
+        {loading && <p className="owner-home-page__status">Loading your feed...</p>}
+        {error && <p className="owner-home-page__status-error">{error}</p>}
 
-            <ErrorBoundary>
-              <UnifiedFeed
-                feedItems={feed}
-                loading={loading}
-                error={error}
-                followingList={followingOwners}
-                role="owner"
-                emptyMessage="No posts or surveys yet. Follow other owners to see their updates!"
-              />
-            </ErrorBoundary>
+        {!loading && !error && feed.length === 0 && (
+          <div className="owner-home-page__empty">
+            <p>No posts or surveys yet. Start following salons to see their updates!</p>
           </div>
+        )}
+
+        <div className="owner-home-page__feed">
+          {feed.map((item) => {
+            // v1 API returns { type, data } format
+            if (item.type === 'post') {
+              return (
+                <FeedPostCard
+                  key={item.data._id || item.data.id}
+                  post={item.data}
+                />
+              );
+            } else if (item.type === 'survey') {
+              return (
+                <FeedSurveyCard
+                  key={item.data._id || item.data.id}
+                  survey={item.data}
+                />
+              );
+            }
+            return null;
+          })}
         </div>
       </div>
-    </ErrorBoundary>
+
+      {/* Floating Create Buttons */}
+      <button
+        className="fab fab-survey"
+        onClick={() => setShowSurveyModal(true)}
+        title="Create Survey"
+        style={{ bottom: '90px' }}
+      >
+        📊
+      </button>
+
+      <button
+        className="fab fab-post"
+        onClick={() => setShowPostModal(true)}
+        title="Create Post"
+        style={{ bottom: '30px' }}
+      >
+        ✏️
+      </button>
+
+      {/* Modals */}
+      <CreateSurveyModal
+        isOpen={showSurveyModal}
+        onClose={() => setShowSurveyModal(false)}
+        onSubmit={handleCreateSurvey}
+        role="owner"
+      />
+
+      <CreatePostModal
+        isOpen={showPostModal}
+        onClose={() => setShowPostModal(false)}
+        onSubmit={handleCreatePost}
+        role="owner"
+      />
+    </div>
   );
 };
 

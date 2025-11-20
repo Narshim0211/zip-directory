@@ -1,35 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleWare/authMiddleware');
-const controller = require('../controllers/profileResolverController');
-const rateLimit = require('../middleWare/rateLimit');
+const profileResolverController = require('../controllers/profileResolverController');
+const { authenticateOptional } = require('../middleWare/authMiddleware');
 
 /**
  * Profile Resolver Routes
- *
- * Public endpoints for resolving profiles across Owner/Visitor roles
+ * Unified profile lookup system that works for both Owner and Visitor profiles
  */
 
-// Get profile by handle (works for both Owner and Visitor)
-// Public endpoint - optional auth for follow status
-router.get(
-  '/:handle',
-  rateLimit({ windowMs: 60 * 1000, max: 100 }),
-  controller.getProfileByHandle
-);
+// GET /api/profile/:handle - Get profile by handle (supports optional auth for follow status)
+router.get('/:handle', authenticateOptional, profileResolverController.getProfileByHandle);
 
-// Get profile by user ID
-router.get(
-  '/id/:userId',
-  rateLimit({ windowMs: 60 * 1000, max: 100 }),
-  controller.getProfileById
-);
+// GET /api/profile/id/:userId - Get profile by user ID
+router.get('/id/:userId', profileResolverController.getProfileById);
 
-// Check handle availability
-router.get(
-  '/check-handle/:handle',
-  rateLimit({ windowMs: 60 * 1000, max: 100 }),
-  controller.checkHandleAvailability
-);
+// GET /api/profile/check-handle/:handle - Check if handle is available
+router.get('/check-handle/:handle', authenticateOptional, profileResolverController.checkHandleAvailability);
 
 module.exports = router;

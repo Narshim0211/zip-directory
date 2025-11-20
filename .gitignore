@@ -30,6 +30,7 @@ frontend/.env.local
 frontend/.env.development
 frontend/.env.production
 frontend/.env.*
+frontend.env
 
 # Admin service
 admin/.env
@@ -60,3 +61,10 @@ services/profile-service/.env
 !**/.env.template
 !.env.example
 !.env.template
+
+# ====================================
+# Windows Ghost Files
+# ====================================
+# Exclude "nul" files (Windows null device file artifacts)
+nul
+**/nul

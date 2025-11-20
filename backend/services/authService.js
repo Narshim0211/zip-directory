@@ -23,8 +23,9 @@ async function register({ firstName, lastName, email, password, role, newsletter
 
   const existing = await User.findOne({ email });
   if (existing) {
-    const err = new Error('User already exists');
-    err.status = 400;
+    const err = new Error('An account with this email already exists. Please login or use a different email.');
+    err.status = 409; // 409 Conflict is more appropriate than 400
+    err.code = 'USER_EXISTS';
     throw err;
   }
 

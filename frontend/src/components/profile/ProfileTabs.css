@@ -1,0 +1,69 @@
+/* ProfileTabs - World-class Instagram-style tabs */
+
+.profile-tabs {
+  margin-top: 32px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.profile-tabs__nav {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+}
+
+.profile-tabs__tab {
+  flex: 1;
+  padding: 16px 24px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.profile-tabs__tab:hover {
+  color: #111827;
+  background: #f9fafb;
+}
+
+.profile-tabs__tab.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+}
+
+.profile-tabs__content {
+  padding: 8px 0;
+  min-height: 200px;
+}
+
+.profile-about {
+  padding: 16px 0;
+}
+
+.profile-surveys,
+.profile-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Skeleton loader for world-class UX */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton-loader {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1000px 100%;
+}

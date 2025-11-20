@@ -118,7 +118,7 @@ exports.getFeedForVisitor = async (userId, options = {}) => {
       visibility: 'public',
       ...cursorFilter
     })
-      .populate('author', 'name avatarUrl')
+      .populate('author', 'name avatarUrl role email')
       .sort({ createdAt: -1 })
       .limit(limit);
 
@@ -129,7 +129,7 @@ exports.getFeedForVisitor = async (userId, options = {}) => {
       visibility: 'public',
       ...cursorFilter
     })
-      .populate('author', 'name avatarUrl')
+      .populate('author', 'name avatarUrl role email')
       .sort({ createdAt: -1 })
       .limit(limit);
 
@@ -188,7 +188,7 @@ exports.buildFeed = async ({ limit = 30, userId = null, userRole = null }) => {
         .sort({ createdAt: -1 })
         .limit(limit * 2), // Fetch more to ensure enough content after filtering
       Survey.find({ visibleToVisitors: true, isActive: true })
-        .populate('author', 'name email avatarUrl')
+        .populate('author', 'name email avatarUrl role')
         .sort({ createdAt: -1 })
         .limit(limit * 2),
     ]);

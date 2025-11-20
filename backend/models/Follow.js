@@ -69,8 +69,8 @@ const followSchema = new mongoose.Schema(
 );
 
 // Compound indexes for efficient queries
-followSchema.index({ follower: 1, following: 1 }, { unique: true });
-followSchema.index({ followerId: 1, followingId: 1 });
+followSchema.index({ follower: 1, following: 1 }, { unique: true }); // Legacy unique index
+followSchema.index({ followerId: 1, followingId: 1 }, { unique: true, sparse: true }); // NEW unique index to prevent duplicates
 followSchema.index({ followerId: 1, followerRole: 1 });
 followSchema.index({ followingId: 1, followingRole: 1 });
 followSchema.index({ followerId: 1, followingRole: 1 });
@@ -96,11 +96,8 @@ followSchema.pre('save', function(next) {
 
 // Static method to check if follower can follow following
 followSchema.statics.canFollow = function(followerRole, followingRole) {
-  // Owner CANNOT follow Visitor
-  if (followerRole === 'owner' && followingRole === 'visitor') {
-    return false;
-  }
-  // All other combinations are allowed
+  // Everyone can follow everyone (better engagement)
+  // No restrictions - owners can follow visitors, visitors can follow anyone
   return true;
 };
 
