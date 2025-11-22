@@ -1,0 +1,35 @@
+/* Inline Verification Badge Styles */
+
+.verification-badge-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: help;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.verification-badge-inline:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+/* Gold star gets special pulse animation */
+.verification-badge-inline[style*="fef9c3"] {
+  animation: inline-pulse 2s ease-in-out infinite;
+}
+
+@keyframes inline-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.15);
+  }
+}

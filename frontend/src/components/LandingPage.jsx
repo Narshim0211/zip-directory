@@ -1,54 +1,9 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import SearchHero from "./SearchHero";
+import React from "react";
+import { Link } from "react-router-dom";
+import UnifiedSearchBar from "./UnifiedSearchBar";
 import "../styles/HomePage.css";
 
 const LandingPage = () => {
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useState({
-    city: '',
-    zip: '',
-    category: 'All Categories',
-  });
-
-  const categories = [
-    'All Categories',
-    'Salon',
-    'Spa',
-    'Barbershop',
-    'Freelance Stylist',
-  ];
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setSearchParams((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleDirectorySearch = (e) => {
-    e.preventDefault();
-
-    if (!searchParams.city.trim()) {
-      alert('Please enter a city');
-      return;
-    }
-
-    const params = new URLSearchParams();
-    params.append('city', searchParams.city.trim());
-    
-    if (searchParams.zip.trim()) {
-      params.append('zip', searchParams.zip.trim());
-    }
-    
-    if (searchParams.category !== 'All Categories') {
-      params.append('category', searchParams.category);
-    }
-
-    navigate(`/directory/search?${params.toString()}`);
-  };
-
   return (
     <div className="home-page">
       {/* Header with Logo */}
@@ -91,58 +46,13 @@ const LandingPage = () => {
           Discover salons, spas, and stylists near you
         </p>
 
-        <form className="directory-search-form" onSubmit={handleDirectorySearch} style={{ maxWidth: '900px', margin: '0 auto' }}>
-          <div className="directory-search-form__fields" style={{ display: 'flex', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' }}>
-            <div className="directory-search-form__field" style={{ flex: '1 1 200px' }}>
-              <label htmlFor="city" style={{ display: 'block', color: '#fff', marginBottom: '8px', fontWeight: 600 }}>City *</label>
-              <input
-                type="text"
-                id="city"
-                name="city"
-                placeholder="Enter city"
-                value={searchParams.city}
-                onChange={handleInputChange}
-                required
-                style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', fontSize: '16px' }}
-              />
-            </div>
-
-            <div className="directory-search-form__field" style={{ flex: '1 1 200px' }}>
-              <label htmlFor="zip" style={{ display: 'block', color: '#fff', marginBottom: '8px', fontWeight: 600 }}>ZIP Code</label>
-              <input
-                type="text"
-                id="zip"
-                name="zip"
-                placeholder="Enter ZIP"
-                value={searchParams.zip}
-                onChange={handleInputChange}
-                maxLength="5"
-                style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', fontSize: '16px' }}
-              />
-            </div>
-
-            <div className="directory-search-form__field" style={{ flex: '1 1 200px' }}>
-              <label htmlFor="category" style={{ display: 'block', color: '#fff', marginBottom: '8px', fontWeight: 600 }}>Category</label>
-              <select
-                id="category"
-                name="category"
-                value={searchParams.category}
-                onChange={handleInputChange}
-                style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', fontSize: '16px' }}
-              >
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <button type="submit" className="directory-search-form__button" style={{ width: '100%', padding: '16px', background: '#fff', color: '#667eea', border: 'none', borderRadius: '8px', fontSize: '18px', fontWeight: 700, cursor: 'pointer' }}>
-            Search Businesses
-          </button>
-        </form>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <UnifiedSearchBar
+            size="large"
+            placeholder="Braids, Dallas, 75001..."
+            autoFocus={false}
+          />
+        </div>
       </div>
 
       {/* Per PRD: no News Feed on Landing */}

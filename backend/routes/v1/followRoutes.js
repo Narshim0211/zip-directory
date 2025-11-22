@@ -22,19 +22,13 @@ router.post('/:targetId', protect, asyncHandler(async (req, res) => {
   const { targetId } = req.params;
   const followerRole = req.user.role;
 
-  // 🔍 DEBUG LOGGING
-  console.log('='.repeat(80));
-  console.log('[FOLLOW POST] Request received');
-  console.log('followerId:', followerId);
-  console.log('targetId:', targetId);
-  console.log('followerRole:', followerRole);
-  console.log('targetId type:', typeof targetId);
-  console.log('targetId length:', targetId?.length);
-  console.log('='.repeat(80));
+  // 🔍 DEBUG LOGGING - Only in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[FOLLOW] followerId:', followerId, 'targetId:', targetId, 'role:', followerRole);
+  }
 
   // Prevent self-follow
   if (followerId.toString() === targetId) {
-    console.log('❌ [FOLLOW POST] Self-follow attempt blocked');
     return res.status(400).json({
       success: false,
       message: 'You cannot follow yourself'
@@ -44,7 +38,6 @@ router.post('/:targetId', protect, asyncHandler(async (req, res) => {
   // Get target user role
   const targetUser = await User.findById(targetId);
   if (!targetUser) {
-    console.log('❌ [FOLLOW POST] Target user not found:', targetId);
     return res.status(404).json({
       success: false,
       message: 'User not found'
@@ -52,16 +45,13 @@ router.post('/:targetId', protect, asyncHandler(async (req, res) => {
   }
 
   const targetRole = targetUser.role;
-  console.log('[FOLLOW POST] Target user found, role:', targetRole);
 
   // Allow everyone to follow everyone (better engagement)
   // No role restrictions - owners can follow visitors, visitors can follow anyone
 
   // Use the follow service
   try {
-    console.log('[FOLLOW POST] Calling followService.follow()');
     const result = await followService.follow(followerId, targetId, followerRole, targetRole);
-    console.log('[FOLLOW POST] Service result:', result);
 
     // If already following, return 200 with flag (NOT 400)
     if (result.alreadyFollowing) {
@@ -81,8 +71,6 @@ router.post('/:targetId', protect, asyncHandler(async (req, res) => {
       message: 'Successfully followed user'
     });
   } catch (error) {
-    console.log('❌ [FOLLOW POST] Error caught:', error.message);
-
     // Only these should be 400/404
     if (error.message === 'Owners cannot follow Visitors') {
       return res.status(400).json({
@@ -91,8 +79,10 @@ router.post('/:targetId', protect, asyncHandler(async (req, res) => {
       });
     }
 
-    // Internal server error
-    console.error('FOLLOW ERROR:', error);
+    // Internal server error - log only in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('FOLLOW ERROR:', error);
+    }
     return res.status(500).json({
       success: false,
       message: 'Internal server error'

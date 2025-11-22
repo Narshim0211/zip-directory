@@ -42,4 +42,8 @@ surveySchema.index({ createdAt: -1 });
 surveySchema.index({ visibility: 1 });
 surveySchema.index({ visibleToVisitors: 1 });
 
+// CRITICAL PERFORMANCE INDEXES - Added for 10k user scale
+surveySchema.index({ visibility: 1, isActive: 1, createdAt: -1 }); // Active survey feed
+surveySchema.index({ visibleToVisitors: 1, isActive: 1, createdAt: -1 }); // Visitor surveys
+
 module.exports = mongoose.model('Survey', surveySchema);

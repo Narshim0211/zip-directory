@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
 import ownerApi from "../api/owner";
+import VerificationProgress from "./VerificationProgress";
+import VerificationStatusBanner from "./VerificationStatusBanner";
+import PremiumSubscription from "./PremiumSubscription";
+import StripeConnectCard from "./StripeConnectCard";
+import BookingURLPreview from "./BookingURLPreview";
+import PlanSelectionCard from "./PlanSelectionCard";
 import "../styles/ownerMyBusiness.css";
 
 const emojiOptions = ["👍", "❤️", "🔥", "💅", "🎉"];
@@ -13,6 +19,12 @@ const OwnerMyBusiness = () => {
     description: "",
     businessType: "salon",
   });
+  const [businessId, setBusinessId] = useState(null); // Business ID for verification
+  const [businessSlug, setBusinessSlug] = useState(null); // Business slug for booking URL
+  const [stripeConnected, setStripeConnected] = useState(false); // Stripe Connect status
+  const [businessStatus, setBusinessStatus] = useState(null); // Track admin approval status
+  const [listingType, setListingType] = useState(null); // Track listing type from database (free/premium/null)
+  const [selectedPlan, setSelectedPlan] = useState(null); // Track temporary plan selection before saving
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [gallery, setGallery] = useState([]);
@@ -37,7 +49,11 @@ const OwnerMyBusiness = () => {
   const loadBusiness = async () => {
     try {
       const { data } = await ownerApi.get("/business");
-      if (data) {
+      if (data && data._id) {
+        setBusinessId(data._id); // Store business ID for verification
+        setBusinessSlug(data.slug || data.bookingSlug); // Store booking slug
+        setStripeConnected(data.verificationSteps?.stripeConnected || false); // Store Stripe status
+        setListingType(data.listingType || null); // Load listing type from database
         setForm({
           name: data.name || "",
           city: data.city || "",
@@ -47,6 +63,7 @@ const OwnerMyBusiness = () => {
           businessType: data.businessType || "salon",
         });
         setGallery(data.images || []);
+        setBusinessStatus(data.status || "pending"); // Set admin approval status
       }
     } catch (error) {
       console.error("Failed to load business", error);
@@ -90,8 +107,14 @@ const OwnerMyBusiness = () => {
     setLoading(true);
     setMessage("");
     try {
-      await ownerApi.put("/business", form);
+      // Include selectedPlan as listingType when saving
+      const payload = {
+        ...form,
+        listingType: selectedPlan || listingType, // Save selected plan or existing listingType
+      };
+      await ownerApi.put("/business", payload);
       setMessage("Business saved.");
+      await loadBusiness(); // Reload business to get updated data including businessId and listingType
     } catch (error) {
       setMessage("Unable to save business.");
     } finally {
@@ -173,6 +196,17 @@ const OwnerMyBusiness = () => {
     }
   };
 
+  const handlePlanSelection = (plan) => {
+    setSelectedPlan(plan);
+    // Auto-scroll to form after selection
+    setTimeout(() => {
+      const formElement = document.querySelector('.owner-business-page__card');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
   const renderFeedItem = (item) => {
     const subtitle = (() => {
       switch (item.type) {
@@ -225,6 +259,198 @@ const OwnerMyBusiness = () => {
         <h1>My Business + Social Feed</h1>
         <p>Keep your listing polished and publish engaging content in one place.</p>
       </header>
+
+      {/* Plan Selection - Show for ALL users where listingType is null */}
+      {listingType === null && !selectedPlan && (
+        <PlanSelectionCard onSelectPlan={handlePlanSelection} currentPlan={selectedPlan} />
+      )}
+
+      {/* Confirmation Message + Back Button after plan selection */}
+      {listingType === null && selectedPlan && (
+        <div>
+          {/* Back Button */}
+          <button
+            onClick={() => setSelectedPlan(null)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
+              marginBottom: '16px',
+              background: 'white',
+              border: '2px solid #e2e8f0',
+              borderRadius: '8px',
+              color: '#64748b',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = '#f8fafc';
+              e.currentTarget.style.borderColor = '#cbd5e1';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = 'white';
+              e.currentTarget.style.borderColor = '#e2e8f0';
+            }}
+          >
+            ← Back to Listing Options
+          </button>
+
+          {/* Confirmation Banner */}
+          <div style={{
+            padding: '16px',
+            marginBottom: '24px',
+            borderRadius: '12px',
+            backgroundColor: selectedPlan === 'free' ? '#f0f9ff' : '#fdf2f8',
+            border: `2px solid ${selectedPlan === 'free' ? '#3b82f6' : '#E91E63'}`,
+            color: '#0f172a'
+          }}>
+            <p style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}>
+              {selectedPlan === 'free' ? '🆓' : '💎'} You selected <strong>{selectedPlan === 'free' ? 'Free Listing' : 'Premium Listing'}</strong>
+            </p>
+            <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#64748b' }}>
+              {selectedPlan === 'free'
+                ? 'Complete basic business information to get listed in the directory'
+                : 'Complete your business info, then subscribe to premium for top placement'
+              }
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content - Show if user selected a plan OR has a listing type */}
+      {(selectedPlan || listingType) && (
+        <>
+      {/* Business Status Banner */}
+      {businessStatus && (
+        <div
+          style={{
+            padding: '16px',
+            marginBottom: '24px',
+            borderRadius: '8px',
+            backgroundColor:
+              businessStatus === 'approved'
+                ? '#d1fae5'
+                : businessStatus === 'rejected'
+                ? '#fee2e2'
+                : '#fef3c7',
+            border: `2px solid ${
+              businessStatus === 'approved'
+                ? '#10b981'
+                : businessStatus === 'rejected'
+                ? '#ef4444'
+                : '#f59e0b'
+            }`,
+            color: '#1f2937',
+          }}
+        >
+          <strong style={{ display: 'block', marginBottom: '4px', fontSize: '16px' }}>
+            {businessStatus === 'approved'
+              ? '✅ Business Approved'
+              : businessStatus === 'rejected'
+              ? '❌ Business Not Approved'
+              : '⏳ Pending Admin Approval'}
+          </strong>
+          <p style={{ margin: 0, fontSize: '14px' }}>
+            {businessStatus === 'approved'
+              ? 'Your business is live and visible to all visitors in the directory.'
+              : businessStatus === 'rejected'
+              ? 'Your business was not approved. Please contact support for details.'
+              : 'Your business is under review. You can edit your information, but it won\'t be visible to visitors until an admin approves it.'}
+          </p>
+        </div>
+      )}
+
+      {/* Enhanced 3-Tier Verification Status Banner */}
+      {businessId && (
+        <div style={{ marginBottom: '32px' }}>
+          <VerificationStatusBanner businessId={businessId} />
+        </div>
+      )}
+
+      {/* Verification Progress Checklist */}
+      {businessId && (
+        <div style={{ marginBottom: '32px' }}>
+          <VerificationProgress businessId={businessId} />
+        </div>
+      )}
+
+      {/* PREMIUM-ONLY SECTION - Show ONLY for Premium listing */}
+      {businessId && (listingType === 'premium' || selectedPlan === 'premium') && (
+        <>
+          {/* Premium Features Section Header */}
+          {listingType === null && selectedPlan === 'premium' && (
+            <div style={{
+              padding: '24px',
+              marginBottom: '32px',
+              background: 'linear-gradient(135deg, #fdf2f8 0%, #fae8ff 100%)',
+              borderRadius: '16px',
+              border: '2px solid #E91E63'
+            }}>
+              <h2 style={{ margin: '0 0 8px 0', fontSize: '24px', fontWeight: 700, color: '#0f172a' }}>
+                💎 Premium Features
+              </h2>
+              <p style={{ margin: 0, fontSize: '15px', color: '#64748b' }}>
+                Complete these steps to unlock premium benefits: top placement, verified badge, and online payments
+              </p>
+            </div>
+          )}
+
+          {/* Premium Subscription Card */}
+          <div style={{ marginBottom: '32px' }}>
+            <PremiumSubscription businessId={businessId} />
+          </div>
+
+          {/* Stripe Connect Card */}
+          <div style={{ marginBottom: '32px' }}>
+            <StripeConnectCard businessId={businessId} />
+          </div>
+
+          {/* Booking URL Preview */}
+          <div style={{ marginBottom: '32px' }}>
+            <BookingURLPreview
+              businessId={businessId}
+              businessSlug={businessSlug}
+              stripeConnected={stripeConnected}
+            />
+          </div>
+        </>
+      )}
+
+      {/* FREE LISTING INFO - Show ONLY for Free listing users */}
+      {(listingType === 'free' || selectedPlan === 'free') && businessId && (
+        <div style={{
+          padding: '20px',
+          marginBottom: '32px',
+          background: '#f0f9ff',
+          borderRadius: '12px',
+          border: '2px solid #3b82f6'
+        }}>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 700, color: '#0f172a' }}>
+            🆓 Free Listing Active
+          </h3>
+          <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#64748b' }}>
+            Your business will appear in the directory. Want to stand out more?
+          </p>
+          <button
+            onClick={() => setSelectedPlan('premium')}
+            style={{
+              padding: '10px 20px',
+              background: 'linear-gradient(135deg, #E91E63 0%, #F06292 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Upgrade to Premium
+          </button>
+        </div>
+      )}
 
       <div className="owner-business-page__grid">
         <div className="owner-business-page__card">
@@ -413,6 +639,8 @@ const OwnerMyBusiness = () => {
           {!feed.length && <p>No feed items available.</p>}
         </div>
       </div>
+        </>
+      )}
     </section>
   );
 };

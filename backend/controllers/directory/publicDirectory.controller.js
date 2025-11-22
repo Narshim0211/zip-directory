@@ -48,9 +48,8 @@ exports.searchBusinesses = catchAsync(async (req, res, next) => {
     city: new RegExp(city, 'i'), // Case-insensitive city search
   };
 
-  // Show approved and pending businesses (for now - can be restricted later)
-  // Only hide rejected businesses
-  query.status = { $ne: 'rejected' };
+  // CRITICAL: Only show admin-approved businesses in public directory
+  query.status = 'approved';
 
   if (category && category !== 'All' && category !== 'All Categories') {
     query.category = category;

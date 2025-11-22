@@ -43,20 +43,18 @@ export const FollowProvider = ({ children }) => {
       // Backend returns array of follow objects with following/followingId
       const data = response.data || response;
 
-      console.log('[FollowContext] Raw API response:', data);
-
       // Extract user IDs from the response
       const userIds = data.map(f => {
         // The API returns Follow documents with populated followingId/following fields
         // We need to extract the user ID from the populated object
-        const id = f.followingId?._id || f.following?._id || f.followingId || f.following;
-        console.log('[FollowContext] Extracted ID:', id, 'from:', f);
-        return id;
+        return f.followingId?._id || f.following?._id || f.followingId || f.following;
       }).filter(Boolean);
 
       setFollowingList(userIds);
 
-      console.log('[FollowContext] Fetched following list:', userIds.length, 'users -', userIds);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[FollowContext] Fetched following list:', userIds.length, 'users');
+      }
     } catch (error) {
       console.error('[FollowContext] Failed to fetch following list:', error);
       setFollowingList([]);
@@ -68,9 +66,7 @@ export const FollowProvider = ({ children }) => {
    */
   const isFollowing = useCallback((userId) => {
     if (!userId) return false;
-    const result = followingList.includes(userId);
-    console.log(`[FollowContext] isFollowing(${userId}):`, result, '| Following list:', followingList);
-    return result;
+    return followingList.includes(userId);
   }, [followingList]);
 
   /**
@@ -89,7 +85,6 @@ export const FollowProvider = ({ children }) => {
       // Refresh from backend to ensure consistency
       await fetchFollowingList();
 
-      console.log('[FollowContext] Followed user:', userId);
       return { success: true };
     } catch (error) {
       console.error('[FollowContext] Failed to follow user:', error);
@@ -122,7 +117,6 @@ export const FollowProvider = ({ children }) => {
       // Refresh from backend to ensure consistency
       await fetchFollowingList();
 
-      console.log('[FollowContext] Unfollowed user:', userId);
       return { success: true };
     } catch (error) {
       console.error('[FollowContext] Failed to unfollow user:', error);

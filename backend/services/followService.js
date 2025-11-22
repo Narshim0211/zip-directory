@@ -1,5 +1,6 @@
 const Follow = require('../models/Follow');
 const User = require('../models/User');
+const cache = require('../utils/simpleCache');
 
 /**
  * Follow a user with role-aware permission checks
@@ -56,8 +57,15 @@ const follow = async (followerId, targetId, followerRole, targetRole) => {
     following: targetId,
     relationType: `${followerRole}_to_${targetRole}` // Fixed: use underscores, not hyphens
   });
-  console.log('✅ [followService.follow] Follow created successfully:', newFollow._id);
-  console.log('[DEBUG] NEW FOLLOW RECORD:', JSON.stringify(newFollow, null, 2));
+
+  // Invalidate cached stats for both users
+  cache.delete(`follow:stats:${followerId}`);
+  cache.delete(`follow:stats:${targetId}`);
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[followService] Follow created:', newFollow._id);
+  }
+
   return {
     alreadyFollowing: false,
     follow: newFollow
@@ -78,38 +86,46 @@ const unfollow = async (followerId, targetId) => {
       { follower: followerId, following: targetId }
     ]
   });
+
+  // Invalidate cached stats for both users
+  cache.delete(`follow:stats:${followerId}`);
+  cache.delete(`follow:stats:${targetId}`);
 };
 
 /**
  * Get all users that a specific user is following
  * @param {ObjectId} followerId - ID of user
+ * @param {Object} options - Pagination options
  * @returns {Promise<Array>} Array of follow documents with populated user data
  */
-const getFollowing = async (followerId) => {
-  return Follow.find({
-    $or: [
-      { followerId },
-      { follower: followerId }
-    ]
-  })
+const getFollowing = async (followerId, options = {}) => {
+  const limit = Math.min(Number(options.limit) || 50, 200); // Max 200 follows per page
+  const skip = Number(options.skip) || 0;
+
+  // OPTIMIZED: Use single-field query instead of $or
+  return Follow.find({ followerId })
     .populate('followingId', 'firstName lastName avatarUrl role handle slug')
-    .populate('following', 'firstName lastName avatarUrl role handle slug');
+    .limit(limit)
+    .skip(skip)
+    .sort({ createdAt: -1 }); // Most recent follows first
 };
 
 /**
  * Get all users who are following a specific user
  * @param {ObjectId} targetId - ID of user
+ * @param {Object} options - Pagination options
  * @returns {Promise<Array>} Array of follow documents with populated user data
  */
-const getFollowers = async (targetId) => {
-  return Follow.find({
-    $or: [
-      { followingId: targetId },
-      { following: targetId }
-    ]
-  })
+const getFollowers = async (targetId, options = {}) => {
+  const limit = Math.min(Number(options.limit) || 50, 200); // Max 200 followers per page
+  const skip = Number(options.skip) || 0;
+
+  // OPTIMIZED: Use single-field query instead of $or
+  return Follow.find({ followingId: targetId })
     .populate('followerId', 'firstName lastName avatarUrl role handle slug')
-    .populate('follower', 'firstName lastName avatarUrl role handle slug');
+    .limit(limit)
+    .skip(skip)
+    .sort({ createdAt: -1 }); // Most recent followers first
 };
 
 /**
@@ -134,22 +150,21 @@ const isFollowing = async (followerId, targetId) => {
  * @returns {Promise<Object>} { followingCount, followersCount }
  */
 const getFollowStats = async (userId) => {
-  console.log('[DEBUG] getCounts called for:', userId);
+  // Cache follow stats for 5 minutes (frequently accessed on profiles)
+  const cacheKey = `follow:stats:${userId}`;
+  const cached = cache.get(cacheKey);
+  if (cached) return cached;
 
+  // OPTIMIZED: Use single-field queries instead of $or for better index usage
   const [followingCount, followersCount] = await Promise.all([
-    Follow.countDocuments({
-      $or: [{ followerId: userId }, { follower: userId }]
-    }),
-    Follow.countDocuments({
-      $or: [{ followingId: userId }, { following: userId }]
-    })
+    Follow.countDocuments({ followerId: userId }),
+    Follow.countDocuments({ followingId: userId })
   ]);
 
-  console.log('[DEBUG] followingCount from DB:', followingCount);
-  console.log('[DEBUG] followersCount from DB:', followersCount);
-  console.log('[DEBUG] Returning object:', { followingCount, followersCount });
+  const stats = { followingCount, followersCount };
+  cache.set(cacheKey, stats, 300); // 5 minutes TTL
 
-  return { followingCount, followersCount };
+  return stats;
 };
 
 /**

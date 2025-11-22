@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import IdentityBadge from "../../components/SharedComponents/IdentityBadge";
 import FollowButton from "../../components/FollowButton";
 import SurveyEngagementBar from "../../components/engagement/SurveyEngagementBar";
+import VerificationBadgeInline from "../../components/VerificationBadgeInline";
 import v1Client from "../../api/v1";
 
 /**
@@ -10,8 +11,10 @@ import v1Client from "../../api/v1";
  *
  * Follow state is now managed globally by FollowContext.
  * No more local follow state - all surveys from same user update together!
+ *
+ * OPTIMIZED with React.memo - prevents re-renders when props haven't changed
  */
-export default function FeedSurveyCard({ survey }) {
+const FeedSurveyCard = React.memo(function FeedSurveyCard({ survey }) {
   const [voting, setVoting] = useState(false);
   const [selected, setSelected] = useState(null);
   const [voted, setVoted] = useState(false);
@@ -58,6 +61,9 @@ export default function FeedSurveyCard({ survey }) {
                 style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}
               >
                 <IdentityBadge identity={survey.identity} author={survey.author} />
+                {survey.author?.role === 'owner' && survey.business?.verificationStatus && (
+                  <VerificationBadgeInline status={survey.business.verificationStatus} />
+                )}
               </Link>
               <span style={{
                 display: 'inline-block',
@@ -139,4 +145,6 @@ export default function FeedSurveyCard({ survey }) {
       </div>
     </article>
   );
-}
+});
+
+export default FeedSurveyCard;

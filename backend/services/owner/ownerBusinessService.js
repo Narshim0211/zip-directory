@@ -1,6 +1,9 @@
 const Business = require("../../models/Business");
 
 const ensureBusinessOwner = async (ownerId, payload = {}) => {
+  // CRITICAL: Fetch existing business to preserve admin-controlled fields
+  const existingBusiness = await Business.findOne({ owner: ownerId });
+
   const update = {
     owner: ownerId,
     name: payload.name,
@@ -15,6 +18,17 @@ const ensureBusinessOwner = async (ownerId, payload = {}) => {
   // Only include businessType if provided and valid
   if (payload.businessType && ["salon", "spa", "freelance"].includes(payload.businessType)) {
     update.businessType = payload.businessType;
+  }
+
+  // Only include listingType if provided and valid
+  if (payload.listingType && ["free", "premium"].includes(payload.listingType)) {
+    update.listingType = payload.listingType;
+  }
+
+  // CRITICAL: Preserve admin-controlled status field (pending/approved/rejected)
+  // Owners can edit their business, but status can only be changed by admins
+  if (existingBusiness && existingBusiness.status) {
+    update.status = existingBusiness.status;
   }
 
   const options = { new: true, upsert: true, setDefaultsOnInsert: true };

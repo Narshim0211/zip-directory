@@ -1,0 +1,236 @@
+/* Plan Selection Component Styles */
+
+.plan-selection {
+  background: white;
+  border-radius: 16px;
+  padding: 48px 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.plan-selection__header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.plan-selection__header h2 {
+  margin: 0 0 8px 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.plan-selection__header p {
+  margin: 0;
+  font-size: 16px;
+  color: #64748b;
+}
+
+.plan-selection__cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.plan-card {
+  position: relative;
+  background: white;
+  border: 3px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 32px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  border-color: #cbd5e1;
+}
+
+.plan-card--premium {
+  background: linear-gradient(135deg, #fff5f7 0%, #ffe4ec 100%);
+  border-color: #E91E63;
+}
+
+.plan-card--premium:hover {
+  border-color: #C2185B;
+  box-shadow: 0 12px 32px rgba(233, 30, 99, 0.2);
+}
+
+.plan-card--selected {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.plan-card--premium.plan-card--selected {
+  border-color: #E91E63;
+  box-shadow: 0 0 0 4px rgba(233, 30, 99, 0.15);
+}
+
+.plan-card__badge {
+  position: absolute;
+  top: -12px;
+  right: 24px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.plan-card__badge--free {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.plan-card__badge--premium {
+  background: linear-gradient(135deg, #E91E63 0%, #F06292 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.plan-card h3 {
+  margin: 0 0 16px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.plan-card__price {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.plan-card__amount {
+  font-size: 48px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.plan-card--premium .plan-card__amount {
+  background: linear-gradient(135deg, #E91E63 0%, #F06292 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.plan-card__period {
+  font-size: 16px;
+  color: #64748b;
+}
+
+.plan-card__features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px 0;
+  display: grid;
+  gap: 12px;
+}
+
+.plan-card__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.plan-card__icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.plan-card__feature--included .plan-card__icon {
+  color: #22c55e;
+}
+
+.plan-card__feature--excluded {
+  color: #94a3b8;
+}
+
+.plan-card__feature--excluded .plan-card__icon {
+  color: #cbd5e1;
+}
+
+.plan-card__feature--premium {
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.plan-card__feature--premium .plan-card__icon {
+  font-size: 18px;
+}
+
+.plan-card__button {
+  width: 100%;
+  padding: 16px 32px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.plan-card__button:hover {
+  background: #e2e8f0;
+  transform: translateY(-2px);
+}
+
+.plan-card__button--premium {
+  background: linear-gradient(135deg, #E91E63 0%, #F06292 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.plan-card__button--premium:hover {
+  box-shadow: 0 6px 16px rgba(233, 30, 99, 0.4);
+}
+
+.plan-selection__footer {
+  text-align: center;
+  padding-top: 16px;
+  border-top: 2px solid #f1f5f9;
+}
+
+.plan-selection__footer p {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+@media (max-width: 768px) {
+  .plan-selection {
+    padding: 32px 24px;
+  }
+
+  .plan-selection__header h2 {
+    font-size: 24px;
+  }
+
+  .plan-selection__cards {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .plan-card {
+    padding: 24px;
+  }
+
+  .plan-card__amount {
+    font-size: 36px;
+  }
+}

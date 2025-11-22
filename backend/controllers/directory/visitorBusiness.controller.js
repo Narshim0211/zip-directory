@@ -38,8 +38,8 @@ exports.getFullProfile = catchAsync(async (req, res, next) => {
     return next(new AppError('Business not found', 404));
   }
 
-  // Show pending and approved businesses, hide rejected ones
-  if (business.status === 'rejected') {
+  // CRITICAL: Only show admin-approved businesses to visitors
+  if (business.status !== 'approved') {
     return next(new AppError('Business not available', 404));
   }
 

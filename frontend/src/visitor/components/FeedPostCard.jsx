@@ -3,14 +3,17 @@ import { Link } from "react-router-dom";
 import IdentityBadge from "../../components/SharedComponents/IdentityBadge";
 import FollowButton from "../../components/FollowButton";
 import PostEngagementBar from "../../components/engagement/PostEngagementBar";
+import VerificationBadgeInline from "../../components/VerificationBadgeInline";
 
 /**
  * FeedPostCard - Post card for visitor feed
  *
  * Follow state is now managed globally by FollowContext.
  * No more local follow state - all posts from same user update together!
+ *
+ * OPTIMIZED with React.memo - prevents re-renders when props haven't changed
  */
-export default function FeedPostCard({ post }) {
+const FeedPostCard = React.memo(function FeedPostCard({ post }) {
   return (
     <article className="feed-card">
       <header className="feed-card__header">
@@ -23,6 +26,9 @@ export default function FeedPostCard({ post }) {
                 style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
               >
                 <IdentityBadge identity={post.identity} author={post.author} />
+                {post.author?.role === 'owner' && post.business?.verificationStatus && (
+                  <VerificationBadgeInline status={post.business.verificationStatus} />
+                )}
               </Link>
               <span style={{
                 display: 'inline-block',
@@ -55,5 +61,7 @@ export default function FeedPostCard({ post }) {
       </div>
     </article>
   );
-}
+});
+
+export default FeedPostCard;
 

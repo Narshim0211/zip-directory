@@ -4,6 +4,7 @@ const Follow = require('../models/Follow');
 const OwnerPost = require('../models/OwnerPost');
 const OwnerProfile = require('../models/OwnerProfile');
 const VisitorProfile = require('../models/VisitorProfile');
+const cache = require('../utils/simpleCache');
 
 const mapPost = (doc) => ({
   type: 'post',
@@ -84,6 +85,13 @@ exports.getFeedForVisitor = async (userId, options = {}) => {
     const limit = Math.min(Number(options.limit) || 20, 50);
     const cursor = options.cursor; // createdAt timestamp for pagination
 
+    // Cache initial feed for 2 minutes (no cursor = first page)
+    if (!cursor) {
+      const cacheKey = `feed:visitor:${userId}:${limit}`;
+      const cached = cache.get(cacheKey);
+      if (cached) return cached;
+    }
+
     const followedOwners = await Follow.find({ follower: userId, relationType: 'visitor_to_owner' }).distinct('following');
     const followedVisitors = await Follow.find({ follower: userId, relationType: 'visitor_to_visitor' }).distinct('following');
 
@@ -151,6 +159,12 @@ exports.getFeedForVisitor = async (userId, options = {}) => {
     const sorted = feed
       .sort((a, b) => new Date(b.data.createdAt) - new Date(a.data.createdAt))
       .slice(0, limit);
+
+    // Cache initial feed for 2 minutes
+    if (!cursor) {
+      const cacheKey = `feed:visitor:${userId}:${limit}`;
+      cache.set(cacheKey, sorted, 120); // 2 minutes TTL
+    }
 
     return sorted;
   } catch (error) {

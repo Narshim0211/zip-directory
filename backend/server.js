@@ -1,10 +1,6 @@
 // Load environment variables FIRST before anything else
 require('dotenv').config();
 
-// Force override MONGO_URI to ensure it's correct
-process.env.MONGO_URI = 'mongodb+srv://Vercel-Admin-MoodTrackerapp:Mood%40123@moodtrackerapp.doviekn.mongodb.net/?appName=MoodTrackerapp';
-console.log('🔍 DEBUG: MONGO_URI =', process.env.MONGO_URI);
-
 const express = require('express');
 const detectPort = require('detect-port');
 const http = require('http');
@@ -73,12 +69,21 @@ mongoose
     try {
       const { startVisitorReminderCron } = require('./visitor/time/cron/reminderCron');
       const { startOwnerReminderCron } = require('./owner/time/cron/reminderCron');
-      
+
       startVisitorReminderCron();
       startOwnerReminderCron();
       logger.info('Reminder schedulers started');
     } catch (err) {
       logger.warn('Reminder schedulers failed to start:', err.message);
+    }
+
+    // Start Smart Search cron jobs (Open Now updater)
+    try {
+      const { initializeCronJobs } = require('./lib/cron/scheduler');
+      initializeCronJobs();
+      logger.info('Smart Search cron jobs started');
+    } catch (err) {
+      logger.warn('Smart Search cron jobs failed to start:', err.message);
     }
     
     // Verify email service configuration (non-blocking, suppressed)
@@ -169,6 +174,26 @@ const visitorBusinessRoutes = require('./routes/directory/visitorBusiness.routes
 app.use('/api/public/directory', publicDirectoryRoutes);
 app.use('/api/visitor/business', visitorBusinessRoutes);
 
+// Smart Search Routes (v1.0)
+const searchRoutes = require('./routes/search.Route');
+app.use('/api/search', searchRoutes);
+
+// Verification Routes (v1.0)
+const verificationRoutes = require('./routes/verification.routes');
+app.use('/api/v1/verification', verificationRoutes);
+
+// Stripe Connect Routes (v1.0)
+const stripeConnectRoutes = require('./routes/stripeConnect.routes');
+app.use('/api/v1/stripe-connect', stripeConnectRoutes);
+
+// Premium Subscription Routes (v1.0)
+const premiumRoutes = require('./routes/premium.routes');
+app.use('/api/v1/premium', premiumRoutes);
+
+// Health & Monitoring Routes
+const healthRoutes = require('./routes/health.routes');
+app.use('/api/health', healthRoutes);
+
 // V2 API routes (Facebook-style profiles)
 const v2OwnerProfilesRoutes = require('./routes/v2/ownerProfiles.routes');
 app.use('/api/v2/owner-profiles', v2OwnerProfilesRoutes);
@@ -202,10 +227,6 @@ try {
 }
 // NOTE: Old staff and booking routes removed - now using microservice architecture
 // All booking/staff operations go through /api/booking-service/* proxy
-
-// Legacy follow routes removed - now using unified v1 follow routes at /api/v1/follow
-// const followRoutes = require('./routes/followRoutes');
-// app.use('/api/follow', followRoutes);
 
 // Posts & Comments
 const postRoutes = require('./routes/postRoutes');

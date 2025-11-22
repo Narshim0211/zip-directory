@@ -62,7 +62,12 @@ const tryExtractVisitor = (req) => {
 router.get("/:id", async (req, res) => {
   try {
     const biz = await Business.findById(req.params.id);
-    if (!biz) return res.status(404).json({ message: "Business not found" });
+
+    // CRITICAL: Only show approved businesses in public view
+    if (!biz || biz.status !== 'approved') {
+      return res.status(404).json({ message: "Business not found" });
+    }
+
     const visitorId = tryExtractVisitor(req);
     analyticsService.recordProfileVisit(biz._id, visitorId).catch(() => {});
     res.json(biz);
@@ -215,11 +220,9 @@ router.get('/search', async (req, res) => {
       const nearby = await Business.aggregate(pipeline);
       if (nearby.length > 0) return res.json(nearby);
 
+      // CRITICAL: Fallback must also show only approved businesses
       const fallback = await Business.find({ status: 'approved' }).sort({ createdAt: -1 }).limit(50);
-      if (fallback.length > 0) return res.json(fallback);
-
-      const any = await Business.find({}).sort({ createdAt: -1 }).limit(50);
-      return res.json(any);
+      return res.json(fallback);
     }
 
     const filter = { status: 'approved' };
@@ -246,11 +249,9 @@ router.get('/search', async (req, res) => {
     let items = await q.sort(sortObj).limit(100);
     if (items.length > 0) return res.json(items);
 
+    // CRITICAL: Final fallback must also show only approved businesses
     const fallback = await Business.find({ status: 'approved' }).sort({ createdAt: -1 }).limit(50);
-    if (fallback.length > 0) return res.json(fallback);
-
-    const any = await Business.find({}).sort({ createdAt: -1 }).limit(50);
-    return res.json(any);
+    return res.json(fallback);
   } catch (e) {
     res.status(500).json({ message: e.message });
   }

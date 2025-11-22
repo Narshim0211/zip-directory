@@ -1,0 +1,70 @@
+{
+  "instructions": "Create these 2 indexes in MongoDB Atlas → Search tab",
+  "clusterName": "MoodTrackerapp",
+  "database": "test",
+  "collection": "businesses",
+  "indexes": [
+    {
+      "name": "default",
+      "description": "Full-text fuzzy search on name, keywords, and city",
+      "definition": {
+        "mappings": {
+          "dynamic": false,
+          "fields": {
+            "name": {
+              "type": "string",
+              "analyzer": "lucene.standard"
+            },
+            "serviceKeywords": {
+              "type": "string",
+              "analyzer": "lucene.standard"
+            },
+            "city": {
+              "type": "string",
+              "analyzer": "lucene.standard"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "autocomplete",
+      "description": "Instant suggestions as user types",
+      "definition": {
+        "mappings": {
+          "dynamic": false,
+          "fields": {
+            "name": {
+              "type": "autocomplete",
+              "analyzer": "lucene.standard",
+              "tokenization": "edgeGram",
+              "minGrams": 2,
+              "maxGrams": 15,
+              "foldDiacritics": true
+            },
+            "serviceKeywords": {
+              "type": "autocomplete",
+              "analyzer": "lucene.standard",
+              "tokenization": "edgeGram",
+              "minGrams": 2,
+              "maxGrams": 15,
+              "foldDiacritics": true
+            }
+          }
+        }
+      }
+    }
+  ],
+  "howToCreate": [
+    "1. Go to https://cloud.mongodb.com",
+    "2. Select your cluster (MoodTrackerapp)",
+    "3. Click the 'Search' tab",
+    "4. Click 'Create Search Index'",
+    "5. Choose 'JSON Editor' mode",
+    "6. Copy-paste the 'definition' JSON from above",
+    "7. Set index name to 'default' or 'autocomplete'",
+    "8. Click 'Create Search Index'",
+    "9. Wait 1-5 minutes for index to become Active",
+    "10. Repeat for second index"
+  ]
+}

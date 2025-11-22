@@ -1,0 +1,111 @@
+/* Verification Status Banner Styles */
+
+.verification-banner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  border-radius: 12px;
+  border: 2px solid;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.verification-banner--loading {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  justify-content: center;
+}
+
+.verification-banner__spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.verification-banner__icon {
+  font-size: 48px;
+  flex-shrink: 0;
+}
+
+.verification-banner__content {
+  flex: 1;
+}
+
+.verification-banner__content h3 {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.verification-banner__content p {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.verification-banner__progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-ring {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.progress-ring__svg {
+  transform: rotate(-90deg);
+}
+
+.progress-ring__circle {
+  transition: stroke-dasharray 0.3s ease;
+}
+
+.progress-ring__text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.verification-banner__progress-label {
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+}
+
+.verification-banner__cta {
+  display: flex;
+  align-items: center;
+}
+
+.verification-banner__cta-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+@media (max-width: 768px) {
+  .verification-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .verification-banner__icon {
+    font-size: 36px;
+  }
+}

@@ -158,6 +158,166 @@ const businessSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // If false, system auto-assigns staff
     },
+
+    // ========================================
+    // 🔍 SMART SEARCH ENGINE FIELDS (v1.0)
+    // ========================================
+
+    // Service keywords for fuzzy search (e.g., ["braids", "knotless braids", "balayage"])
+    serviceKeywords: {
+      type: [String],
+      default: [],
+      index: true,
+    },
+
+    // Business hours for "Open Now" filtering
+    hours: {
+      mon: { type: String, default: "" }, // "09:00-18:00" or "closed"
+      tue: { type: String, default: "" },
+      wed: { type: String, default: "" },
+      thu: { type: String, default: "" },
+      fri: { type: String, default: "" },
+      sat: { type: String, default: "" },
+      sun: { type: String, default: "" },
+    },
+
+    // Calculated by cron job every hour
+    isOpenNow: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
+    // Price level indicator (1=$ 2=$$ 3=$$$ 4=$$$$)
+    priceLevel: {
+      type: Number,
+      min: 1,
+      max: 4,
+      default: 2, // Default to $$
+    },
+
+    // Trending signal - updated by analytics
+    viewsLast7Days: {
+      type: Number,
+      default: 0,
+      index: true,
+    },
+
+    // Trust signals for ranking boost
+    verifiedBadges: {
+      type: [String],
+      default: [],
+      // Examples: ["verified_owner", "verified_location", "verified_phone"]
+    },
+
+    // Admin-assigned quality score (0-100)
+    qualityScore: {
+      type: Number,
+      default: 50,
+      min: 0,
+      max: 100,
+    },
+
+    // ========================================
+    // 🎖️ VERIFICATION SYSTEM FIELDS (v1.0)
+    // ========================================
+
+    // Overall verification tier
+    verificationStatus: {
+      type: String,
+      enum: ["unverified", "basic", "fully_verified"],
+      default: "unverified",
+      index: true,
+    },
+
+    // Individual verification steps tracking
+    verificationSteps: {
+      emailVerified: {
+        type: Boolean,
+        default: false,
+      },
+      phoneVerified: {
+        type: Boolean,
+        default: false,
+      },
+      addressVerified: {
+        type: Boolean,
+        default: false,
+      },
+      photosUploaded: {
+        type: Number,
+        default: 0,
+      },
+      stripeConnected: {
+        type: Boolean,
+        default: false,
+      },
+      documentsUploaded: {
+        type: Boolean,
+        default: false,
+      },
+      profileCompleted: {
+        type: Number, // Percentage 0-100
+        default: 0,
+      },
+      premiumPlanActive: {
+        type: Boolean,
+        default: false,
+      },
+    },
+
+    // Verification metadata
+    verificationMeta: {
+      lastVerifiedAt: Date,
+      verifiedBy: String, // Admin ID if manually verified
+      rejectionReason: String, // If verification was rejected
+    },
+
+    // Stripe Connect account ID (for customer payment processing)
+    stripeAccountId: {
+      type: String,
+      default: "",
+      sparse: true, // Allow multiple null values but enforce uniqueness when present
+    },
+
+    // Stripe Customer ID (for platform subscription billing)
+    stripeCustomerId: {
+      type: String,
+      default: "",
+      sparse: true,
+    },
+
+    // Premium Subscription to Platform (monthly payment to us)
+    premiumSubscription: {
+      active: {
+        type: Boolean,
+        default: false,
+      },
+      subscriptionId: {
+        type: String,
+        default: "",
+      },
+      status: {
+        type: String,
+        enum: ["inactive", "active", "past_due", "canceled", "trialing"],
+        default: "inactive",
+      },
+      currentPeriodEnd: {
+        type: Date,
+      },
+      cancelAtPeriodEnd: {
+        type: Boolean,
+        default: false,
+      },
+    },
+
+    // Listing Type Selection (Free vs Premium)
+    listingType: {
+      type: String,
+      enum: ["free", "premium"],
+      default: null,
+      sparse: true, // Allows null values, enforces uniqueness for non-null values if needed
+    },
   },
   { timestamps: true }
 );
@@ -169,6 +329,11 @@ businessSchema.index({ state: 1, city: 1, zip: 1 });
 businessSchema.index({ location: "2dsphere" });
 businessSchema.index({ businessType: 1 });
 businessSchema.index({ bookingSlug: 1 }); // fast lookup for public booking pages
+
+// 🔍 Smart Search Engine Indexes (v1.0)
+businessSchema.index({ status: 1, isOpenNow: 1 }); // Fast filtering for approved + open businesses
+businessSchema.index({ viewsLast7Days: -1 }); // Trending sort
+businessSchema.index({ priceLevel: 1, ratingAverage: -1 }); // Price + quality filter
 
 // ⚙️ Virtual population (get reviews automatically)
 businessSchema.virtual("reviews", {
@@ -212,7 +377,7 @@ businessSchema.methods.toSoftProfileJSON = function() {
  * Returns full profile data (all visitor-safe fields)
  * Used by: /api/visitor/business/:id/full
  * Access: Private (authenticated visitors only)
- * 
+ *
  * @returns {Object} Full profile with contact info, services, hours, etc.
  */
 businessSchema.methods.toFullProfileJSON = function() {
@@ -240,8 +405,103 @@ businessSchema.methods.toFullProfileJSON = function() {
     ratingAverage: this.ratingAverage || 0,
     ratingsCount: this.ratingsCount || 0,
     createdAt: this.createdAt,
-    updatedAt: this.updatedAt
+    updatedAt: this.updatedAt,
+    verificationStatus: this.verificationStatus,
+    verificationSteps: this.verificationSteps
   };
+};
+
+/**
+ * 🎖️ VERIFICATION TIER CALCULATION
+ *
+ * Automatically calculates verification tier based on completed steps.
+ * Called after any verification step is updated.
+ *
+ * Tier Rules:
+ * - Unverified: Default state (0-2 steps completed)
+ * - Basic: Email + Phone verified, 2+ photos, address confirmed (3-5 steps)
+ * - Fully Verified: All basic steps + Stripe connected + profile complete (6+ steps)
+ *
+ * @returns {String} New verification status
+ */
+businessSchema.methods.calculateVerificationTier = function() {
+  const steps = this.verificationSteps;
+  let score = 0;
+
+  // Count completed steps
+  if (steps.emailVerified) score += 1;
+  if (steps.phoneVerified) score += 1;
+  if (steps.addressVerified) score += 1;
+  if (steps.photosUploaded >= 2) score += 1;
+  if (steps.stripeConnected) score += 1;
+  if (steps.documentsUploaded) score += 1;
+  if (steps.profileCompleted >= 80) score += 1;
+
+  // Determine tier based on score
+  if (score >= 6 && steps.stripeConnected) {
+    this.verificationStatus = "fully_verified";
+  } else if (score >= 3 && steps.emailVerified && steps.phoneVerified) {
+    this.verificationStatus = "basic";
+  } else {
+    this.verificationStatus = "unverified";
+  }
+
+  return this.verificationStatus;
+};
+
+/**
+ * 📊 PROFILE COMPLETION PERCENTAGE
+ *
+ * Calculates how complete the business profile is (0-100%)
+ * Used to encourage owners to complete their profiles
+ *
+ * @returns {Number} Completion percentage (0-100)
+ */
+businessSchema.methods.calculateProfileCompletion = function() {
+  let completed = 0;
+  const total = 10;
+
+  // Basic info (4 points)
+  if (this.name) completed += 1;
+  if (this.address) completed += 1;
+  if (this.phone) completed += 1;
+  if (this.email) completed += 1;
+
+  // Business details (3 points)
+  if (this.description && this.description.length > 50) completed += 1;
+  if (this.services && this.services.length > 0) completed += 1;
+  if (this.hours && Object.values(this.hours).some(h => h && h !== 'closed')) completed += 1;
+
+  // Media (2 points)
+  if (this.photos && this.photos.length >= 2) completed += 1;
+  if (this.logoUrl || this.coverPhotoUrl) completed += 1;
+
+  // Trust signals (1 point)
+  if (this.verificationSteps.stripeConnected) completed += 1;
+
+  const percentage = Math.round((completed / total) * 100);
+  this.verificationSteps.profileCompleted = percentage;
+
+  return percentage;
+};
+
+/**
+ * 🔄 UPDATE VERIFICATION STATUS
+ *
+ * Convenience method to update verification step and recalculate tier
+ *
+ * @param {String} step - The step to update (e.g., 'emailVerified')
+ * @param {Boolean|Number} value - The new value
+ * @returns {Promise<Business>} Updated business document
+ */
+businessSchema.methods.updateVerificationStep = async function(step, value) {
+  if (this.verificationSteps.hasOwnProperty(step)) {
+    this.verificationSteps[step] = value;
+    this.calculateProfileCompletion();
+    this.calculateVerificationTier();
+    return await this.save();
+  }
+  throw new Error(`Invalid verification step: ${step}`);
 };
 
 module.exports = mongoose.model("Business", businessSchema);

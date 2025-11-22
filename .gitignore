@@ -68,3 +68,83 @@ services/profile-service/.env
 # Exclude "nul" files (Windows null device file artifacts)
 nul
 **/nul
+
+# ====================================
+# Additional Sensitive Files
+# ====================================
+# Credentials and secrets
+credentials.json
+**/credentials.json
+secrets.json
+**/secrets.json
+config.json
+**/config.json
+
+# SSL/TLS certificates and keys
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+
+# SSH keys
+id_rsa
+id_rsa.pub
+*.ppk
+
+# Database dumps
+*.sql
+*.dump
+*.backup
+
+# Logs with potential sensitive data
+*.log
+logs/
+**/*.log
+
+# IDE and Editor files (may contain sensitive workspace settings)
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Dependency directories
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+*.min.js
+*.min.css
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.next/
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Local development files
+.env.development.local
+.env.test.local
+.env.production.local

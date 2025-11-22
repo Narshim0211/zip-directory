@@ -49,4 +49,9 @@ postSchema.index({ isPromoted: -1 });
 postSchema.index({ author: 1, createdAt: -1 });
 postSchema.index({ business: 1 });
 
+// CRITICAL PERFORMANCE INDEXES - Added for 10k user scale
+postSchema.index({ visibility: 1, createdAt: -1 }); // Global feed queries
+postSchema.index({ visibleToVisitors: 1, visibility: 1, createdAt: -1 }); // Visitor feed
+postSchema.index({ author: 1, visibility: 1, createdAt: -1 }); // User profile posts
+
 module.exports = mongoose.model('Post', postSchema);
