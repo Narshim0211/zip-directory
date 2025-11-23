@@ -1,0 +1,404 @@
+/**
+ * Trending Week Panel - Premium Beauty-Tech Design
+ * Right sidebar panel showing top 5 trending surveys by engagement
+ */
+
+.trending-week-panel {
+  background: linear-gradient(135deg, #FAFBFC 0%, #F7FAFC 100%);
+  border-radius: 16px;
+  padding: 20px;
+  height: fit-content;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  position: sticky;
+  top: 80px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #E2E8F0;
+}
+
+/* Custom scrollbar */
+.trending-week-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.trending-week-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.trending-week-panel::-webkit-scrollbar-thumb {
+  background: #E2E8F0;
+  border-radius: 3px;
+}
+
+.trending-week-panel::-webkit-scrollbar-thumb:hover {
+  background: #CBD5E0;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.trending-week-panel__header {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #E2E8F0;
+  position: relative;
+}
+
+/* Gradient underline accent */
+.trending-week-panel__header::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, #FF37A6 0%, #9B5FFF 100%);
+}
+
+.trending-week-panel__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2D3748;
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.trending-week-panel__icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.trending-week-panel__subtitle {
+  font-size: 12px;
+  color: #718096;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ============================================
+   RANKED LIST
+   ============================================ */
+
+.trending-week-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.trending-week-panel__item {
+  position: relative;
+}
+
+/* Subtle ranking gradient behind cards */
+.trending-week-panel__item:nth-child(1) {
+  /* Gold for #1 */
+}
+
+.trending-week-panel__item:nth-child(1)::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.15) 100%);
+  border-radius: 14px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.trending-week-panel__item:nth-child(1):hover::before {
+  opacity: 1;
+}
+
+/* ============================================
+   FOOTER INFO
+   ============================================ */
+
+.trending-week-panel__footer {
+  padding-top: 16px;
+  border-top: 1px solid #E2E8F0;
+}
+
+.trending-week-panel__info {
+  font-size: 11px;
+  color: #A0AEC0;
+  margin: 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+.trending-week-panel__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+}
+
+.trending-week-panel__spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #E2E8F0;
+  border-top-color: #FF37A6;
+  border-right-color: #9B5FFF;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.trending-week-panel__loading p {
+  font-size: 13px;
+  color: #718096;
+  margin: 0;
+}
+
+/* ============================================
+   ERROR STATE
+   ============================================ */
+
+.trending-week-panel__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+  text-align: center;
+}
+
+.trending-week-panel__error p {
+  font-size: 13px;
+  color: #E53E3E;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.trending-week-panel__retry {
+  background: linear-gradient(135deg, #FF37A6 0%, #9B5FFF 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(255, 55, 166, 0.3);
+}
+
+.trending-week-panel__retry:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 55, 166, 0.4);
+}
+
+.trending-week-panel__retry:active {
+  transform: translateY(0);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.trending-week-panel__empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #718096;
+}
+
+.trending-week-panel__empty p {
+  font-size: 14px;
+  margin: 0 0 8px 0;
+}
+
+.trending-week-panel__empty-subtitle {
+  font-size: 12px;
+  color: #A0AEC0;
+  margin: 0;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+/* Hide panel on tablets and below */
+@media (max-width: 1200px) {
+  .trending-week-panel {
+    display: none;
+  }
+}
+
+/* Smaller padding on medium screens */
+@media (max-width: 1400px) {
+  .trending-week-panel {
+    padding: 16px;
+  }
+
+  .trending-week-panel__header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+.trending-week-panel {
+  animation: panelFadeIn 0.5s ease-out 0.2s backwards;
+}
+
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Stagger animation for ranked items */
+.trending-week-panel__item {
+  animation: itemSlideIn 0.4s ease-out backwards;
+}
+
+.trending-week-panel__item:nth-child(1) { animation-delay: 0.1s; }
+.trending-week-panel__item:nth-child(2) { animation-delay: 0.2s; }
+.trending-week-panel__item:nth-child(3) { animation-delay: 0.3s; }
+.trending-week-panel__item:nth-child(4) { animation-delay: 0.4s; }
+.trending-week-panel__item:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes itemSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ============================================
+   FOCUS STATES (Accessibility)
+   ============================================ */
+
+.trending-week-panel__retry:focus {
+  outline: 2px solid #FF37A6;
+  outline-offset: 2px;
+}
+
+/* ============================================
+   SPECIAL EFFECTS FOR TOP RANKS
+   ============================================ */
+
+/* Subtle glow for #1 position */
+.trending-week-panel__item:nth-child(1) {
+  animation: itemSlideIn 0.4s ease-out backwards, subtleGlow 3s ease-in-out infinite;
+}
+
+@keyframes subtleGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 0px rgba(255, 215, 0, 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.3));
+  }
+}
+
+/* ============================================
+   DARK MODE SUPPORT (Future-proofing)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .trending-week-panel {
+    background: linear-gradient(135deg, #1A202C 0%, #2D3748 100%);
+    border-color: #4A5568;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .trending-week-panel__header {
+    border-bottom-color: #4A5568;
+  }
+
+  .trending-week-panel__title {
+    color: #E2E8F0;
+  }
+
+  .trending-week-panel__subtitle,
+  .trending-week-panel__loading p,
+  .trending-week-panel__empty {
+    color: #A0AEC0;
+  }
+
+  .trending-week-panel__footer {
+    border-top-color: #4A5568;
+  }
+
+  .trending-week-panel__info {
+    color: #718096;
+  }
+
+  .trending-week-panel::-webkit-scrollbar-thumb {
+    background: #4A5568;
+  }
+
+  .trending-week-panel::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+  }
+}
+
+/* ============================================
+   TROPHY INDICATORS FOR TOP 3
+   ============================================ */
+
+/* Add trophy emoji overlay for top 3 positions */
+.trending-week-panel__item:nth-child(1)::after,
+.trending-week-panel__item:nth-child(2)::after,
+.trending-week-panel__item:nth-child(3)::after {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-size: 20px;
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  animation: trophyBounce 2s ease-in-out infinite;
+}
+
+.trending-week-panel__item:nth-child(1)::after {
+  content: '🏆';
+}
+
+.trending-week-panel__item:nth-child(2)::after {
+  content: '🥈';
+}
+
+.trending-week-panel__item:nth-child(3)::after {
+  content: '🥉';
+}
+
+@keyframes trophyBounce {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-3px) rotate(5deg);
+  }
+}

@@ -5,6 +5,8 @@ import FeedSurveyCard from '../../visitor/components/FeedSurveyCard';
 import SearchSection from '../../visitor/components/SearchSection';
 import CreateSurveyModal from '../../components/CreateSurveyModal';
 import CreatePostModal from '../../components/CreatePostModal';
+import SurveyInsightsPanel from './components/SurveyInsightsPanel';
+import TrendingWeekPanel from './components/TrendingWeekPanel';
 import '../../styles/ownerHome.css';
 
 /**
@@ -64,46 +66,59 @@ const OwnerHome = () => {
 
   return (
     <div className="owner-home-page">
-      <div className="owner-home-page__container">
-        <header className="owner-home-page__hero">
-          <h1 className="owner-home-page__title">SalonHub Owner</h1>
-          <p className="owner-home-page__subtitle">
-            Connect with other salon owners, share insights, and grow your business.
-          </p>
-        </header>
+      <div className="owner-home-page__grid">
+        {/* Left Sidebar - Survey Insights */}
+        <aside className="owner-home-page__sidebar-left">
+          <SurveyInsightsPanel />
+        </aside>
 
-        <SearchSection />
+        {/* Main Content Area */}
+        <div className="owner-home-page__container">
+          <header className="owner-home-page__hero">
+            <h1 className="owner-home-page__title">SalonHub Owner</h1>
+            <p className="owner-home-page__subtitle">
+              Connect with other salon owners, share insights, and grow your business.
+            </p>
+          </header>
 
-        {loading && <p className="owner-home-page__status">Loading your feed...</p>}
-        {error && <p className="owner-home-page__status-error">{error}</p>}
+          <SearchSection />
 
-        {!loading && !error && feed.length === 0 && (
-          <div className="owner-home-page__empty">
-            <p>No posts or surveys yet. Start following salons to see their updates!</p>
+          {loading && <p className="owner-home-page__status">Loading your feed...</p>}
+          {error && <p className="owner-home-page__status-error">{error}</p>}
+
+          {!loading && !error && feed.length === 0 && (
+            <div className="owner-home-page__empty">
+              <p>No posts or surveys yet. Start following salons to see their updates!</p>
+            </div>
+          )}
+
+          <div className="owner-home-page__feed">
+            {feed.map((item) => {
+              // v1 API returns { type, data } format
+              if (item.type === 'post') {
+                return (
+                  <FeedPostCard
+                    key={item.data._id || item.data.id}
+                    post={item.data}
+                  />
+                );
+              } else if (item.type === 'survey') {
+                return (
+                  <FeedSurveyCard
+                    key={item.data._id || item.data.id}
+                    survey={item.data}
+                  />
+                );
+              }
+              return null;
+            })}
           </div>
-        )}
-
-        <div className="owner-home-page__feed">
-          {feed.map((item) => {
-            // v1 API returns { type, data } format
-            if (item.type === 'post') {
-              return (
-                <FeedPostCard
-                  key={item.data._id || item.data.id}
-                  post={item.data}
-                />
-              );
-            } else if (item.type === 'survey') {
-              return (
-                <FeedSurveyCard
-                  key={item.data._id || item.data.id}
-                  survey={item.data}
-                />
-              );
-            }
-            return null;
-          })}
         </div>
+
+        {/* Right Sidebar - Trending Week */}
+        <aside className="owner-home-page__sidebar-right">
+          <TrendingWeekPanel />
+        </aside>
       </div>
 
       {/* Floating Create Buttons */}

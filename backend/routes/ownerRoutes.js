@@ -9,8 +9,11 @@ const ownerNotificationController = require('../controllers/owner/ownerNotificat
 const ownerPostController = require('../controllers/owner/ownerPostController');
 const ownerFeedController = require('../controllers/owner/ownerFeedController');
 const ownerGalleryController = require('../controllers/owner/ownerGalleryController');
+const ownerAnalyticsController = require('../controllers/ownerAnalyticsController');
 
 router.get('/dashboard', protectOwner, requireProfileComplete('owner'), ownerDashboardController.getStats);
+router.get('/analytics/dashboard', protectOwner, ownerAnalyticsController.getDashboardStats);
+router.get('/analytics/promotion', protectOwner, ownerAnalyticsController.getPromotionAnalytics);
 
 router.get('/business', protectOwner, ownerBusinessController.getBusiness);
 router.put('/business', protectOwner, ownerBusinessController.upsertBusiness);

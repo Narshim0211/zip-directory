@@ -1,0 +1,324 @@
+/*
+ * OwnerPromotionModal Styles
+ * Modern, minimalist design matching SalonHub's existing UI
+ * Mobile-first responsive
+ */
+
+/* Modal Overlay */
+.promo-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Container */
+.promo-modal {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 520px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Modal Header */
+.promo-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.promo-modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.promo-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.promo-modal-close:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+/* Error Message */
+.promo-modal-error {
+  margin: 16px 24px 0;
+  padding: 12px 16px;
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  color: #c33;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-icon {
+  font-size: 18px;
+}
+
+/* Form */
+.promo-modal-form {
+  padding: 24px;
+}
+
+.promo-form-group {
+  margin-bottom: 24px;
+}
+
+.promo-form-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.char-count {
+  font-size: 12px;
+  color: #999;
+  font-weight: 400;
+}
+
+.promo-form-input,
+.promo-form-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.promo-form-input:focus,
+.promo-form-textarea:focus {
+  outline: none;
+  border-color: #7873f5;
+  box-shadow: 0 0 0 3px rgba(120, 115, 245, 0.1);
+}
+
+.promo-form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.promo-form-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* Expiry Buttons */
+.promo-expiry-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.promo-expiry-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 16px;
+  border: 2px solid #ddd;
+  border-radius: 20px;
+  background: white;
+  color: #666;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.promo-expiry-btn:hover {
+  border-color: #7873f5;
+  color: #7873f5;
+}
+
+.promo-expiry-btn.active {
+  background: linear-gradient(135deg, #ff6ec4 0%, #7873f5 100%);
+  border-color: transparent;
+  color: white;
+}
+
+/* Custom Date */
+.promo-custom-date {
+  margin-top: 16px;
+}
+
+.promo-form-label-small {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+/* Submit Button */
+.promo-submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #ff6ec4 0%, #7873f5 100%);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.promo-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(120, 115, 245, 0.4);
+}
+
+.promo-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Spinner */
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Cancel Button */
+.promo-cancel-btn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: color 0.2s;
+}
+
+.promo-cancel-btn:hover:not(:disabled) {
+  color: #333;
+}
+
+.promo-cancel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Footer */
+.promo-modal-footer {
+  padding: 16px 24px 24px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.promo-footer-note {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .promo-modal {
+    max-height: 95vh;
+    border-radius: 16px 16px 0 0;
+    margin-top: auto;
+  }
+
+  .promo-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .promo-modal-title {
+    font-size: 20px;
+  }
+
+  .promo-expiry-buttons {
+    flex-direction: column;
+  }
+
+  .promo-expiry-btn {
+    width: 100%;
+  }
+}
+
+/* Smooth scrolling for mobile */
+@media (max-width: 768px) {
+  .promo-modal {
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+}

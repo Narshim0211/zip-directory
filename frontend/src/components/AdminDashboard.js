@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import "./adminDashboard.css";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ totalBusinesses: 0, approved: 0, pending: 0, rejected: 0 });
   const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -100,7 +102,116 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="admin-shell">
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+      {/* Sidebar */}
+      <aside style={{
+        width: '240px',
+        background: 'linear-gradient(180deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        padding: '24px 16px',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{ fontSize: '14px', marginBottom: '4px' }}>SalonHub</div>
+          <div style={{ fontSize: '18px', fontWeight: '700' }}>Super Admin</div>
+        </div>
+
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '1px', marginBottom: '12px', opacity: 0.7 }}>OVERVIEW</div>
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <button
+              onClick={() => navigate('/admin')}
+              style={{
+                background: window.location.pathname === '/admin' ? 'rgba(255,255,255,0.2)' : 'transparent',
+                border: 'none',
+                color: 'white',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'background 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.15)'}
+              onMouseOut={(e) => e.target.style.background = window.location.pathname === '/admin' ? 'rgba(255,255,255,0.2)' : 'transparent'}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => navigate('/admin/feedback')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'white',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'background 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.15)'}
+              onMouseOut={(e) => e.target.style.background = 'transparent'}
+            >
+              <span>💬</span> Feedback
+            </button>
+            <button
+              onClick={() => navigate('/admin/newsletters')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'white',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'background 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.15)'}
+              onMouseOut={(e) => e.target.style.background = 'transparent'}
+            >
+              <span>📧</span> Newsletters
+            </button>
+            <button
+              onClick={() => navigate('/admin/blogs')}
+              style={{
+                background: window.location.pathname.includes('/admin/blogs') ? 'rgba(255,255,255,0.2)' : 'transparent',
+                border: 'none',
+                color: 'white',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'background 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.15)'}
+              onMouseOut={(e) => e.target.style.background = window.location.pathname.includes('/admin/blogs') ? 'rgba(255,255,255,0.2)' : 'transparent'}
+            >
+              <span>📝</span> Blogs
+            </button>
+          </nav>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="admin-shell" style={{ flex: 1, background: 'linear-gradient(135deg, #F5F7FF 0%, #F0FAFF 40%, #FAFBFF 100%)' }}>
+
       {/* KPI cards */}
       <section className="kpi-grid">
         <div className="kpi-card tone-blue">
@@ -313,6 +424,7 @@ const AdminDashboard = () => {
           </div>
         )}
       </section>
+      </div>
     </div>
   );
 };

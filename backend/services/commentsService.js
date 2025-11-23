@@ -1,8 +1,14 @@
 const Comment = require('../models/Comment');
+const Business = require('../models/Business');
 
 async function listByContent(contentType, contentId) {
-  return Comment.find({ contentType, contentId, isDeleted: false })
-    .populate('userId', 'name avatarUrl role')
+  return Comment.find({
+    contentType,
+    contentId,
+    isDeleted: false,
+    isHidden: false // NEW: Don't show hidden/reported comments
+  })
+    .populate('author', 'name firstName lastName avatarUrl role') // ENHANCED: Better populate
     .populate('reactions.user', 'name')
     .sort([
       ['isPinned', -1],
@@ -18,18 +24,46 @@ async function listByUser(userId) {
 
 async function createComment(userId, payload) {
   const { contentType, contentId, text, parentId } = payload || {};
+
+  // Existing validation
   if (!contentType || !contentId || !text || !text.trim()) {
     const error = new Error('contentType, contentId, and text are required');
     error.status = 400;
     throw error;
   }
+
+  // NEW: Get user to determine authorType
+  const User = require('../models/User');
+  const user = await User.findById(userId);
+  if (!user) {
+    const error = new Error('User not found');
+    error.status = 404;
+    throw error;
+  }
+
+  // NEW: Determine if Premium owner (for gold orbit)
+  let isPremiumAuthor = false;
+  if (user.role === 'owner') {
+    const business = await Business.findOne({ owner: userId });
+    isPremiumAuthor = business?.listingType === 'premium' && business?.premiumSubscription?.active === true;
+  }
+
+  // Create comment with NEW fields
   const comment = new Comment({
-    contentType,
-    contentId,
-    text: text.trim(),
+    // Use postId for backward compatibility (will be mapped to contentId)
+    postId: contentId,
+    author: userId,
+    content: text.trim(),
     parentId: parentId || null,
-    userId,
+
+    // NEW fields:
+    contentType: contentType || 'post',
+    authorType: user.role,
+    isPremiumAuthor: isPremiumAuthor,
+    reportCount: 0,
+    isHidden: false,
   });
+
   return comment.save();
 }
 

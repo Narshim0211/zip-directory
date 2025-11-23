@@ -34,6 +34,12 @@ exports.getGlobalFeed = withTryCatch(async (req, res) => {
   // Enrich with profile data (avatar, handle, slug)
   feedData.items = await feedService.enrichWithProfiles(feedData.items);
 
+  // Enrich with reactions (like/love counts and user's reaction)
+  feedData.items = await feedService.enrichWithReactions(feedData.items, userId);
+
+  // Enrich with comment counts
+  feedData.items = await feedService.enrichWithComments(feedData.items);
+
   res.json({
     success: true,
     data: feedData.items,
@@ -83,6 +89,12 @@ exports.getVisitorFeed = withTryCatch(async (req, res) => {
   });
 
   feedData.items = await feedService.enrichWithProfiles(feedData.items);
+
+  // Enrich with reactions (like/love counts and user's reaction)
+  feedData.items = await feedService.enrichWithReactions(feedData.items, userId);
+
+  // Enrich with comment counts
+  feedData.items = await feedService.enrichWithComments(feedData.items);
 
   res.json({
     success: true,

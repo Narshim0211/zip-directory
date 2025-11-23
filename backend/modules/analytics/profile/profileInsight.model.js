@@ -50,9 +50,6 @@ const profileInsightSchema = new mongoose.Schema({
   collection: 'profileInsights'
 });
 
-// Index for efficient lookups
-profileInsightSchema.index({ ownerId: 1 });
-
 // Static method to increment views with auto-reset logic
 profileInsightSchema.statics.incrementViews = async function(ownerId) {
   const now = new Date();

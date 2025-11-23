@@ -1,4 +1,5 @@
 import React from 'react';
+import PromotionSearchTag from '../promotions/PromotionSearchTag';
 import './BusinessCardSoft.css';
 
 /**
@@ -8,12 +9,14 @@ import './BusinessCardSoft.css';
  * NO duplication with full profile cards
  */
 const BusinessCardSoft = ({ business, onViewProfile }) => {
-  const { id, name, city, zip, category, heroImage, distance } = business;
+  const { id, name, city, zip, category, heroImage, distance, promotion } = business;
 
   const defaultImage = 'https://via.placeholder.com/400x250/667eea/ffffff?text=No+Image';
 
   return (
-    <div className="business-card-soft">
+    <div className="business-card-soft" style={{ position: 'relative' }}>
+      <PromotionSearchTag promotion={promotion} />
+
       <div className="business-card-soft__image">
         <img
           src={heroImage || defaultImage}

@@ -126,6 +126,83 @@
   text-align: right;
 }
 
+/* Survey Type Selector */
+.survey-type-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.survey-type-btn {
+  padding: 16px;
+  border: 2px solid #e1e8ed;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.survey-type-btn:hover:not(:disabled) {
+  border-color: #667eea;
+  background: #f5f7ff;
+}
+
+.survey-type-btn.active {
+  border-color: #667eea;
+  background: #f5f7ff;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.survey-type-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.survey-type-desc {
+  font-size: 12px;
+  font-weight: 400;
+  color: #657786;
+}
+
+/* Love-only specific fields */
+.form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.2s;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-textarea:disabled {
+  background: #f7f9fa;
+  cursor: not-allowed;
+}
+
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #657786;
+  font-style: italic;
+}
+
 .option-input-group {
   display: flex;
   gap: 8px;

@@ -33,6 +33,36 @@ const surveySchema = new mongoose.Schema(
       default: 'public',
     },
     visibleToVisitors: { type: Boolean, default: true }, // for feed filtering
+
+    // COMMUNITY FEED ENHANCEMENTS - Love-only surveys
+    surveyType: {
+      type: String,
+      enum: ['poll', 'love-only'],
+      default: 'poll',
+    },
+    imageUrl: {
+      type: String,
+      default: ''
+    },
+    loveCount: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    lastLoveAt: {
+      type: Date,
+      default: null
+    },
+    authorNote: {
+      type: String,
+      maxlength: 280,
+      default: ''
+    },
+    viewCount: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
   },
   { timestamps: true }
 );
@@ -45,5 +75,10 @@ surveySchema.index({ visibleToVisitors: 1 });
 // CRITICAL PERFORMANCE INDEXES - Added for 10k user scale
 surveySchema.index({ visibility: 1, isActive: 1, createdAt: -1 }); // Active survey feed
 surveySchema.index({ visibleToVisitors: 1, isActive: 1, createdAt: -1 }); // Visitor surveys
+
+// COMMUNITY FEED INDEXES - Love-only surveys
+surveySchema.index({ surveyType: 1, isActive: 1, createdAt: -1 }); // Filter by survey type
+surveySchema.index({ loveCount: -1, createdAt: -1 }); // Popular Love surveys
+surveySchema.index({ lastLoveAt: -1 }); // Recently loved surveys
 
 module.exports = mongoose.model('Survey', surveySchema);

@@ -1,0 +1,701 @@
+/**
+ * PREMIUM OWNER DASHBOARD STYLES v1.0
+ *
+ * The one page that makes every $49/mo owner think: "This is the best $49 I spend every month."
+ *
+ * Design Principles:
+ * - Instant money visibility
+ * - Giant, obvious action buttons
+ * - Beautiful gradient cards
+ * - Zero hunting, zero thinking
+ */
+
+/* ========================================
+   CONTAINER & LAYOUT
+   ======================================== */
+
+.premium-dashboard {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+  padding: 24px;
+}
+
+.premium-dashboard__container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.premium-dashboard__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: #64748b;
+}
+
+.premium-dashboard__spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #E91E63;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   HERO GREETING - Premium Badge
+   ======================================== */
+
+.premium-dashboard__hero {
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.premium-dashboard__greeting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.premium-dashboard__greeting h1 {
+  font-size: 36px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.premium-dashboard__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3); }
+  50% { box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5); }
+}
+
+.premium-badge__icon {
+  font-size: 20px;
+}
+
+.premium-badge__text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* ========================================
+   SMART ATTENTION BANNER - Quick Actions
+   ======================================== */
+
+.premium-dashboard__attention-banner {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border: 2px solid #fb923c;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(251, 146, 60, 0.2);
+}
+
+.attention-banner__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.attention-banner__icon {
+  font-size: 20px;
+}
+
+.attention-banner__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.attention-banner__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.attention-banner__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 2px solid #fed7aa;
+  border-radius: 8px;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.attention-banner__item:hover {
+  background: #fffbeb;
+  border-color: #fb923c;
+  transform: translateX(4px);
+}
+
+.attention-item__text {
+  flex: 1;
+}
+
+.attention-item__arrow {
+  font-size: 16px;
+  color: #fb923c;
+}
+
+/* ========================================
+   MONEY SNAPSHOT - The Dopamine Hit
+   ======================================== */
+
+.premium-dashboard__money-snapshot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  margin-bottom: 32px;
+  padding: 32px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.money-snapshot__revenue {
+  text-align: center;
+}
+
+.money-snapshot__amount {
+  font-size: 48px;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.money-snapshot__label {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.money-snapshot__change {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.money-snapshot__change.positive {
+  color: #10b981;
+}
+
+.money-snapshot__change.negative {
+  color: #ef4444;
+}
+
+.money-snapshot__bookings {
+  text-align: center;
+  border-left: 2px solid #e2e8f0;
+  padding-left: 48px;
+}
+
+.bookings__count {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.bookings__change {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.bookings__change.positive {
+  color: #10b981;
+}
+
+.bookings__change.negative {
+  color: #ef4444;
+}
+
+/* ========================================
+   4 GIANT ACTION BUTTONS - Zero Thinking
+   ======================================== */
+
+.premium-dashboard__action-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.action-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 32px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.action-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.action-button:hover::before {
+  opacity: 1;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.action-button:active {
+  transform: translateY(0);
+}
+
+.action-button__icon {
+  font-size: 24px;
+}
+
+.action-button__text {
+  letter-spacing: 0.5px;
+}
+
+.action-button__badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  background: #ef4444;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+}
+
+/* Button Gradients */
+.action-button--edit-profile {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.action-button--bookings {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.action-button--messages {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.action-button--promotion {
+  background: linear-gradient(135deg, #ff6ec4 0%, #7873f5 100%);
+}
+
+/* ========================================
+   CONTENT GRID - Profile Preview + Stats
+   ======================================== */
+
+.premium-dashboard__content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+/* ========================================
+   LIVE PROFILE PREVIEW
+   ======================================== */
+
+.premium-dashboard__profile-preview {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.profile-preview__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 16px;
+}
+
+.profile-preview__card {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #e2e8f0;
+}
+
+.profile-preview__image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.profile-preview__placeholder {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+  color: #94a3b8;
+}
+
+.profile-preview__placeholder span {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.profile-preview__placeholder p {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.profile-preview__info {
+  padding: 16px;
+  background: white;
+}
+
+.profile-preview__info h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.profile-preview__info p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 12px 0;
+}
+
+.profile-preview__rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.profile-preview__rating span:first-child {
+  font-size: 16px;
+}
+
+.profile-preview__view-button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-preview__view-button:hover {
+  opacity: 0.9;
+}
+
+/* ========================================
+   4 STAT CARDS - Instant Money Proof
+   ======================================== */
+
+.premium-dashboard__stat-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.stat-card {
+  padding: 20px;
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Clickable stat cards */
+.stat-card--clickable {
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+
+.stat-card--clickable::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.stat-card--clickable:hover::before {
+  opacity: 1;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card--clickable:active {
+  transform: translateY(-2px);
+}
+
+.stat-card__icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.stat-card__value {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.stat-card__label {
+  font-size: 13px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.stat-card__change {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.stat-card__change.positive {
+  color: #d1fae5;
+}
+
+.stat-card__change.negative {
+  color: #fecaca;
+}
+
+.stat-card__badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.stat-card__meta {
+  font-size: 12px;
+  opacity: 0.85;
+  margin-top: 4px;
+}
+
+.stat-card__cta {
+  display: none;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  opacity: 0.9;
+}
+
+.stat-card--clickable:hover .stat-card__cta {
+  display: block;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+}
+
+/* Card Gradients */
+.stat-card--revenue {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-card--bookings {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.stat-card--messages {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.stat-card--promotion {
+  background: linear-gradient(135deg, #ff6ec4 0%, #7873f5 100%);
+}
+
+/* ========================================
+   SUBSCRIPTION INFO - Next Billing
+   ======================================== */
+
+.premium-dashboard__subscription-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  font-size: 14px;
+  color: #64748b;
+}
+
+.subscription-info__manage-button {
+  padding: 8px 16px;
+  background: transparent;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.subscription-info__manage-button:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN - Mobile First
+   ======================================== */
+
+@media (max-width: 1024px) {
+  .premium-dashboard__content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .premium-dashboard__money-snapshot {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .money-snapshot__bookings {
+    border-left: none;
+    border-top: 2px solid #e2e8f0;
+    padding-left: 0;
+    padding-top: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .premium-dashboard {
+    padding: 16px;
+  }
+
+  .premium-dashboard__greeting h1 {
+    font-size: 28px;
+  }
+
+  .money-snapshot__amount {
+    font-size: 36px;
+  }
+
+  .bookings__count {
+    font-size: 20px;
+  }
+
+  .premium-dashboard__action-buttons {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .premium-dashboard__stat-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card__value {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .premium-dashboard__greeting h1 {
+    font-size: 24px;
+  }
+
+  .money-snapshot__amount {
+    font-size: 32px;
+  }
+
+  .premium-dashboard__money-snapshot {
+    padding: 24px 16px;
+  }
+
+  .action-button {
+    padding: 16px 24px;
+    font-size: 14px;
+  }
+
+  .action-button__icon {
+    font-size: 20px;
+  }
+}

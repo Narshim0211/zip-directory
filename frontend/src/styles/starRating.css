@@ -1,0 +1,71 @@
+/* ⭐ STAR RATING STYLES */
+
+.star-rating {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.star {
+  cursor: default;
+  transition: transform 0.2s ease, color 0.15s ease;
+  user-select: none;
+  line-height: 1;
+}
+
+.star--clickable {
+  cursor: pointer;
+}
+
+.star--clickable:hover {
+  transform: scale(1.15);
+}
+
+.star--clickable:active {
+  transform: scale(1.05);
+}
+
+.star--filled {
+  color: #FFD700; /* Gold */
+}
+
+.star--half {
+  color: #FFD700; /* Gold */
+  opacity: 0.6;
+}
+
+.star--empty {
+  color: #E0E0E0; /* Light gray */
+}
+
+/* Size variants */
+.star-rating--small .star {
+  font-size: 1rem;
+}
+
+.star-rating--medium .star {
+  font-size: 1.5rem;
+}
+
+.star-rating--large .star {
+  font-size: 2.5rem;
+}
+
+/* Focus state for accessibility */
+.star--clickable:focus {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Mobile touch optimization */
+@media (max-width: 768px) {
+  .star-rating--large .star {
+    font-size: 2rem;
+  }
+
+  .star--clickable {
+    padding: 4px;
+    margin: -4px;
+  }
+}

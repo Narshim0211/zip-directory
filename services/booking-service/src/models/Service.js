@@ -51,6 +51,28 @@ const serviceSchema = new mongoose.Schema(
       max: 100,
       default: 25,
     },
+    cancellationPolicy: {
+      enabled: {
+        type: Boolean,
+        default: false,
+      },
+      hoursNotice: {
+        type: Number,
+        min: 0,
+        default: 24, // 24 hours notice required
+      },
+      feeAmount: {
+        type: Number,
+        min: 0,
+        default: 0, // Fixed fee amount
+      },
+      feePercentage: {
+        type: Number,
+        min: 0,
+        max: 100,
+        default: 0, // Percentage of service price
+      },
+    },
     staffIds: [
       {
         type: mongoose.Schema.Types.ObjectId,

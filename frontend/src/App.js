@@ -32,6 +32,7 @@ import VisitorLayout from "./visitor/layouts/VisitorLayout";
 import Dashboard from "./pages/owner/Dashboard";
 import OwnerHome from "./pages/owner/OwnerHome";
 import MyBusiness from "./pages/owner/MyBusiness";
+import PlanSelection from "./components/PlanSelectionPage";
 import ExploreOwner from "./pages/owner/ExploreOwner";
 import Surveys from "./pages/owner/Surveys";
 import Notifications from "./pages/owner/Notifications";
@@ -48,6 +49,8 @@ import ErrorBoundary from './components/SharedComponents/ErrorBoundary';
 import "./App.css";
 import TimeManagerPage from "./features/timeManager/pages/TimeManagerPage";
 import TimeManagerOwnerPage from "./features/timeManager/pages/owner/TimeManagerOwnerPage";
+import VisitorInbox from "./components/VisitorInbox";
+import OwnerInbox from "./components/OwnerInbox";
 import OwnerProfilePage from "./pages/owner/Profile";
 import BookingPublicProfile from "./pages/owner/BookingPublicProfile";
 import OwnerBookingManager from "./pages/owner/BookingManager";
@@ -59,6 +62,8 @@ import MicroservicesRoutes from "./routes/MicroservicesRoutes";
 import VisitorNewsletterSettings from "./visitor/pages/VisitorNewsletterSettings";
 import OwnerNewsletterSettings from "./pages/owner/OwnerNewsletterSettings";
 import ProfilePageWrapper from "./pages/ProfilePageWrapper";
+import BlogReader from "./components/blog/BlogReader";
+import BlogList from "./components/blog/BlogList";
 
 const LandingOrRedirect = () => {
   const { user } = useAuth();
@@ -92,6 +97,10 @@ function Frame() {
           
           {/* Public Directory Search Results (Search form is on landing page) */}
           <Route path="/directory/search" element={<DirectorySearchResults />} />
+
+          {/* Blog Routes */}
+          <Route path="/blog" element={<BlogList title="SalonHub Insights" subtitle="Tips · Trends · Glow-Up Guides · Salon Business Advice" />} />
+          <Route path="/blog/:slug" element={<BlogReader />} />
         </Route>
 
         <Route path="/profile" element={<Navigate to="/visitor/profile" replace />} />
@@ -114,6 +123,7 @@ function Frame() {
           <Route path="surveys" element={<VisitorSurveys />} />
           <Route path="notifications" element={<VisitorNotifications />} />
           <Route path="feedback" element={<VisitorFeedback />} />
+          <Route path="inbox" element={<VisitorInbox />} />
           <Route path="settings/newsletter" element={<VisitorNewsletterSettings />} />
             <Route path="toolkit">
               <Route index element={<ToolkitPage />} />
@@ -144,11 +154,13 @@ function Frame() {
         >
           <Route index element={<ErrorBoundary><OwnerHome /></ErrorBoundary>} />
           <Route path="home" element={<ErrorBoundary><OwnerHome /></ErrorBoundary>} />
+          <Route path="plan-selection" element={<ErrorBoundary><PlanSelection /></ErrorBoundary>} />
           <Route path="dashboard" element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
           <Route path="my-business" element={<ErrorBoundary><MyBusiness /></ErrorBoundary>} />
           <Route path="explore" element={<ErrorBoundary><ExploreOwner /></ErrorBoundary>} />
           <Route path="surveys" element={<ErrorBoundary><Surveys /></ErrorBoundary>} />
           <Route path="notifications" element={<ErrorBoundary><Notifications /></ErrorBoundary>} />
+          <Route path="inbox" element={<ErrorBoundary><OwnerInbox /></ErrorBoundary>} />
           <Route path="profile/me" element={<ErrorBoundary><OwnerProfilePage /></ErrorBoundary>} />
           <Route path="booking/public-profile" element={<ErrorBoundary fallbackTitle="Booking Profile Error"><BookingPublicProfile /></ErrorBoundary>} />
           <Route path="booking/staff" element={<ErrorBoundary><StaffManagement /></ErrorBoundary>} />

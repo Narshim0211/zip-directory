@@ -1,0 +1,229 @@
+/**
+ * Love Feed Styles
+ * Styles for Love-only survey cards in the community feed
+ * Clean, minimalist design with subtle animations
+ */
+
+/* Love-only Survey Card */
+.feed-card--love-only {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+.feed-card--love-only:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Love Question Styling */
+.love-question {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #1f2937;
+  margin: 16px 0 24px 0;
+  text-align: center;
+}
+
+/* Love Image Container */
+.love-image-container {
+  width: 100%;
+  max-height: 300px;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.love-image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  display: block;
+}
+
+/* Love Button */
+.love-button {
+  width: 100%;
+  padding: 18px 24px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ff006e;
+  background: #ffffff;
+  border: 3px solid #ff006e;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.love-button:hover:not(:disabled) {
+  background: #ff006e;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 0, 110, 0.3);
+}
+
+.love-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(255, 0, 110, 0.2);
+}
+
+.love-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.love-button--voting {
+  background: #ffe5ef;
+  border-color: #ff8bb9;
+  animation: pulse 1.5s infinite;
+}
+
+/* Love Results */
+.love-results {
+  margin-top: 24px;
+  padding: 24px;
+  background: linear-gradient(135deg, #fff5f8 0%, #ffe8f0 100%);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.love-stats {
+  margin-bottom: 16px;
+}
+
+.love-percentage {
+  font-size: 56px;
+  font-weight: 800;
+  color: #ff006e;
+  margin: 0;
+  line-height: 1;
+}
+
+.love-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 8px 0 0 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.your-impact {
+  font-size: 16px;
+  font-weight: 600;
+  color: #059669;
+  margin: 12px 0 0 0;
+  padding: 8px 16px;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 20px;
+  display: inline-block;
+}
+
+/* Author Note */
+.author-note {
+  margin-top: 24px;
+  padding: 20px;
+  background: #ffffff;
+  border-left: 4px solid #ff006e;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.author-note__text {
+  font-size: 16px;
+  font-style: italic;
+  color: #374151;
+  margin: 0 0 8px 0;
+  line-height: 1.6;
+}
+
+.author-note__author {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0;
+  text-align: right;
+}
+
+/* Fade-in Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Pulse Animation for Loading State */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .love-question {
+    font-size: 20px;
+  }
+
+  .love-button {
+    padding: 16px 20px;
+    font-size: 18px;
+  }
+
+  .love-percentage {
+    font-size: 48px;
+  }
+
+  .author-note__text {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .feed-card--love-only {
+    padding: 16px;
+  }
+
+  .love-question {
+    font-size: 18px;
+    margin: 12px 0 20px 0;
+  }
+
+  .love-button {
+    padding: 14px 18px;
+    font-size: 16px;
+  }
+
+  .love-percentage {
+    font-size: 40px;
+  }
+
+  .love-label {
+    font-size: 12px;
+  }
+
+  .your-impact {
+    font-size: 14px;
+  }
+}

@@ -63,6 +63,60 @@ const businessSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
+    // 🛡️ BUSINESS MODERATION FIELDS (V1)
+    // Automated quality control for directory listings
+    moderationStatus: {
+      type: String,
+      enum: ["APPROVED", "PENDING", "REJECTED"],
+      default: "PENDING",
+      index: true,
+    },
+    moderationIssues: {
+      type: [String],
+      default: [],
+      // Example: ["Missing logo", "Description too short"]
+    },
+    metadata: {
+      ip: {
+        type: String,
+        default: null,
+      },
+      lastModeratedAt: {
+        type: Date,
+        default: null,
+      },
+    },
+
+    // 🚨 AUTO-FLAGGING FIELDS (Phase 2: Reporting System)
+    // Used when community reports trigger auto-hide
+    isFlagged: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    flagReason: {
+      type: String,
+      default: '',
+    },
+    flaggedAt: {
+      type: Date,
+      default: null,
+    },
+    isHidden: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+
     ratingAverage: {
       type: Number,
       default: 0,
@@ -70,6 +124,13 @@ const businessSchema = new mongoose.Schema(
     ratingsCount: {
       type: Number,
       default: 0,
+    },
+    // 📸 Photo Review Count (for "Real Results Shown" badge - FIX #2)
+    // Incremented when approved review with photo is submitted
+    photoReviewCount: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
     // GeoJSON location for distance-based search
     location: {
@@ -318,6 +379,41 @@ const businessSchema = new mongoose.Schema(
       default: null,
       sparse: true, // Allows null values, enforces uniqueness for non-null values if needed
     },
+
+    // 🎁 PROMOTIONS SYSTEM (V1 - Lean Edition)
+    // Single active promotion per business (Phase 4)
+    promotion: {
+      title: {
+        type: String,
+        maxlength: 50,
+        trim: true,
+        default: '',
+      },
+      description: {
+        type: String,
+        maxlength: 120,
+        trim: true,
+        default: '',
+      },
+      expiresAt: {
+        type: Date,
+        default: null,
+      },
+      isActive: {
+        type: Boolean,
+        default: false,
+        index: true,
+      },
+      createdAt: {
+        type: Date,
+        default: null,
+      },
+      createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
+      },
+    },
   },
   { timestamps: true }
 );
@@ -335,11 +431,24 @@ businessSchema.index({ status: 1, isOpenNow: 1 }); // Fast filtering for approve
 businessSchema.index({ viewsLast7Days: -1 }); // Trending sort
 businessSchema.index({ priceLevel: 1, ratingAverage: -1 }); // Price + quality filter
 
+// 🛡️ Moderation Engine Indexes (v1.0)
+businessSchema.index({ moderationStatus: 1, createdAt: -1 }); // Fast pending queue queries
+businessSchema.index({ 'metadata.ip': 1, createdAt: -1 }); // Spam detection by IP
+
+// 🎁 Promotions Indexes (Phase 4)
+businessSchema.index({ 'promotion.expiresAt': 1, 'promotion.isActive': 1 }); // Fast expiry cron queries
+
 // ⚙️ Virtual population (get reviews automatically)
 businessSchema.virtual("reviews", {
   ref: "Review",
   localField: "_id",
   foreignField: "business",
+});
+
+// 💎 PREMIUM STATUS VIRTUAL (for chat entitlement checks)
+businessSchema.virtual('isPremium').get(function() {
+  return this.listingType === 'premium' &&
+         this.premiumSubscription?.active === true;
 });
 
 /**
@@ -369,7 +478,12 @@ businessSchema.methods.toSoftProfileJSON = function() {
     zip: this.zip,
     category: this.category,
     heroImage: this.coverPhotoUrl || this.logoUrl || '',
-    location: this.location
+    location: this.location,
+    promotion: this.promotion?.isActive ? {
+      title: this.promotion.title,
+      description: this.promotion.description,
+      expiresAt: this.promotion.expiresAt
+    } : null
   };
 };
 
@@ -407,7 +521,12 @@ businessSchema.methods.toFullProfileJSON = function() {
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
     verificationStatus: this.verificationStatus,
-    verificationSteps: this.verificationSteps
+    verificationSteps: this.verificationSteps,
+    promotion: this.promotion?.isActive ? {
+      title: this.promotion.title,
+      description: this.promotion.description,
+      expiresAt: this.promotion.expiresAt
+    } : null
   };
 };
 

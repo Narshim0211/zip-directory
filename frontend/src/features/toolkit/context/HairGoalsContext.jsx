@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { loadHairGoals, saveHairGoals, saveField, loadField } from '../utils/hairGoalsStorage';
+import { loadHairGoals, saveField } from '../utils/hairGoalsStorage';
 import { getStreak } from '../utils/hairGoalsReportGenerator';
 
 export const HairGoalsContext = createContext();

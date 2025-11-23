@@ -1,0 +1,345 @@
+/* CommentCard.css - Individual Comment with Gold Orbit */
+
+.comment-card {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  transition: background 0.2s;
+  margin-bottom: 12px;
+}
+
+.comment-card:hover {
+  background: #f9fafb;
+}
+
+/* Premium Owner Gold Orbit */
+.comment-card--premium {
+  position: relative;
+  padding: 18px;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 2px solid #fbbf24;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.15);
+}
+
+.comment-card__orbit {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #fbbf24) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: orbitRotate 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes orbitRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Avatar */
+.comment-card__avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+}
+
+.comment-card__avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.comment-card__avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* Main Content */
+.comment-card__content {
+  flex: 1;
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+}
+
+.comment-card__main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Header */
+.comment-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.comment-card__author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.comment-card__author strong {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Role Badges */
+.comment-card__badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.comment-card__badge--owner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+}
+
+.comment-card__badge--visitor {
+  background: #e0e7ff;
+  color: #4f46e5;
+}
+
+.comment-card__badge--admin {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Timestamp */
+.comment-card__timestamp {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+/* Menu Button */
+.comment-card__menu-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.comment-card__menu-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* Menu Dropdown */
+.comment-card__menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+}
+
+.comment-card__menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  min-width: 160px;
+  animation: menuSlideDown 0.15s ease-out;
+}
+
+@keyframes menuSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.comment-card__menu button {
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  border-radius: 6px;
+}
+
+.comment-card__menu button:hover {
+  background: #f9fafb;
+  color: #ef4444;
+}
+
+/* Comment Text */
+.comment-card__text {
+  margin: 0 0 12px 0;
+  color: #374151;
+  font-size: 15px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+/* Actions */
+.comment-card__actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.comment-card__action {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+
+.comment-card__action:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.comment-card__action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Love Button Active State */
+.comment-card__action--loved {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.comment-card__action--loved:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* Replies (One Level Only) */
+.comment-card__replies {
+  margin-top: 16px;
+  padding-left: 52px;
+  border-left: 2px solid #e5e7eb;
+}
+
+.comment-card__replies .comment-card {
+  margin-bottom: 8px;
+  padding: 12px;
+  background: #f9fafb;
+}
+
+.comment-card__replies .comment-card:last-child {
+  margin-bottom: 0;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .comment-card {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .comment-card--premium {
+    padding: 14px;
+  }
+
+  .comment-card__avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .comment-card__avatar-placeholder {
+    font-size: 14px;
+  }
+
+  .comment-card__author strong {
+    font-size: 14px;
+  }
+
+  .comment-card__badge {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+
+  .comment-card__timestamp {
+    font-size: 12px;
+  }
+
+  .comment-card__text {
+    font-size: 14px;
+  }
+
+  .comment-card__action {
+    padding: 4px 10px;
+    font-size: 13px;
+  }
+
+  .comment-card__replies {
+    padding-left: 40px;
+  }
+}
+
+/* Loading State */
+.comment-card.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Hidden Comment */
+.comment-card.hidden {
+  opacity: 0.4;
+}
+
+.comment-card.hidden .comment-card__text {
+  font-style: italic;
+  color: #9ca3af;
+}

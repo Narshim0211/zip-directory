@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import UnifiedSearchBar from "./UnifiedSearchBar";
+import BlogList from "./blog/BlogList";
 import "../styles/HomePage.css";
 
 const LandingPage = () => {
@@ -520,6 +521,11 @@ const LandingPage = () => {
             <p>Showcase services, photos, and client reviews in one place.</p>
           </div>
         </div>
+      </section>
+
+      {/* Blog Section */}
+      <section style={{ padding: '80px 5%', backgroundColor: '#fff' }}>
+        <BlogList limit={3} title="SalonHub Insights" subtitle="Expert tips, trends, and advice for the beauty industry" />
       </section>
 
       <footer className="footer">(c) 2025 SalonHub - Built for the Beauty Industry</footer>

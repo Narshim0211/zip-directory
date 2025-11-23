@@ -15,7 +15,8 @@ const handleEvent = async (event) => {
   // ========================================
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-    const userId = session.metadata?.toolkitUserId;
+    const subscriptionType = session.metadata?.subscriptionType; // 'CHAT_PASS' or 'PREMIUM' or 'TOOLKIT'
+    const userId = session.metadata?.userId || session.metadata?.toolkitUserId;
 
     const user = userId ? await User.findById(userId) : await User.findOne({ email: session.customer_email });
     if (!user) {
@@ -23,12 +24,26 @@ const handleEvent = async (event) => {
       return;
     }
 
-    user.subscriptionStatus = "active";
-    user.subscriptionPlan = "premium";
-    user.subscriptionExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    user.stripeCustomerId = session.customer;
-    user.stripeSubscriptionId = session.subscription;
-    await user.save();
+    // Handle Chat Pass subscription (Visitor Stylist Access Pass - $9.99/mo)
+    if (subscriptionType === 'CHAT_PASS') {
+      user.hasChatPass = true;
+      user.chatPassActivatedAt = new Date();
+      user.chatPassExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+      user.chatPassSubscriptionId = session.subscription;
+      user.chatPassGraceEndsAt = null; // Clear grace period
+      user.stripeCustomerId = session.customer;
+      await user.save();
+      logger.info(`Chat Pass activated for user: ${user._id}`);
+    }
+    // Handle existing toolkit/premium user subscriptions
+    else {
+      user.subscriptionStatus = "active";
+      user.subscriptionPlan = "premium";
+      user.subscriptionExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      user.stripeCustomerId = session.customer;
+      user.stripeSubscriptionId = session.subscription;
+      await user.save();
+    }
   }
 
   if (event.type === "invoice.payment_failed") {
@@ -92,6 +107,19 @@ const handleEvent = async (event) => {
     const subscription = event.data.object;
     const customerId = subscription.customer;
 
+    // Check if this is a Chat Pass subscription
+    const userWithChatPass = await User.findOne({ chatPassSubscriptionId: subscription.id });
+    if (userWithChatPass) {
+      // Set grace period: 30 days from now
+      userWithChatPass.hasChatPass = false;
+      userWithChatPass.chatPassExpiresAt = new Date(subscription.current_period_end * 1000);
+      userWithChatPass.chatPassGraceEndsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      await userWithChatPass.save();
+      logger.info(`Chat Pass canceled for user: ${userWithChatPass._id}, grace period active until ${userWithChatPass.chatPassGraceEndsAt}`);
+      return;
+    }
+
+    // Check if this is a business premium subscription
     const business = await Business.findOne({ stripeCustomerId: customerId });
 
     if (business) {

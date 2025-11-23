@@ -18,10 +18,10 @@ const BusinessDetails = () => {
       try {
         const [bizRes, revRes] = await Promise.all([
           api.get(`/businesses/${id}`),
-          api.get(`/reviews/${id}`),
+          api.get(`/reviews/business/${id}`),
         ]);
         setBusiness(bizRes.data);
-        setReviews(revRes.data);
+        setReviews(revRes.data.reviews || []);
       } catch (error) {
         console.error("Error loading business:", error);
       }
@@ -32,12 +32,12 @@ const BusinessDetails = () => {
   const submitReview = async (e) => {
     e.preventDefault();
     try {
-      await api.post(`/reviews/${id}`, { rating, comment: text });
+      await api.post(`/reviews`, { businessId: id, rating, message: text });
       setMessage("Review submitted successfully!");
       setText("");
       setRating(0);
-      const { data } = await api.get(`/reviews/${id}`);
-      setReviews(data || []);
+      const { data } = await api.get(`/reviews/business/${id}`);
+      setReviews(data.reviews || []);
     } catch (err) {
       const msg = (err && err.response && err.response.data && err.response.data.message) || 'Failed to submit review.';
       setMessage(msg);

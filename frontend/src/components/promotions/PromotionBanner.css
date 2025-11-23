@@ -1,0 +1,211 @@
+/*
+ * PromotionBanner Styles
+ * Eye-catching banner for business profile pages
+ * Pink-purple gradient, mobile responsive
+ */
+
+.promotion-banner {
+  position: relative;
+  background: linear-gradient(135deg, #ff6ec4 0%, #7873f5 100%);
+  border-radius: 16px;
+  padding: 32px;
+  margin: 24px 0;
+  color: white;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(120, 115, 245, 0.4);
+  animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Floating background effect */
+.promotion-banner-bg-effect {
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* Content */
+.promotion-banner-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+.promotion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.limited-time-badge {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Countdown Timer */
+.countdown-timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.countdown-icon {
+  font-size: 16px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Title */
+.promotion-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 12px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.promotion-emoji {
+  font-size: 32px;
+}
+
+/* Description */
+.promotion-description {
+  font-size: 16px;
+  margin: 0 0 20px 0;
+  opacity: 0.95;
+  line-height: 1.6;
+  max-width: 600px;
+}
+
+/* CTA Button */
+.promotion-cta {
+  background: white;
+  color: #7873f5;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.promotion-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.promotion-cta:active {
+  transform: translateY(0);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .promotion-banner {
+    padding: 24px 20px;
+    margin: 16px 0;
+    border-radius: 12px;
+  }
+
+  .promotion-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .promotion-title {
+    font-size: 22px;
+  }
+
+  .promotion-emoji {
+    font-size: 28px;
+  }
+
+  .promotion-description {
+    font-size: 14px;
+  }
+
+  .promotion-cta {
+    width: 100%;
+    padding: 16px;
+  }
+
+  .promotion-banner-bg-effect {
+    width: 300px;
+    height: 300px;
+    right: -20%;
+  }
+}
+
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .promotion-title {
+    font-size: 24px;
+  }
+}
+
+/* Ensure proper stacking on smaller screens */
+@media (max-width: 480px) {
+  .promotion-title {
+    font-size: 20px;
+  }
+
+  .limited-time-badge,
+  .countdown-timer {
+    font-size: 11px;
+  }
+}

@@ -1,4 +1,6 @@
 const commentsService = require('../services/commentsService');
+const { canComment } = require('../services/chatEntitlementsService');
+const Comment = require('../models/Comment');
 
 exports.getComments = async (req, res) => {
   const { contentType, contentId } = req.query;
@@ -15,6 +17,20 @@ exports.getComments = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
+    // NEW: Check entitlements before creating comment
+    const permission = await canComment(req.user._id, req.user.role);
+
+    if (!permission.allowed) {
+      return res.status(403).json({
+        message: permission.reason,
+        requiresUpgrade: permission.requiresUpgrade || false,
+        requiresPayment: permission.requiresPayment || false,
+        upgradePrice: permission.upgradePrice,
+        upgradeBenefits: permission.upgradeBenefits
+      });
+    }
+
+    // EXISTING: Create comment (keep existing logic)
     const comment = await commentsService.createComment(req.user._id, req.body || {});
     res.status(201).json(comment);
   } catch (error) {
@@ -81,6 +97,45 @@ exports.userComments = async (req, res) => {
   try {
     const list = await commentsService.listByUser(req.user._id);
     res.json(list);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * NEW: Report comment endpoint
+ * Increments report count and auto-hides if threshold reached (5 reports)
+ */
+exports.report = async (req, res) => {
+  try {
+    const { reason } = req.body;
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({ message: 'Report reason is required' });
+    }
+
+    const comment = await Comment.findById(req.params.id);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    // Increment report count
+    comment.reportCount += 1;
+
+    // Auto-hide if reportCount exceeds threshold (e.g., 5 reports)
+    if (comment.reportCount >= 5) {
+      comment.isHidden = true;
+    }
+
+    await comment.save();
+
+    // TODO: Create Report record for admin dashboard (future enhancement)
+    // await Report.create({ commentId: comment._id, reporterId: req.user._id, reason });
+
+    res.json({
+      success: true,
+      message: 'Comment reported successfully',
+      isHidden: comment.isHidden
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

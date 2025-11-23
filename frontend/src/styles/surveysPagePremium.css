@@ -1,0 +1,519 @@
+/**
+ * Surveys Page - Premium Beauty-Tech Redesign 2025
+ * World-class visual design with glassmorphism, soft gradients, and micro-interactions
+ *
+ * Features:
+ * - Glassmorphism cards
+ * - Smooth animations
+ * - Premium typography
+ * - Soothing color palette
+ * - Distinct visual hierarchy
+ */
+
+/* ============================================
+   📄 PAGE CONTAINER
+   ============================================ */
+
+.surveys-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-6);
+  max-width: 1440px;
+  margin: 0 auto;
+  animation: pageFadeIn 0.5s var(--transition-base);
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   📄 HEADER SECTION - Premium Typography
+   ============================================ */
+
+.surveys-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-6);
+  padding: var(--space-8) var(--space-6);
+  background: var(--gradient-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle animated background pattern */
+.surveys-page__header::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(
+    circle,
+    rgba(155, 95, 255, 0.08) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  animation: headerBreathe 4s ease-in-out infinite;
+}
+
+@keyframes headerBreathe {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.15);
+  }
+}
+
+.surveys-page__header-actions {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.eyebrow {
+  display: inline-block;
+  text-transform: uppercase;
+  font-size: var(--font-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.15em;
+  color: var(--color-neon-purple);
+  margin: 0 0 var(--space-3);
+  padding: var(--space-1) var(--space-4);
+  background: var(--color-lavender-soft);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-lavender-light);
+}
+
+.surveys-page__header h1 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--font-4xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  line-height: var(--leading-tight);
+  background: var(--gradient-neon-glow);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  z-index: 1;
+}
+
+.surveys-page__subtitle {
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-lg);
+  line-height: var(--leading-relaxed);
+  max-width: 600px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Create Survey Button - Premium Gradient */
+.surveys-page__create-btn {
+  border: none;
+  background: var(--gradient-neon-glow);
+  color: var(--color-text-white);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-full);
+  font-size: var(--font-base);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--glow-purple);
+  position: relative;
+  overflow: hidden;
+}
+
+.surveys-page__create-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #FF37A6 0%, #9B5FFF 100%);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.surveys-page__create-btn span {
+  position: relative;
+  z-index: 1;
+}
+
+.surveys-page__create-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 32px rgba(155, 95, 255, 0.6);
+}
+
+.surveys-page__create-btn:hover::before {
+  opacity: 1;
+}
+
+.surveys-page__create-btn:active {
+  transform: translateY(0) scale(1);
+}
+
+/* ============================================
+   🏷 FILTER PILLS - Beautiful & Interactive
+   ============================================ */
+
+.surveys-page__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.surveys-page__filter {
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-mist-gray);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-soft-white);
+  color: var(--color-text-secondary);
+  font-size: var(--font-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.surveys-page__filter::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-neon-glow);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.surveys-page__filter span {
+  position: relative;
+  z-index: 1;
+}
+
+.surveys-page__filter:hover {
+  border-color: var(--color-lavender-mist);
+  background: var(--color-lavender-soft);
+  color: var(--color-deep-indigo);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.surveys-page__filter.active {
+  background: var(--gradient-neon-glow);
+  border-color: transparent;
+  color: var(--color-text-white);
+  box-shadow: var(--glow-purple);
+  transform: translateY(-1px);
+}
+
+.surveys-page__filter.active::before {
+  opacity: 0.2;
+}
+
+/* ============================================
+   📐 GRID LAYOUT - Asymmetrical Premium
+   ============================================ */
+
+.surveys-page__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 720px) minmax(320px, 1fr);
+  gap: var(--space-8);
+  align-items: start;
+}
+
+/* ============================================
+   📋 FEED SECTION - Main Content
+   ============================================ */
+
+.surveys-page__feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ============================================
+   📌 SIDEBAR PANEL - Glass Cards
+   ============================================ */
+
+.surveys-page__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  position: sticky;
+  top: var(--space-6);
+}
+
+.surveys-page__panel-card {
+  background: var(--gradient-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+}
+
+.surveys-page__panel-card:hover {
+  background: var(--gradient-card-hover);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Survey of the Day - Special Styling */
+.surveys-page__panel-card:first-child {
+  background: var(--gradient-survey-day);
+  border: 2px solid var(--color-sunshine-gold);
+  box-shadow: var(--glow-gold);
+  position: relative;
+  overflow: hidden;
+}
+
+.surveys-page__panel-card:first-child::before {
+  content: '⭐';
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  font-size: var(--font-3xl);
+  opacity: 0.15;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(5deg);
+  }
+}
+
+.surveys-page__panel-card h3,
+.surveys-page__panel-card h4 {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-heading);
+  font-size: var(--font-xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+}
+
+.surveys-page__panel-subtitle {
+  font-size: var(--font-sm);
+  color: var(--color-text-tertiary);
+  margin: 0 0 var(--space-5);
+  line-height: var(--leading-relaxed);
+}
+
+/* Trending List */
+.surveys-page__panel ul {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.surveys-page__panel li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-soft-white);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-neon-purple);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.surveys-page__panel li:hover {
+  background: var(--color-lavender-soft);
+  border-left-color: var(--color-magenta-glow);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
+}
+
+.surveys-page__panel li strong {
+  font-size: var(--font-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  line-height: var(--leading-snug);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.surveys-page__panel li span {
+  color: var(--color-neon-purple);
+  font-size: var(--font-xs);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================
+   📭 EMPTY STATE - Elegant & Friendly
+   ============================================ */
+
+.surveys-page__empty {
+  padding: var(--space-12) var(--space-8);
+  text-align: center;
+  background: var(--gradient-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 2px dashed var(--color-lavender-mist);
+  border-radius: var(--radius-xl);
+  color: var(--color-text-secondary);
+  font-size: var(--font-lg);
+  line-height: var(--leading-relaxed);
+}
+
+.surveys-page__empty::before {
+  content: '✨';
+  display: block;
+  font-size: var(--font-4xl);
+  margin-bottom: var(--space-4);
+  opacity: 0.5;
+  animation: float 2s ease-in-out infinite;
+}
+
+/* ============================================
+   📱 RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 1100px) {
+  .surveys-page__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .surveys-page__panel {
+    position: static;
+  }
+
+  .surveys-page__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .surveys-page__header-actions {
+    width: 100%;
+  }
+
+  .surveys-page__create-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .surveys-page {
+    padding: var(--space-4);
+    gap: var(--space-6);
+  }
+
+  .surveys-page__header {
+    padding: var(--space-6) var(--space-5);
+  }
+
+  .surveys-page__header h1 {
+    font-size: var(--font-3xl);
+  }
+
+  .surveys-page__subtitle {
+    font-size: var(--font-base);
+  }
+
+  .surveys-page__filters {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .surveys-page__filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .surveys-page__filter {
+    flex-shrink: 0;
+  }
+
+  .surveys-page__grid {
+    gap: var(--space-6);
+  }
+
+  .surveys-page__feed {
+    gap: var(--space-5);
+  }
+
+  .surveys-page__panel {
+    gap: var(--space-5);
+  }
+
+  .surveys-page__panel-card {
+    padding: var(--space-5);
+  }
+}
+
+/* ============================================
+   ✨ MICRO-INTERACTIONS & ANIMATIONS
+   ============================================ */
+
+/* Ripple effect on filter buttons */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Shimmer loading effect */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Pulse animation for new content */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Loading state */
+.surveys-page__feed--loading {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

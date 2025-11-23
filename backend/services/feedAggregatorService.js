@@ -4,6 +4,9 @@ const Survey = require('../models/Survey');
 const OwnerProfile = require('../models/OwnerProfile');
 const VisitorProfile = require('../models/VisitorProfile');
 const User = require('../models/User');
+const Reaction = require('../models/Reaction');
+const feedRankingService = require('./feedRankingService');
+const { getSurveyOfTheDay } = require('./surveyOfTheDayService');
 
 /**
  * Feed Aggregator Service - Unified Global Feed
@@ -75,11 +78,52 @@ async function getGlobalFeed({ limit = 20, cursor = null, userId = null, userRol
     ...surveys.map(s => normalizeSurvey(s))
   ];
 
-  // Sort by createdAt descending
-  allItems.sort((a, b) => b.createdAt - a.createdAt);
+  // Get user's following list for ranking algorithm
+  let followedIds = [];
+  if (userId) {
+    try {
+      followedIds = await feedRankingService.getFollowedUserIds(userId);
+    } catch (error) {
+      console.error('[FeedAggregator] Failed to fetch following list:', error);
+      // Continue with empty follow list - ranking will still work
+    }
+  }
+
+  // Rank items using world-class algorithm (velocity + follow boost + premium boost)
+  const rankedItems = feedRankingService.rankFeedItems(allItems, userId, followedIds);
+
+  // 🌟 PHASE 4: Inject Survey of the Day at the top (only on first page, cursor = null)
+  let finalItems = rankedItems;
+  if (!cursor) {
+    try {
+      const surveyOfTheDay = await getSurveyOfTheDay();
+      if (surveyOfTheDay) {
+        // Check if Survey of the Day is already in the feed
+        const alreadyInFeed = rankedItems.some(
+          item => item._id.toString() === surveyOfTheDay._id.toString()
+        );
+
+        if (alreadyInFeed) {
+          // Remove it from its current position
+          finalItems = rankedItems.filter(
+            item => item._id.toString() !== surveyOfTheDay._id.toString()
+          );
+        }
+
+        // Normalize and inject at position 0
+        const normalizedSurvey = normalizeSurvey(surveyOfTheDay);
+        finalItems = [normalizedSurvey, ...finalItems];
+
+        console.log('[FeedAggregator] Injected Survey of the Day at top:', surveyOfTheDay._id);
+      }
+    } catch (error) {
+      console.error('[FeedAggregator] Failed to inject Survey of the Day:', error);
+      // Continue without Survey of the Day - non-blocking
+    }
+  }
 
   // Apply limit and get next cursor
-  const items = allItems.slice(0, limit);
+  const items = finalItems.slice(0, limit);
   const nextCursor = items.length === limit ? items[items.length - 1].createdAt.toISOString() : null;
 
   return {
@@ -178,6 +222,7 @@ function normalizeSurvey(survey) {
   return {
     _id: survey._id,
     type: 'survey',
+    surveyType: survey.surveyType || 'poll', // 'poll' or 'love-only'
     authorRole,
     author: {
       _id: author?._id,
@@ -190,9 +235,67 @@ function normalizeSurvey(survey) {
     category: survey.category,
     totalVotes: survey.totalVotes || 0,
     expiresAt: survey.expiresAt,
+
+    // Love-only survey fields
+    imageUrl: survey.imageUrl || '',
+    loveCount: survey.loveCount || 0,
+    lastLoveAt: survey.lastLoveAt,
+    authorNote: survey.authorNote || '',
+    viewCount: survey.viewCount || 0,
+
     createdAt: survey.createdAt,
     updatedAt: survey.updatedAt
   };
+}
+
+/**
+ * Enrich feed items with reactions (like/love counts)
+ * Fetches reaction counts for all items in parallel
+ */
+async function enrichWithReactions(items, userId = null) {
+  // Fetch reaction counts for all items in parallel
+  const reactionPromises = items.map(async (item) => {
+    const contentType = item.type === 'survey' ? 'survey' : 'post';
+    const contentId = item._id.toString();
+
+    try {
+      const counts = await Reaction.getReactionCounts(contentId, contentType);
+      const userReaction = userId
+        ? await Reaction.getUserReaction(userId, contentId, contentType)
+        : null;
+
+      return {
+        contentId,
+        reactions: counts,
+        userReaction
+      };
+    } catch (error) {
+      console.error(`[FeedAggregator] Failed to fetch reactions for ${contentId}:`, error.message);
+      return {
+        contentId,
+        reactions: { like: 0, love: 0, total: 0 },
+        userReaction: null
+      };
+    }
+  });
+
+  const reactionResults = await Promise.all(reactionPromises);
+
+  // Build reaction lookup map
+  const reactionMap = new Map();
+  reactionResults.forEach(r => {
+    reactionMap.set(r.contentId, { reactions: r.reactions, userReaction: r.userReaction });
+  });
+
+  // Enrich items with reaction data
+  return items.map(item => {
+    const reactionData = reactionMap.get(item._id.toString());
+    if (reactionData) {
+      item.reactions = reactionData.reactions;
+      item.userReaction = reactionData.userReaction;
+    }
+    return item;
+  });
 }
 
 /**
@@ -250,7 +353,48 @@ async function enrichWithProfiles(items) {
   });
 }
 
+/**
+ * Enrich feed items with comment counts
+ * Batched query for performance - no N+1 problem
+ * @param {Array} items - Feed items (surveys/posts)
+ * @returns {Array} Items with commentCount field
+ */
+async function enrichWithComments(items) {
+  if (!items || items.length === 0) return items;
+
+  const Comment = require('../models/Comment');
+
+  // Batch fetch comment counts for all items
+  const commentCountPromises = items.map(async (item) => {
+    const contentType = item.type === 'survey' ? 'survey' : 'post';
+    const contentId = item._id.toString();
+
+    const count = await Comment.countDocuments({
+      postId: contentId, // postId field is used for both posts and surveys
+      contentType,
+      isDeleted: false,
+      isHidden: false,
+    });
+
+    return { contentId, commentCount: count };
+  });
+
+  const commentResults = await Promise.all(commentCountPromises);
+  const commentMap = new Map();
+  commentResults.forEach(r => {
+    commentMap.set(r.contentId, r.commentCount);
+  });
+
+  // Add commentCount to each item
+  return items.map(item => {
+    item.commentCount = commentMap.get(item._id.toString()) || 0;
+    return item;
+  });
+}
+
 module.exports = {
   getGlobalFeed,
-  enrichWithProfiles
+  enrichWithProfiles,
+  enrichWithReactions,
+  enrichWithComments // NEW: Comment count enrichment
 };

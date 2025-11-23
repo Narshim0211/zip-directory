@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import axios from '../api/axios';
+import ReviewList from '../components/reviews/ReviewList';
+import PromotionBanner from '../components/promotions/PromotionBanner';
+import MessageButton from '../components/MessageButton';
 import '../styles/publicProfile.css';
 
 export default function PublicProfile() {
@@ -98,18 +101,152 @@ export default function PublicProfile() {
 
       <div className="public-profile-container">
         {/* Premium Hero Section */}
-        <div className="hero-section" style={{ backgroundImage: `url(${profile.coverPhoto})` }}>
+        <div className="hero-section" style={{ backgroundImage: `url(${profile.coverPhoto})`, position: 'relative' }}>
           <div className="hero-overlay"></div>
+
+          {/* Premium Orbit Badges - Only for Premium Listings */}
+          {profile.listingType === 'premium' && profile.premiumSubscription?.active && (
+            <style>
+              {`
+                @keyframes orbit {
+                  from {
+                    transform: rotate(0deg) translateX(80px) rotate(0deg);
+                  }
+                  to {
+                    transform: rotate(360deg) translateX(80px) rotate(-360deg);
+                  }
+                }
+                @keyframes orbit-reverse {
+                  from {
+                    transform: rotate(0deg) translateX(90px) rotate(0deg);
+                  }
+                  to {
+                    transform: rotate(-360deg) translateX(90px) rotate(360deg);
+                  }
+                }
+                @keyframes pulse {
+                  0%, 100% {
+                    transform: scale(1);
+                  }
+                  50% {
+                    transform: scale(1.1);
+                  }
+                }
+              `}
+            </style>
+          )}
+
           <div className="hero-content">
             {profile.logo && (
-              <div className="hero-logo">
+              <div className="hero-logo" style={{ position: 'relative' }}>
                 <img src={profile.logo} alt={`${profile.name} logo`} />
+
+                {/* Premium Orbit Animation */}
+                {profile.listingType === 'premium' && profile.premiumSubscription?.active && (
+                  <>
+                    {/* Orbit Badge 1: Premium */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      width: '40px',
+                      height: '40px',
+                      marginLeft: '-20px',
+                      marginTop: '-20px',
+                      animation: 'orbit 8s linear infinite'
+                    }}>
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '20px',
+                        boxShadow: '0 4px 12px rgba(255, 215, 0, 0.5)',
+                        animation: 'pulse 2s ease-in-out infinite'
+                      }}>
+                        💎
+                      </div>
+                    </div>
+
+                    {/* Orbit Badge 2: Verified */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      width: '36px',
+                      height: '36px',
+                      marginLeft: '-18px',
+                      marginTop: '-18px',
+                      animation: 'orbit-reverse 10s linear infinite'
+                    }}>
+                      <div style={{
+                        width: '36px',
+                        height: '36px',
+                        background: 'linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%)',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '18px',
+                        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.5)',
+                        animation: 'pulse 2.5s ease-in-out infinite'
+                      }}>
+                        ✓
+                      </div>
+                    </div>
+
+                    {/* Orbit Badge 3: Star */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      width: '38px',
+                      height: '38px',
+                      marginLeft: '-19px',
+                      marginTop: '-19px',
+                      animation: 'orbit 12s linear infinite',
+                      animationDelay: '-4s'
+                    }}>
+                      <div style={{
+                        width: '38px',
+                        height: '38px',
+                        background: 'linear-gradient(135deg, #E91E63 0%, #F06292 100%)',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '18px',
+                        boxShadow: '0 4px 12px rgba(233, 30, 99, 0.5)',
+                        animation: 'pulse 3s ease-in-out infinite'
+                      }}>
+                        ⭐
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
-            <h1 className="hero-title">{profile.name}</h1>
-            {profile.contact?.city && profile.contact?.state && (
-              <p className="hero-location">📍 {profile.contact.city}, {profile.contact.state}</p>
-            )}
+            <div className="hero-title-row">
+              <h1 className="hero-title">{profile.name}</h1>
+              {profile.verificationStatus === 'fully_verified' && (
+                <span className="verified-badge" title="Verified Business">
+                  ✓
+                </span>
+              )}
+            </div>
+            <div className="hero-meta">
+              {profile.contact?.city && profile.contact?.state && (
+                <p className="hero-location">📍 {profile.contact.city}, {profile.contact.state}</p>
+              )}
+              {profile.isOpenNow !== undefined && (
+                <span className={`open-now-pill ${profile.isOpenNow ? 'open' : 'closed'}`}>
+                  {profile.isOpenNow ? '🟢 Open Now' : '🔴 Closed'}
+                </span>
+              )}
+            </div>
             {profile.rating && profile.rating.count > 0 && (
               <div className="hero-rating">
                 <span className="rating-stars">⭐ {profile.rating.average.toFixed(1)}</span>
@@ -119,8 +256,21 @@ export default function PublicProfile() {
             <button className="hero-cta" onClick={() => handleBookNow()}>
               📅 Book Appointment
             </button>
+
+            {/* 💬 Message Button - Chat System */}
+            <MessageButton
+              businessId={profile._id}
+              businessName={profile.name}
+              isPremium={profile.listingType === 'premium' && profile.premiumSubscription?.active}
+            />
           </div>
         </div>
+
+        {/* 🎁 Promotions Banner */}
+        <PromotionBanner
+          promotion={profile.promotion}
+          onBookNow={() => handleBookNow()}
+        />
 
         {/* Highlights Section */}
         {profile.highlights && profile.highlights.length > 0 && (
@@ -136,7 +286,7 @@ export default function PublicProfile() {
         )}
 
         {/* Content */}
-        <div className="profile-content">
+        <div className="profile-content" style={{ paddingBottom: '100px' }}>
           {/* About */}
           {profile.bio && (
             <section className="profile-section">
@@ -145,14 +295,63 @@ export default function PublicProfile() {
             </section>
           )}
 
-          {/* Recent Work Carousel */}
+          {/* Recent Work - Masonry Grid */}
           {profile.recentGallery && profile.recentGallery.length > 0 && (
             <section className="profile-section">
               <h2>Recent Work</h2>
-              <div className="recent-work-carousel">
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '16px',
+                width: '100%'
+              }}>
                 {profile.recentGallery.map((photo, index) => (
-                  <div key={index} className="carousel-item" onClick={() => openLightbox(photo)}>
-                    <img src={photo.url} alt={photo.caption || `Recent work ${index + 1}`} />
+                  <div
+                    key={index}
+                    onClick={() => openLightbox(photo)}
+                    style={{
+                      position: 'relative',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                      aspectRatio: '1 / 1',
+                      background: '#f3f4f6'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.03)';
+                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                    }}
+                  >
+                    <img
+                      src={photo.url}
+                      alt={photo.caption || `Recent work ${index + 1}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                    {photo.caption && (
+                      <div style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+                        color: 'white',
+                        padding: '12px',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                      }}>
+                        {photo.caption}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -189,20 +388,88 @@ export default function PublicProfile() {
             </section>
           )}
 
+          {/* 👥 Team Section */}
+          {profile.team && profile.team.length > 0 && (
+            <section className="profile-section">
+              <h2>Meet Our Team</h2>
+              <div className="team-scroll">
+                {profile.team.map((member, index) => (
+                  <div key={index} className="team-card">
+                    <div className="team-photo">
+                      {member.photoUrl ? (
+                        <img src={member.photoUrl} alt={member.name} />
+                      ) : (
+                        <div className="team-placeholder">
+                          {member.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <h4 className="team-name">{member.name}</h4>
+                    {member.role && (
+                      <p className="team-role">{member.role}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Masonry Gallery */}
           {profile.photos && profile.photos.length > 0 && (
             <section className="profile-section">
               <h2>Gallery</h2>
-              <div className="masonry-gallery">
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '16px',
+                width: '100%'
+              }}>
                 {profile.photos.map((photo, index) => (
-                  <div 
-                    key={index} 
-                    className="masonry-item"
+                  <div
+                    key={index}
                     onClick={() => openLightbox(photo)}
+                    style={{
+                      position: 'relative',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                      aspectRatio: '1 / 1',
+                      background: '#f3f4f6'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.03)';
+                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                    }}
                   >
-                    <img src={photo.url} alt={photo.caption || `Gallery ${index + 1}`} />
+                    <img
+                      src={photo.url}
+                      alt={photo.caption || `Gallery ${index + 1}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
                     {photo.caption && (
-                      <div className="masonry-caption">{photo.caption}</div>
+                      <div style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+                        color: 'white',
+                        padding: '12px',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                      }}>
+                        {photo.caption}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -264,16 +531,137 @@ export default function PublicProfile() {
               </div>
             </section>
           )}
+
+          {/* 🕒 Hours Section */}
+          {profile.hours && Object.keys(profile.hours).length > 0 && (
+            <section className="profile-section">
+              <h2>Hours</h2>
+              <div className="hours-table">
+                {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((day) => {
+                  const dayName = {
+                    mon: 'Monday',
+                    tue: 'Tuesday',
+                    wed: 'Wednesday',
+                    thu: 'Thursday',
+                    fri: 'Friday',
+                    sat: 'Saturday',
+                    sun: 'Sunday'
+                  }[day];
+
+                  const today = new Date().toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase().substring(0, 3);
+                  const isToday = day === today;
+                  const hours = profile.hours[day] || 'Closed';
+
+                  return (
+                    <div key={day} className={`hours-row ${isToday ? 'today' : ''}`}>
+                      <span className="hours-day">{dayName}</span>
+                      <span className="hours-time">{hours}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* ⭐ Reviews Section */}
+          <section className="profile-section">
+            <h2>Reviews</h2>
+            <ReviewList businessId={profile._id} />
+          </section>
         </div>
 
-        {/* Sticky Mobile CTA */}
-        <div className="sticky-mobile-cta">
-          {profile.logo && (
-            <img src={profile.logo} alt={profile.name} className="sticky-logo" />
-          )}
-          <button className="sticky-cta-btn" onClick={() => handleBookNow()}>
-            Book with {profile.name} →
+        {/* Sticky CTA Ribbon - Book, Message, Call */}
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: 'white',
+          padding: '12px 16px',
+          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.15)',
+          display: 'flex',
+          gap: '12px',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 50,
+          borderTop: '1px solid #e5e7eb'
+        }}>
+          {/* Message Button */}
+          <MessageButton
+            businessId={profile._id}
+            businessName={profile.name}
+            isPremium={profile.listingType === 'premium' && profile.premiumSubscription?.active}
+            compact={true}
+          />
+
+          {/* Book Now Button - Primary */}
+          <button
+            onClick={() => handleBookNow()}
+            style={{
+              flex: 1,
+              padding: '14px 20px',
+              background: 'linear-gradient(135deg, #E91E63 0%, #F06292 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '10px',
+              fontSize: '16px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(233, 30, 99, 0.3)',
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(233, 30, 99, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(233, 30, 99, 0.3)';
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>📅</span>
+            <span>Book Now</span>
           </button>
+
+          {/* Call Button */}
+          {profile.contact?.phone && (
+            <a
+              href={`tel:${profile.contact.phone}`}
+              style={{
+                padding: '14px 20px',
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                fontSize: '16px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                textDecoration: 'none',
+                minWidth: '120px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+              }}
+            >
+              <span style={{ fontSize: '18px' }}>📞</span>
+              <span>Call</span>
+            </a>
+          )}
         </div>
 
         {/* Lightbox */}

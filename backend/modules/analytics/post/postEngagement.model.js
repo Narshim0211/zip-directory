@@ -57,9 +57,6 @@ const postEngagementSchema = new mongoose.Schema({
   collection: 'postEngagements'
 });
 
-// Index for efficient lookups
-postEngagementSchema.index({ postId: 1 });
-
 // Static methods for clean operations
 postEngagementSchema.statics.incrementViews = async function(postId, userId = null) {
   let engagement = await this.findOne({ postId });

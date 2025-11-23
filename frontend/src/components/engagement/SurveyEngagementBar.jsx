@@ -2,21 +2,49 @@ import React, { useEffect, useState } from 'react';
 import { getSurveyEngagement, toggleReaction, sendImpression } from '../../api/engagementApi';
 import { useImpressionTracking } from '../../hooks/useImpressionTracking';
 import './EngagementBar.css';
+import '../../styles/feedAnimations.css';
 
 /**
  * SurveyEngagementBar Component
  * Shows survey engagement metrics: views, responses, reactions
  * Simple X/Twitter-style compact bar with PROPER toggle behavior
  * NO duplication - used ONLY on survey cards
+ * PHASE 2: Added ripple reward animations on reaction clicks
  */
-const SurveyEngagementBar = ({ surveyId, onReact }) => {
+const SurveyEngagementBar = ({ surveyId, onReact, onCommentsClick }) => {
   const [engagement, setEngagement] = useState({
     views: 0,
     responses: 0,
-    reactions: { like: 0, love: 0, total: 0 }
+    reactions: { like: 0, love: 0, total: 0 },
+    comments: 0 // NEW: Comment count
   });
   const [loading, setLoading] = useState(true);
   const [userReaction, setUserReaction] = useState(null);
+
+  /**
+   * Create ripple effect on button click
+   * @param {MouseEvent} event - Click event
+   */
+  const createRipple = (event) => {
+    const button = event.currentTarget;
+    const ripple = document.createElement('span');
+    const rect = button.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = event.clientX - rect.left - size / 2;
+    const y = event.clientY - rect.top - size / 2;
+
+    ripple.style.width = ripple.style.height = `${size}px`;
+    ripple.style.left = `${x}px`;
+    ripple.style.top = `${y}px`;
+    ripple.classList.add('ripple');
+
+    button.appendChild(ripple);
+
+    // Remove ripple after animation completes
+    setTimeout(() => {
+      ripple.remove();
+    }, 600);
+  };
 
   // Track impression when component enters viewport
   const handleImpression = async (contentType, contentId) => {
@@ -63,7 +91,8 @@ const SurveyEngagementBar = ({ surveyId, onReact }) => {
             love: data.reactions?.love ?? 0,
             total: (data.reactions?.like ?? 0) + (data.reactions?.love ?? 0)
           },
-          responses: data.responses ?? 0
+          responses: data.responses ?? 0,
+          comments: data.comments ?? 0 // NEW: Comment count from API
         });
         // IMPORTANT: Set user's current reaction from backend
         setUserReaction(data.userReaction || null);
@@ -74,7 +103,8 @@ const SurveyEngagementBar = ({ surveyId, onReact }) => {
       setEngagement({
         views: 0,
         responses: 0,
-        reactions: { like: 0, love: 0, total: 0 }
+        reactions: { like: 0, love: 0, total: 0 },
+        comments: 0 // NEW: Default comment count
       });
       setUserReaction(null);
     } finally {
@@ -136,27 +166,47 @@ const SurveyEngagementBar = ({ surveyId, onReact }) => {
       </div>
       
       <div className="engagement-divider">•</div>
-      
+
       <div className="engagement-stat">
         <span className="stat-icon">💬</span>
         <span className="stat-value">{engagement.responses}</span>
         <span className="stat-label">responses</span>
       </div>
-      
+
+      <div className="engagement-divider">•</div>
+
+      {/* NEW: Comments count - clickable */}
+      <button
+        className="engagement-stat engagement-stat--button"
+        onClick={onCommentsClick}
+        disabled={!onCommentsClick}
+        title="View comments"
+      >
+        <span className="stat-icon">💭</span>
+        <span className="stat-value">{engagement.comments}</span>
+        <span className="stat-label">comments</span>
+      </button>
+
       <div className="engagement-divider">•</div>
       
       <div className="engagement-reactions">
         <button
-          className={`reaction-btn ${userReaction === 'like' ? 'active' : ''}`}
-          onClick={() => handleReaction('like')}
+          className={`reaction-btn ripple-container ${userReaction === 'like' ? 'active reaction-btn--liked' : ''}`}
+          onClick={(e) => {
+            createRipple(e);
+            handleReaction('like');
+          }}
           title="Like"
         >
           👍 {engagement.reactions.like}
         </button>
-        
+
         <button
-          className={`reaction-btn ${userReaction === 'love' ? 'active' : ''}`}
-          onClick={() => handleReaction('love')}
+          className={`reaction-btn ripple-container ${userReaction === 'love' ? 'active reaction-btn--loved' : ''}`}
+          onClick={(e) => {
+            createRipple(e);
+            handleReaction('love');
+          }}
           title="Love"
         >
           ❤️ {engagement.reactions.love}

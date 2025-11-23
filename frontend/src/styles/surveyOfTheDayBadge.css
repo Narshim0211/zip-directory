@@ -1,0 +1,128 @@
+/**
+ * Survey of the Day Badge CSS
+ *
+ * Prominent badge with shimmer effect to highlight featured survey
+ */
+
+.survey-of-the-day-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+.badge-icon {
+  font-size: 18px;
+  animation: icon-spin 3s linear infinite;
+}
+
+.badge-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* ========================================
+   PULSE ANIMATION
+   ======================================== */
+
+@keyframes badge-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 6px 20px rgba(251, 191, 36, 0.6);
+    transform: scale(1.02);
+  }
+}
+
+/* ========================================
+   ICON SPIN (SUBTLE)
+   ======================================== */
+
+@keyframes icon-spin {
+  0%, 90% {
+    transform: rotate(0deg);
+  }
+  95% {
+    transform: rotate(15deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* ========================================
+   SHIMMER EFFECT (REUSE FROM FEEDANIMATIONS)
+   ======================================== */
+
+.survey-of-the-day-badge.shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 150%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: shimmer-slide 2.5s infinite;
+  z-index: 0;
+}
+
+@keyframes shimmer-slide {
+  0% {
+    left: -150%;
+  }
+  100% {
+    left: 150%;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY: Reduced Motion
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .survey-of-the-day-badge {
+    animation: none;
+  }
+
+  .badge-icon {
+    animation: none;
+  }
+
+  .survey-of-the-day-badge.shimmer::before {
+    animation: none;
+  }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 600px) {
+  .survey-of-the-day-badge {
+    font-size: 12px;
+    padding: 6px 12px;
+    gap: 6px;
+  }
+
+  .badge-icon {
+    font-size: 16px;
+  }
+}

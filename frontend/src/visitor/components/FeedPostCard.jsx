@@ -11,11 +11,26 @@ import VerificationBadgeInline from "../../components/VerificationBadgeInline";
  * Follow state is now managed globally by FollowContext.
  * No more local follow state - all posts from same user update together!
  *
+ * PHASE 3: Added visual hierarchy - follow glow and premium orbit
+ *
  * OPTIMIZED with React.memo - prevents re-renders when props haven't changed
  */
 const FeedPostCard = React.memo(function FeedPostCard({ post }) {
+  // Determine visual hierarchy classes
+  const isFollowed = post._isFollowed || false;
+  const isPremium = post._isPremium || (post.author?.isPremium) || false;
+
+  // Build dynamic class names for visual hierarchy
+  const cardClasses = `feed-card ${
+    isFollowed ? 'feed-card--followed' : ''
+  } ${
+    isPremium ? 'feed-card--premium' : ''
+  }`.trim();
+
   return (
-    <article className="feed-card">
+    <article className={cardClasses}>
+      {/* Premium orbit effect */}
+      {isPremium && <div className="premium-orbit"></div>}
       <header className="feed-card__header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
           <div>

@@ -1,0 +1,421 @@
+/**
+ * Feed Animations CSS
+ * Ripple reward animations for votes and reactions
+ *
+ * Features:
+ * - Ripple effect on button click (visual feedback)
+ * - Pulse animation for successful actions
+ * - Smooth transitions for engagement
+ */
+
+/* ========================================
+   RIPPLE EFFECT ANIMATION
+   ======================================== */
+
+.ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  transform: scale(0);
+  animation: ripple-animation 0.6s ease-out;
+  pointer-events: none;
+}
+
+@keyframes ripple-animation {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* ========================================
+   SUCCESS PULSE ANIMATION
+   ======================================== */
+
+.success-pulse {
+  animation: success-pulse-animation 0.5s ease-in-out;
+}
+
+@keyframes success-pulse-animation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ========================================
+   VOTE BUTTON ENHANCEMENTS
+   ======================================== */
+
+.feed-card__vote-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.feed-card__vote-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.feed-card__vote-btn:active {
+  transform: translateY(0);
+}
+
+/* ========================================
+   LOVE BUTTON ENHANCEMENTS
+   ======================================== */
+
+.love-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.love-button:hover {
+  transform: scale(1.05);
+}
+
+.love-button:active {
+  transform: scale(0.95);
+}
+
+/* Love button ripple (pink/red color) */
+.love-button .ripple {
+  background: rgba(236, 72, 153, 0.6); /* Pink ripple for love */
+}
+
+/* ========================================
+   REACTION BUTTONS (Like/Love)
+   ======================================== */
+
+.reaction-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.reaction-btn:hover {
+  transform: scale(1.1);
+}
+
+.reaction-btn:active {
+  transform: scale(0.9);
+}
+
+.reaction-btn--liked .ripple {
+  background: rgba(59, 130, 246, 0.6); /* Blue ripple for like */
+}
+
+.reaction-btn--loved .ripple {
+  background: rgba(236, 72, 153, 0.6); /* Pink ripple for love */
+}
+
+/* ========================================
+   REWARD ANIMATIONS (Vote Success)
+   ======================================== */
+
+.vote-success {
+  animation: vote-success-animation 0.8s ease-out;
+}
+
+@keyframes vote-success-animation {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ========================================
+   CONFETTI PARTICLES (Optional Enhancement)
+   ======================================== */
+
+.confetti-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #fbbf24; /* Yellow confetti */
+  border-radius: 50%;
+  animation: confetti-fall 1s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* ========================================
+   SHIMMER EFFECT (Optional)
+   ======================================== */
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 150%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  animation: shimmer-slide 2s infinite;
+}
+
+@keyframes shimmer-slide {
+  0% {
+    left: -150%;
+  }
+  100% {
+    left: 150%;
+  }
+}
+
+/* ========================================
+   FADE IN ANIMATION (Results Display)
+   ======================================== */
+
+.fade-in {
+  animation: fade-in-animation 0.5s ease-in;
+}
+
+@keyframes fade-in-animation {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* ========================================
+   SLIDE UP ANIMATION (Results Display)
+   ======================================== */
+
+.slide-up {
+  animation: slide-up-animation 0.5s ease-out;
+}
+
+@keyframes slide-up-animation {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   PHASE 3: VISUAL HIERARCHY
+   ======================================== */
+
+/* ========================================
+   FOLLOW GLOW EFFECT
+   Subtle glow for followed content
+   ======================================== */
+
+.feed-card--followed {
+  position: relative;
+  border: 2px solid transparent;
+  background-image: linear-gradient(white, white),
+                    linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+  animation: follow-glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes follow-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.25);
+  }
+}
+
+/* Follow indicator badge (optional) */
+.follow-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* ========================================
+   PREMIUM ORBIT EFFECT
+   Animated orbit ring for premium content
+   ======================================== */
+
+.feed-card--premium {
+  position: relative;
+  overflow: visible;
+}
+
+.premium-orbit {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.premium-orbit::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 16px;
+  padding: 2px;
+  background: linear-gradient(
+    45deg,
+    #fbbf24 0%,
+    #f59e0b 25%,
+    #fbbf24 50%,
+    #f59e0b 75%,
+    #fbbf24 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: premium-orbit-rotate 4s linear infinite;
+}
+
+@keyframes premium-orbit-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Premium badge */
+.premium-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+  animation: premium-badge-shine 2s ease-in-out infinite;
+}
+
+@keyframes premium-badge-shine {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(251, 191, 36, 0.6);
+  }
+}
+
+/* ========================================
+   COMBINED EFFECTS (Follow + Premium)
+   ======================================== */
+
+.feed-card--followed.feed-card--premium {
+  /* Dual gradient border: Follow (blue/purple) + Premium (gold) */
+  background-image: linear-gradient(white, white),
+                    linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #fbbf24 100%);
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.2),
+              0 0 25px rgba(251, 191, 36, 0.2);
+}
+
+/* ========================================
+   HOVER ENHANCEMENTS
+   ======================================== */
+
+.feed-card--followed:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 30px rgba(59, 130, 246, 0.25);
+  transition: all 0.3s ease;
+}
+
+.feed-card--premium:hover {
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+.feed-card--followed.feed-card--premium:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 6px 40px rgba(59, 130, 246, 0.3),
+              0 6px 40px rgba(251, 191, 36, 0.3);
+}
+
+/* ========================================
+   ACCESSIBILITY: Reduced Motion
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-card--followed,
+  .feed-card--premium,
+  .premium-orbit::before,
+  .premium-badge {
+    animation: none;
+  }
+
+  .feed-card--followed:hover,
+  .feed-card--premium:hover,
+  .feed-card--followed.feed-card--premium:hover {
+    transform: none;
+  }
+}

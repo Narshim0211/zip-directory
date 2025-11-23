@@ -11,6 +11,7 @@ const NavbarPublic = () => {
           <Link to="/" className="link">Home</Link>
           <Link to="/explore" className="link">Explore</Link>
           <Link to="/register?role=owner" className="link">Join as Business</Link>
+          <Link to="/blog" className="link">Blog</Link>
           <Link to="/login" className="link">Login</Link>
         </div>
       </div>

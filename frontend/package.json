@@ -8,10 +8,13 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.13.1",
+    "dompurify": "^3.3.0",
     "isexe": "^2.0.0",
+    "lucide-react": "^0.554.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-helmet-async": "^2.0.5",
+    "react-quill": "^2.0.0",
     "react-router-dom": "^7.9.5",
     "react-scripts": "5.0.1",
     "socket.io-client": "^4.8.1",
@@ -27,7 +30,21 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "plugins": ["unused-imports"],
+    "rules": {
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
+        {
+          "vars": "all",
+          "varsIgnorePattern": "^_",
+          "args": "after-used",
+          "argsIgnorePattern": "^_"
+        }
+      ],
+      "no-unused-vars": "off"
+    }
   },
   "browserslist": {
     "production": [
@@ -42,6 +59,7 @@
     ]
   },
   "devDependencies": {
-    "cross-env": "^10.1.0"
+    "cross-env": "^10.1.0",
+    "eslint-plugin-unused-imports": "^4.3.0"
   }
 }

@@ -3,7 +3,7 @@ import axios from 'axios';
 import Layout from '../components/layout/Layout';
 import './FeedbackInbox.css';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const FeedbackInbox = () => {
   const [feedbackList, setFeedbackList] = useState([]);
@@ -51,7 +51,7 @@ const FeedbackInbox = () => {
       params.append('limit', filters.limit);
 
       const response = await axios.get(
-        `${API_BASE}/admin/feedback?${params.toString()}`,
+        `${API_BASE}/api/admin/feedback?${params.toString()}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -88,7 +88,7 @@ const FeedbackInbox = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.patch(
-        `${API_BASE}/admin/feedback/${selectedFeedback._id}`,
+        `${API_BASE}/api/admin/feedback/${selectedFeedback._id}`,
         updateForm,
         {
           headers: { Authorization: `Bearer ${token}` }

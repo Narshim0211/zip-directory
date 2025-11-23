@@ -13,5 +13,6 @@ router.post('/:id/like', protect, controller.toggleLike);
 router.post('/:id/react', protect, controller.react);
 router.post('/:id/pin', protect, adminOnly, controller.pin);
 router.get('/user/my', protect, controller.userComments);
+router.post('/:id/report', protect, controller.report); // NEW: Report comment endpoint
 
 module.exports = router;

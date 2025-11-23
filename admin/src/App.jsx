@@ -6,6 +6,8 @@ import FeedbackInbox from './pages/FeedbackInbox.jsx';
 import NewsletterHub from './pages/NewsletterHub.jsx';
 import VisitorNewsletter from './pages/VisitorNewsletter.jsx';
 import OwnerNewsletter from './pages/OwnerNewsletter.jsx';
+import BlogHub from './pages/BlogHub.jsx';
+import BlogEditor from './pages/BlogEditor.jsx';
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -22,6 +24,8 @@ export default function App() {
         <Route path="/newsletter" element={<PrivateRoute><NewsletterHub /></PrivateRoute>} />
         <Route path="/newsletter/visitor" element={<PrivateRoute><VisitorNewsletter /></PrivateRoute>} />
         <Route path="/newsletter/owner" element={<PrivateRoute><OwnerNewsletter /></PrivateRoute>} />
+        <Route path="/blogs" element={<PrivateRoute><BlogHub /></PrivateRoute>} />
+        <Route path="/blogs/create" element={<PrivateRoute><BlogEditor /></PrivateRoute>} />
       </Routes>
     </BrowserRouter>
   );

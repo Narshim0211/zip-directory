@@ -1,0 +1,385 @@
+/**
+ * Survey Card - Premium Beauty-Tech Redesign 2025
+ * World-class glassmorphism card with elegant vote bars and micro-interactions
+ *
+ * Features:
+ * - Glass panel with subtle blur
+ * - Gradient vote progress bars
+ * - Smooth hover animations
+ * - Premium typography
+ * - Category pill badges with icons
+ * - Elegant spacing
+ */
+
+/* ============================================
+   🎴 CARD CONTAINER - Glassmorphism
+   ============================================ */
+
+.survey-card {
+  background: var(--gradient-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle hover effect */
+.survey-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-card-hover);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  pointer-events: none;
+}
+
+.survey-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+  border-color: rgba(155, 95, 255, 0.2);
+}
+
+.survey-card:hover::before {
+  opacity: 1;
+}
+
+/* ============================================
+   📄 CARD HEADER - Author & Question
+   ============================================ */
+
+.survey-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  position: relative;
+  z-index: 1;
+}
+
+.survey-card__header strong {
+  font-size: var(--font-xl);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  line-height: var(--leading-snug);
+  display: block;
+  margin-top: var(--space-2);
+}
+
+.survey-card__meta {
+  font-size: var(--font-sm);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-1);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ============================================
+   🏷 CATEGORY BADGE - Premium Pill
+   ============================================ */
+
+.survey-card__category {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--font-xs);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--color-lavender-soft);
+  color: var(--color-deep-indigo);
+  border: 1px solid var(--color-lavender-light);
+  transition: all var(--transition-fast);
+}
+
+.survey-card__category:hover {
+  background: var(--color-lavender-light);
+  border-color: var(--color-lavender-mist);
+}
+
+/* Category Icons (optional - add with spans) */
+.survey-card__category::before {
+  content: attr(data-icon);
+  font-size: var(--font-base);
+}
+
+/* ============================================
+   🗳 VOTE OPTIONS - Elegant Bars
+   ============================================ */
+
+.survey-card__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: relative;
+  z-index: 1;
+}
+
+.survey-option {
+  position: relative;
+}
+
+.survey-option button {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-base);
+  color: var(--color-text-primary);
+  padding: 0;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  z-index: 2;
+}
+
+.survey-option button:hover {
+  color: var(--color-neon-purple);
+  transform: translateX(2px);
+}
+
+.survey-option button:active {
+  transform: translateX(0);
+}
+
+/* Vote Progress Bar - Gradient Fill */
+.survey-option__bar {
+  height: 12px;
+  background: var(--color-cloud-gray);
+  border-radius: var(--radius-full);
+  margin-top: var(--space-2);
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.survey-option__bar span {
+  display: block;
+  height: 100%;
+  background: var(--gradient-neon-glow);
+  border-radius: var(--radius-full);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer animation on vote bars */
+.survey-option__bar span::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  animation: shimmerSlide 2s infinite;
+}
+
+@keyframes shimmerSlide {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Vote Metadata - Percentage & Count */
+.survey-option__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-2);
+  font-weight: var(--weight-medium);
+}
+
+.survey-option__meta span:first-child {
+  color: var(--color-neon-purple);
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-sm);
+}
+
+/* ============================================
+   ✨ MICRO-INTERACTIONS
+   ============================================ */
+
+/* Ripple effect on option click */
+.survey-option button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(155, 95, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s, opacity 0.6s;
+  opacity: 0;
+}
+
+.survey-option button:active::after {
+  width: 300px;
+  height: 300px;
+  opacity: 1;
+  transition: 0s;
+}
+
+/* Pulse animation for new votes */
+@keyframes votePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.survey-option--new-vote {
+  animation: votePulse 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   🎨 CATEGORY-SPECIFIC COLORS (Optional)
+   ============================================ */
+
+/* Hair category */
+.survey-card[data-category="hair"] .survey-option__bar span {
+  background: linear-gradient(135deg, #9B5FFF 0%, #764ba2 100%);
+}
+
+.survey-card[data-category="hair"] .survey-card__category {
+  background: #F5F1FF;
+  color: #5E3BB7;
+  border-color: #EDE7FF;
+}
+
+/* Skin category */
+.survey-card[data-category="skin"] .survey-option__bar span {
+  background: linear-gradient(135deg, #FFB7DC 0%, #FF37A6 100%);
+}
+
+.survey-card[data-category="skin"] .survey-card__category {
+  background: #FFE5F4;
+  color: #C91D7E;
+  border-color: #FFB7DC;
+}
+
+/* Nails category */
+.survey-card[data-category="nails"] .survey-option__bar span {
+  background: linear-gradient(135deg, #FFC861 0%, #FF8A00 100%);
+}
+
+.survey-card[data-category="nails"] .survey-card__category {
+  background: #FFF4D9;
+  color: #B85C00;
+  border-color: #FFC861;
+}
+
+/* Makeup category */
+.survey-card[data-category="makeup"] .survey-option__bar span {
+  background: linear-gradient(135deg, #AEC8FF 0%, #4A90E2 100%);
+}
+
+.survey-card[data-category="makeup"] .survey-card__category {
+  background: #E8F1FF;
+  color: #2563EB;
+  border-color: #AEC8FF;
+}
+
+/* Spa category */
+.survey-card[data-category="spa"] .survey-option__bar span {
+  background: linear-gradient(135deg, #A7F3D0 0%, #34D399 100%);
+}
+
+.survey-card[data-category="spa"] .survey-card__category {
+  background: #D1FAE5;
+  color: #047857;
+  border-color: #A7F3D0;
+}
+
+/* ============================================
+   📱 RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+  .survey-card {
+    padding: var(--space-5);
+    gap: var(--space-4);
+  }
+
+  .survey-card__header strong {
+    font-size: var(--font-lg);
+  }
+
+  .survey-option button {
+    font-size: var(--font-sm);
+  }
+
+  .survey-option__bar {
+    height: 10px;
+  }
+
+  .survey-card__options {
+    gap: var(--space-3);
+  }
+}
+
+/* ============================================
+   ♿ ACCESSIBILITY
+   ============================================ */
+
+/* Focus states */
+.survey-option button:focus-visible {
+  outline: 2px solid var(--color-neon-purple);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .survey-card,
+  .survey-option button,
+  .survey-option__bar span {
+    transition: none;
+  }
+
+  .survey-option__bar span::after {
+    animation: none;
+  }
+
+  .survey-card::before {
+    transition: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .survey-card {
+    border: 2px solid var(--color-deep-indigo);
+  }
+
+  .survey-option__bar {
+    border: 1px solid var(--color-text-primary);
+  }
+}

@@ -1,10 +1,16 @@
 const Business = require('../models/Business');
+const BusinessModerationEngine = require('../modules/moderation/businessModerationEngine');
 
 async function listApproved() {
-  return Business.find({ status: 'approved' });
+  // 🛡️ Filter by both legacy status AND new moderationStatus
+  // Only show businesses that are fully approved
+  return Business.find({
+    status: 'approved',
+    moderationStatus: 'APPROVED'
+  });
 }
 
-async function create({ ownerId, payload }) {
+async function create({ ownerId, payload, req }) {
   const { name, city, category, description, address, images, services, specialties } = payload || {};
   const errors = [];
   if (!name || !String(name).trim()) errors.push("'name' is required");
@@ -22,7 +28,8 @@ async function create({ ownerId, payload }) {
     throw err;
   }
 
-  const business = new Business({
+  // Prepare business data
+  const businessData = {
     name: name.trim(),
     city: city.trim(),
     category,
@@ -33,8 +40,32 @@ async function create({ ownerId, payload }) {
     specialties,
     owner: ownerId,
     status: 'pending',
+  };
+
+  // 🛡️ Run moderation engine on new business
+  const moderation = await BusinessModerationEngine.evaluate(businessData, {
+    ip: req?.ip,
+    ownerId,
   });
-  return business.save();
+
+  // Create business with moderation results
+  const business = new Business({
+    ...businessData,
+    moderationStatus: moderation.status,
+    moderationIssues: moderation.issues,
+    metadata: {
+      ip: req?.ip,
+      lastModeratedAt: new Date(),
+    },
+  });
+
+  const saved = await business.save();
+
+  // Return business with moderation metadata for frontend
+  return {
+    ...saved.toObject(),
+    _moderation: moderation, // Include moderation results in response
+  };
 }
 
 async function setStatus({ id, status }) {

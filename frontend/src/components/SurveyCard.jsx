@@ -3,7 +3,7 @@ import api from '../api/axios';
 import FollowButton from './FollowButton';
 import IdentityBadge from './SharedComponents/IdentityBadge';
 import { SurveyEngagementBar } from './engagement';
-import '../styles/surveyCard.css';
+import '../styles/surveyCardPremium.css';
 
 const SurveyCard = ({ survey, onVote, showFollow, following, onFollow }) => {
   const [busy, setBusy] = useState(false);
@@ -28,7 +28,7 @@ const SurveyCard = ({ survey, onVote, showFollow, following, onFollow }) => {
   };
 
   return (
-    <div className="survey-card">
+    <div className="survey-card" data-category={survey.category?.toLowerCase()}>
       <div className="survey-card__header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <IdentityBadge identity={survey.identity} author={survey.author} />

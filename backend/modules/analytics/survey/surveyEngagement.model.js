@@ -67,9 +67,6 @@ const surveyEngagementSchema = new mongoose.Schema({
   collection: 'surveyEngagements'
 });
 
-// Index for efficient lookups
-surveyEngagementSchema.index({ surveyId: 1 });
-
 // Static methods for clean operations
 surveyEngagementSchema.statics.incrementViews = async function(surveyId, userId = null) {
   let engagement = await this.findOne({ surveyId });

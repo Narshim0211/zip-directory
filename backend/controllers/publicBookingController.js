@@ -48,11 +48,11 @@ exports.getPublicProfile = async (req, res, next) => {
     const { slug } = req.params;
 
     // Find business by booking slug
-    const business = await Business.findOne({ 
+    const business = await Business.findOne({
       bookingSlug: slug,
-      isPublicProfileActive: true 
+      isPublicProfileActive: true
     }).select(
-      'name logoUrl coverPhotoUrl bio photos videos services phone email address city state category description ratingAverage ratingsCount'
+      'name logoUrl coverPhotoUrl bio photos videos services phone email address city state category description ratingAverage ratingsCount hours isOpenNow staff verifiedBadges verificationStatus promotions'
     );
 
     if (!business) {
@@ -61,9 +61,17 @@ exports.getPublicProfile = async (req, res, next) => {
 
     // Generate highlights dynamically
     const highlights = generateHighlights(business);
-    
+
     // Get recent gallery (last 10 photos)
     const recentGallery = (business.photos || []).slice(-10).reverse();
+
+    // Filter active promotions (within date range)
+    const now = new Date();
+    const activePromotions = (business.promotions || []).filter(promo =>
+      promo.isActive &&
+      new Date(promo.startDate) <= now &&
+      new Date(promo.endDate) >= now
+    );
 
     // Format response
     const profileData = {
@@ -90,6 +98,18 @@ exports.getPublicProfile = async (req, res, next) => {
         average: business.ratingAverage || 0,
         count: business.ratingsCount || 0,
       },
+      // 🆕 New fields for world-class profile
+      hours: business.hours || {},
+      isOpenNow: business.isOpenNow || false,
+      team: (business.staff || []).filter(member => member.isActive).map(member => ({
+        name: member.name,
+        role: member.role,
+        photoUrl: member.photoUrl,
+        serviceIds: member.serviceIds,
+      })),
+      verificationStatus: business.verificationStatus || 'unverified',
+      verifiedBadges: business.verifiedBadges || [],
+      promotions: activePromotions,
       lastUpdatedAt: business.updatedAt,
     };
 

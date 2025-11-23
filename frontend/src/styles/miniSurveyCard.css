@@ -1,0 +1,288 @@
+/**
+ * Mini Survey Card - Premium Beauty-Tech Design
+ * Compact survey cards for trending panels
+ */
+
+.mini-survey-card {
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.mini-survey-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  border-color: #9B5FFF;
+}
+
+.mini-survey-card:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.mini-survey-card:focus {
+  outline: 2px solid #9B5FFF;
+  outline-offset: 2px;
+}
+
+/* ============================================
+   RANK BADGE (Trending Week)
+   ============================================ */
+
+.mini-survey-card__rank {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #9B5FFF 0%, #FF37A6 100%);
+  border-radius: 50%;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(155, 95, 255, 0.4);
+  z-index: 1;
+}
+
+/* ============================================
+   HEADER (Author Info)
+   ============================================ */
+
+.mini-survey-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mini-survey-card__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #F5F1FF;
+  flex-shrink: 0;
+}
+
+.mini-survey-card__author {
+  flex: 1;
+  min-width: 0;
+}
+
+.mini-survey-card__author-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #4a5568;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-survey-card__premium-badge {
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   QUESTION
+   ============================================ */
+
+.mini-survey-card__question {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2D3748;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================
+   FOOTER (Category & Stats)
+   ============================================ */
+
+.mini-survey-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mini-survey-card__category {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9B5FFF;
+  background: #F5F1FF;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.mini-survey-card__stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: #718096;
+  flex-shrink: 0;
+}
+
+.mini-survey-card__stats span {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ============================================
+   VARIANT: Survey of the Day
+   ============================================ */
+
+.mini-survey-card--survey-of-day {
+  background: linear-gradient(135deg, #FFF4E6 0%, #FFE5F4 100%);
+  border: 2px solid #FFC861;
+  box-shadow: 0 4px 16px rgba(255, 200, 97, 0.3);
+}
+
+.mini-survey-card--survey-of-day:hover {
+  box-shadow: 0 8px 20px rgba(255, 200, 97, 0.5);
+  border-color: #FFB800;
+}
+
+.mini-survey-card--survey-of-day::before {
+  content: '⭐';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 24px;
+  opacity: 0.15;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(5deg);
+  }
+}
+
+/* ============================================
+   VARIANT: Trending Today
+   ============================================ */
+
+.mini-survey-card--trending-today {
+  border-left: 3px solid #9B5FFF;
+  background: white;
+}
+
+.mini-survey-card--trending-today:hover {
+  background: linear-gradient(to right, #F5F1FF 0%, white 100%);
+}
+
+/* ============================================
+   VARIANT: Trending Week
+   ============================================ */
+
+.mini-survey-card--trending-week {
+  border-left: 3px solid #FF37A6;
+  background: white;
+}
+
+.mini-survey-card--trending-week:hover {
+  background: linear-gradient(to right, #FFE5F4 0%, white 100%);
+}
+
+/* ============================================
+   PREMIUM AUTHOR BORDER
+   ============================================ */
+
+.mini-survey-card[data-premium="true"] {
+  border: 2px solid transparent;
+  background-image:
+    linear-gradient(white, white),
+    linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+.mini-survey-card[data-premium="true"]:hover {
+  box-shadow: 0 8px 16px rgba(255, 215, 0, 0.3);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .mini-survey-card {
+    padding: 14px;
+  }
+
+  .mini-survey-card__question {
+    font-size: 13px;
+  }
+
+  .mini-survey-card__stats {
+    gap: 8px;
+    font-size: 11px;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+/* Stagger animation when cards load */
+.mini-survey-card {
+  animation: cardFadeIn 0.4s ease-out backwards;
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ripple effect on click */
+.mini-survey-card::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(155, 95, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s, opacity 0.6s;
+  opacity: 0;
+}
+
+.mini-survey-card:active::after {
+  width: 200px;
+  height: 200px;
+  opacity: 1;
+  transition: 0s;
+}

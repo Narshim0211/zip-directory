@@ -1,68 +1,125 @@
-const mongoose = require("mongoose");
-
-const replySchema = new mongoose.Schema(
-  {
-    author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    message: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now },
-  },
-  { _id: false }
-);
+const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema(
   {
     businessId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Business",
-      required: true,
+      ref: 'Business',
+      required: [true, 'Business is required'],
+      index: true,
     },
-    reviewerId: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      ref: 'User',
+      required: [true, 'User is required'],
+      index: true,
+    },
+    bookingId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Booking',
+      required: [true, 'Booking is required'],
+      index: true,
     },
     rating: {
       type: Number,
-      required: true,
-      min: 1,
-      max: 5,
+      required: [true, 'Rating is required'],
+      min: [1, 'Rating must be at least 1'],
+      max: [5, 'Rating cannot exceed 5'],
     },
-    text: {
+    message: {
       type: String,
-      required: true,
-      minlength: 5,
+      required: [true, 'Review message is required'],
+      trim: true,
+      minlength: [10, 'Review message must be at least 10 characters'],
+      maxlength: [500, 'Review message cannot exceed 500 characters'],
     },
-    images: [String],
+    photoUrl: {
+      type: String,
+      default: null,
+      trim: true,
+    },
     status: {
       type: String,
-      enum: ["visible", "hidden", "reported"],
-      default: "visible",
+      enum: ['APPROVED', 'PENDING', 'REJECTED'],
+      default: 'APPROVED',
+      index: true,
     },
-    replies: [replySchema],
-    isFlagged: { type: Boolean, default: false },
-    flaggedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    flagReason: { type: String, default: "" },
-    isPendingRemoval: { type: Boolean, default: false },
-    removalRequestMessage: { type: String, default: "" },
+    moderatedReason: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+
+    // 🚨 AUTO-FLAGGING FIELDS (Phase 2: Reporting System)
+    // Used when community reports trigger auto-hide
+    isFlagged: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    flagReason: {
+      type: String,
+      default: '',
+    },
+    flaggedAt: {
+      type: Date,
+      default: null,
+    },
+    isHidden: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+
+    // Author reference for reporting system
+    // (userId is the reviewer, but we use 'author' for consistency with Post model)
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: function() { return this.userId; } // Auto-populate from userId
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true, // Auto-create createdAt and updatedAt fields
+  }
 );
 
-reviewSchema.index({ businessId: 1, reviewerId: 1 }, { unique: true });
+// ✅ FIX #1: Prevent review spam exploit
+// Each booking can only have ONE review (prevents same user leaving 20 five-star reviews from one booking)
+reviewSchema.index({ bookingId: 1 }, { unique: true });
 
-reviewSchema.post("save", async function (doc, next) {
-  const Business = mongoose.model("Business");
-  const reviews = await mongoose.model("Review").find({ businessId: doc.businessId, status: "visible" });
+// 📊 Composite index for efficient queries (business reviews list with filtering)
+// This index optimizes the most common query: "Get all approved reviews for a business, sorted by date"
+reviewSchema.index({ businessId: 1, status: 1, createdAt: -1 });
 
-  const total = reviews.reduce((sum, r) => sum + r.rating, 0);
-  const avg = reviews.length ? total / reviews.length : 0;
+// 🔍 User reviews index (for "my reviews" page in future)
+reviewSchema.index({ userId: 1, createdAt: -1 });
 
-  await Business.findByIdAndUpdate(doc.businessId, {
-    ratingAverage: avg,
-    ratingsCount: reviews.length,
-  });
+/**
+ * 📄 JSON Representation for API Responses
+ * Returns review data with populated user information
+ */
+reviewSchema.methods.toPublicJSON = function() {
+  return {
+    _id: this._id,
+    rating: this.rating,
+    message: this.message,
+    photoUrl: this.photoUrl,
+    createdAt: this.createdAt,
+    user: {
+      name: this.userId?.name || 'Anonymous',
+      avatarUrl: this.userId?.avatarUrl || null,
+    },
+  };
+};
 
-  next();
-});
-
-module.exports = mongoose.model("Review", reviewSchema);
+module.exports = mongoose.model('Review', reviewSchema);

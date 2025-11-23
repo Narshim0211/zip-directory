@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { getPostEngagement, toggleReaction, sendImpression } from '../../api/engagementApi';
 import { useImpressionTracking } from '../../hooks/useImpressionTracking';
 import './EngagementBar.css';
+import '../../styles/feedAnimations.css';
 
 /**
  * PostEngagementBar Component
  * Shows owner post engagement metrics: views, reactions
  * Simple X/Twitter-style compact bar with PROPER toggle behavior
  * NO duplication - used ONLY on post cards
+ * PHASE 2: Added ripple reward animations on reaction clicks
  */
 const PostEngagementBar = ({ postId, onReact }) => {
   const [engagement, setEngagement] = useState({
@@ -16,6 +18,31 @@ const PostEngagementBar = ({ postId, onReact }) => {
   });
   const [loading, setLoading] = useState(true);
   const [userReaction, setUserReaction] = useState(null);
+
+  /**
+   * Create ripple effect on button click
+   * @param {MouseEvent} event - Click event
+   */
+  const createRipple = (event) => {
+    const button = event.currentTarget;
+    const ripple = document.createElement('span');
+    const rect = button.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = event.clientX - rect.left - size / 2;
+    const y = event.clientY - rect.top - size / 2;
+
+    ripple.style.width = ripple.style.height = `${size}px`;
+    ripple.style.left = `${x}px`;
+    ripple.style.top = `${y}px`;
+    ripple.classList.add('ripple');
+
+    button.appendChild(ripple);
+
+    // Remove ripple after animation completes
+    setTimeout(() => {
+      ripple.remove();
+    }, 600);
+  };
 
   // Track impression when component enters viewport
   const handleImpression = async (contentType, contentId) => {
@@ -137,16 +164,22 @@ const PostEngagementBar = ({ postId, onReact }) => {
       
       <div className="engagement-reactions">
         <button
-          className={`reaction-btn ${userReaction === 'like' ? 'active' : ''}`}
-          onClick={() => handleReaction('like')}
+          className={`reaction-btn ripple-container ${userReaction === 'like' ? 'active reaction-btn--liked' : ''}`}
+          onClick={(e) => {
+            createRipple(e);
+            handleReaction('like');
+          }}
           title="Like"
         >
           👍 {engagement.reactions.like}
         </button>
-        
+
         <button
-          className={`reaction-btn ${userReaction === 'love' ? 'active' : ''}`}
-          onClick={() => handleReaction('love')}
+          className={`reaction-btn ripple-container ${userReaction === 'love' ? 'active reaction-btn--loved' : ''}`}
+          onClick={(e) => {
+            createRipple(e);
+            handleReaction('love');
+          }}
           title="Love"
         >
           ❤️ {engagement.reactions.love}

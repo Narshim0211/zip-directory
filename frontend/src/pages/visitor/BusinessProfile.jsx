@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import MessageButton from '../../components/MessageButton';
 import './BusinessProfile.css';
 
 /**
@@ -253,6 +254,13 @@ const BusinessProfile = () => {
                 </button>
               </div>
             )}
+
+            {/* Message Button - Chat System */}
+            <MessageButton
+              businessId={business._id}
+              businessName={business.name}
+              isPremium={business.listingType === 'premium' && business.premiumSubscription?.active}
+            />
           </div>
         </div>
       </div>

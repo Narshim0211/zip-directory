@@ -63,6 +63,33 @@ const userSchema = new mongoose.Schema(
     stripeSubscriptionId: {
       type: String,
     },
+
+    // ========================================
+    // 💬 CHAT PASS SUBSCRIPTION FIELDS (V2)
+    // ========================================
+    hasChatPass: {
+      type: Boolean,
+      default: false,
+      index: true, // Fast entitlement checks
+    },
+    chatPassExpiresAt: {
+      type: Date,
+      default: null,
+    },
+    chatPassSubscriptionId: {
+      type: String,
+      default: '',
+    },
+    chatPassActivatedAt: {
+      type: Date,
+      default: null,
+    },
+    // Grace period tracking (30 days after cancellation)
+    chatPassGraceEndsAt: {
+      type: Date,
+      default: null,
+    },
+
     newsletter: {
       hairTips: {
         type: Boolean,
@@ -73,6 +100,46 @@ const userSchema = new mongoose.Schema(
         default: false,
       },
     },
+
+    // 🚨 MODERATION FIELDS (Phase 2: Reporting System)
+    isFlagged: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    flagReason: {
+      type: String,
+      default: '',
+    },
+    flaggedAt: {
+      type: Date,
+      default: null,
+    },
+    warningCount: {
+      type: Number,
+      default: 0,
+    },
+    warnings: [{
+      reason: String,
+      issuedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      issuedAt: {
+        type: Date,
+        default: Date.now
+      }
+    }],
+    banHistory: [{
+      banType: String,
+      reason: String,
+      bannedAt: Date,
+      unbannedAt: Date,
+      bannedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    }],
   },
   { timestamps: true }
 );

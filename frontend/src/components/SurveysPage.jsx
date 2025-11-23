@@ -1,19 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import SurveyCard from "./SurveyCard";
-import SurveyCreateForm from "./SurveyCreateForm";
+import CreateSurveyModal from "./CreateSurveyModal";
 import ErrorBoundary from "./SharedComponents/ErrorBoundary";
 import { fetchSurveysFeed } from "../api/surveys";
-import visitorApi from "../api/visitor";
-import "../styles/surveysPage.css";
+import v1Client from "../api/v1";
+import "../styles/surveysPagePremium.css";
 
 const FILTERS = [
-  { id: "all", label: "All" },
-  { id: "trending", label: "Trending" },
-  { id: "hair", label: "Hair" },
-  { id: "skin", label: "Skin" },
-  { id: "makeup", label: "Makeup" },
-  { id: "nails", label: "Nails" },
-  { id: "spa", label: "Spa" },
+  { id: "all", label: "All", icon: "✨" },
+  { id: "trending", label: "Trending", icon: "🔥" },
+  { id: "hair", label: "Hair", icon: "✂️" },
+  { id: "skin", label: "Skin", icon: "🌿" },
+  { id: "makeup", label: "Makeup", icon: "💄" },
+  { id: "nails", label: "Nails", icon: "💅" },
+  { id: "spa", label: "Spa", icon: "🧖" },
 ];
 
 const SurveysPage = () => {
@@ -50,6 +50,17 @@ const SurveysPage = () => {
     setShowCreate(false);
   }, [loadSurveys]);
 
+  // Handle modal submission
+  const handleModalSubmit = async (surveyData) => {
+    try {
+      await v1Client.visitor.surveys.create(surveyData);
+      loadSurveys();
+    } catch (error) {
+      console.error("Failed to create survey:", error);
+      throw error; // Re-throw so modal can show error
+    }
+  };
+
   const trendingItems = useMemo(() => {
     return [...surveys]
       .sort((a, b) => (b.totalVotes || 0) - (a.totalVotes || 0))
@@ -78,20 +89,20 @@ const SurveysPage = () => {
           <button
             type="button"
             className="surveys-page__create-btn"
-            onClick={() => setShowCreate((prev) => !prev)}
+            onClick={() => setShowCreate(true)}
           >
-            {showCreate ? "Close form" : "+ Create new survey"}
+            + Create Survey
           </button>
         </div>
       </header>
 
-        {showCreate && (
-          <ErrorBoundary>
-            <div className="surveys-page__creator">
-              <SurveyCreateForm onCreated={handleCreated} apiClient={visitorApi} endpoint="/surveys" />
-            </div>
-          </ErrorBoundary>
-        )}
+      {/* Create Survey Modal - Enhanced with Love-Only support */}
+      <CreateSurveyModal
+        isOpen={showCreate}
+        onClose={() => setShowCreate(false)}
+        onSubmit={handleModalSubmit}
+        role="visitor"
+      />
 
         <div className="surveys-page__filters">
           {FILTERS.map((item) => (
@@ -101,7 +112,8 @@ const SurveysPage = () => {
               className={`surveys-page__filter${filter === item.id ? " active" : ""}`}
               onClick={() => setFilter(item.id)}
             >
-              {item.label}
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
             </button>
           ))}
         </div>

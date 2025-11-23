@@ -14,6 +14,12 @@ const ServiceModal = ({ isOpen, onClose, onSave, service = null, staff = [] }) =
     price: 0,
     depositRequired: false,
     depositPercentage: 25,
+    cancellationPolicy: {
+      enabled: false,
+      hoursNotice: 24,
+      feeAmount: 0,
+      feePercentage: 0,
+    },
     staffIds: [],
     isActive: true,
   });
@@ -36,6 +42,12 @@ const ServiceModal = ({ isOpen, onClose, onSave, service = null, staff = [] }) =
         price: service.price || 0,
         depositRequired: service.depositRequired || false,
         depositPercentage: service.depositPercentage || 25,
+        cancellationPolicy: service.cancellationPolicy || {
+          enabled: false,
+          hoursNotice: 24,
+          feeAmount: 0,
+          feePercentage: 0,
+        },
         staffIds,
         isActive: service.isActive !== undefined ? service.isActive : true,
       });
@@ -66,6 +78,16 @@ const ServiceModal = ({ isOpen, onClose, onSave, service = null, staff = [] }) =
       staffIds: prev.staffIds.includes(staffId)
         ? prev.staffIds.filter(id => id !== staffId)
         : [...prev.staffIds, staffId]
+    }));
+  };
+
+  const handleCancellationChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      cancellationPolicy: {
+        ...prev.cancellationPolicy,
+        [field]: value
+      }
     }));
   };
 
@@ -356,6 +378,137 @@ const ServiceModal = ({ isOpen, onClose, onSave, service = null, staff = [] }) =
                   onFocus={(e) => e.target.style.borderColor = '#1A73E8'}
                   onBlur={(e) => e.target.style.borderColor = '#E8EAED'}
                 />
+              </div>
+            )}
+          </div>
+
+          {/* Cancellation Policy */}
+          <div style={{ marginBottom: '1rem', backgroundColor: '#FFF4F4', padding: '1rem', borderRadius: '8px', border: '1px solid #FFE0E0' }}>
+            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginBottom: '0.75rem' }}>
+              <input
+                type="checkbox"
+                checked={formData.cancellationPolicy.enabled}
+                onChange={(e) => handleCancellationChange('enabled', e.target.checked)}
+                style={{ marginRight: '0.5rem', width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+              <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#1B1E28' }}>
+                ❌ Cancellation Policy
+              </span>
+            </label>
+            {formData.cancellationPolicy.enabled && (
+              <div>
+                {/* Hours Notice */}
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    color: '#1B1E28',
+                    marginBottom: '0.5rem'
+                  }}>
+                    Minimum Cancellation Notice (hours)
+                  </label>
+                  <select
+                    value={formData.cancellationPolicy.hoursNotice}
+                    onChange={(e) => handleCancellationChange('hoursNotice', parseInt(e.target.value))}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      border: '1px solid #E8EAED',
+                      borderRadius: '8px',
+                      fontSize: '1rem',
+                      outline: 'none',
+                      backgroundColor: 'white'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#1A73E8'}
+                    onBlur={(e) => e.target.style.borderColor = '#E8EAED'}
+                  >
+                    <option value="12">12 hours</option>
+                    <option value="24">24 hours (1 day)</option>
+                    <option value="48">48 hours (2 days)</option>
+                    <option value="72">72 hours (3 days)</option>
+                  </select>
+                </div>
+
+                {/* Fee Type Selection */}
+                <div style={{ marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: '#1B1E28' }}>
+                  Cancellation Fee:
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  {/* Fixed Amount */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      color: '#5F6368',
+                      marginBottom: '0.5rem'
+                    }}>
+                      Fixed Amount ($)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.cancellationPolicy.feeAmount}
+                      onChange={(e) => {
+                        handleCancellationChange('feeAmount', parseFloat(e.target.value) || 0);
+                        handleCancellationChange('feePercentage', 0); // Clear percentage
+                      }}
+                      min="0"
+                      step="0.01"
+                      placeholder="0.00"
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: '1px solid #E8EAED',
+                        borderRadius: '8px',
+                        fontSize: '1rem',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#1A73E8'}
+                      onBlur={(e) => e.target.style.borderColor = '#E8EAED'}
+                    />
+                  </div>
+
+                  {/* OR Percentage */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      color: '#5F6368',
+                      marginBottom: '0.5rem'
+                    }}>
+                      OR Percentage (%)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.cancellationPolicy.feePercentage}
+                      onChange={(e) => {
+                        handleCancellationChange('feePercentage', parseFloat(e.target.value) || 0);
+                        handleCancellationChange('feeAmount', 0); // Clear fixed amount
+                      }}
+                      min="0"
+                      max="100"
+                      placeholder="0"
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: '1px solid #E8EAED',
+                        borderRadius: '8px',
+                        fontSize: '1rem',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#1A73E8'}
+                      onBlur={(e) => e.target.style.borderColor = '#E8EAED'}
+                    />
+                  </div>
+                </div>
+
+                {/* Help Text */}
+                <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#5F6368', lineHeight: '1.4' }}>
+                  💡 Clients will be charged this fee if they cancel within {formData.cancellationPolicy.hoursNotice} hours of their appointment.
+                </div>
               </div>
             )}
           </div>

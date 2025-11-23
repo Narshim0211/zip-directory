@@ -5,10 +5,28 @@
   background: #f5f7fa;
 }
 
+/* ============================================
+   GRID LAYOUT (Desktop with Sidebars)
+   ============================================ */
+
+.owner-home-page__grid {
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  gap: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.owner-home-page__sidebar-left,
+.owner-home-page__sidebar-right {
+  /* Sidebars are styled by their panel components */
+}
+
 .owner-home-page__container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 32px 24px;
+  padding: 0; /* Remove padding since grid handles it */
 }
 
 .owner-home-page__hero {
@@ -110,10 +128,36 @@
   background: #dd6b20;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+/* Hide sidebars on tablets and below */
+@media (max-width: 1200px) {
+  .owner-home-page__grid {
+    grid-template-columns: 1fr;
+    padding: 32px 24px;
+  }
+
+  .owner-home-page__sidebar-left,
+  .owner-home-page__sidebar-right {
+    display: none;
+  }
+
   .owner-home-page__container {
+    max-width: 800px;
+    padding: 0;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .owner-home-page__grid {
     padding: 16px;
+  }
+
+  .owner-home-page__container {
+    padding: 0;
   }
 
   .owner-home-page__title {

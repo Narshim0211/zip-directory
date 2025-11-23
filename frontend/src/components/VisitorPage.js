@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
+import BlogList from "./blog/BlogList";
 import "../styles/VisitorPage.css";
 
 const VisitorPage = () => {
@@ -93,33 +94,21 @@ const VisitorPage = () => {
             <p>Browse trusted local professionals near you. Simple. Fast. Free.</p>
           </div>
 
-          <div className="search-box">
-            <input
-              type="text"
-              placeholder="Search by name or city"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <select value={category} onChange={(e) => setCategory(e.target.value)}>
-              <option value="">All Categories</option>
-              <option value="Salon">Salon</option>
-              <option value="Freelance Stylist">Hair Stylist</option>
-              <option value="Spa">Spa</option>
-              <option value="Barbershop">Barbershop</option>
-            </select>
-            <select value={radius} onChange={(e) => setRadius(e.target.value)}>
-              <option value="5000">5 km</option>
-              <option value="10000">10 km</option>
-              <option value="15000">15 km</option>
-              <option value="25000">25 km</option>
-              <option value="50000">50 km</option>
-            </select>
-            <select value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="distance">Distance</option>
-              <option value="rating">Rating</option>
-              <option value="newest">Newest</option>
-            </select>
-            <button onClick={runGeoSearch}>Search</button>
+          <div className="search-box-simple">
+            <div className="search-input-wrapper">
+              <svg className="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M19 19L14.65 14.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <input
+                type="text"
+                placeholder="Braids, Dallas, 75001..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && runGeoSearch()}
+              />
+            </div>
+            <button className="search-button" onClick={runGeoSearch}>Search</button>
           </div>
         </section>
 
@@ -132,6 +121,11 @@ const VisitorPage = () => {
               listingsToShow.map((biz) => renderBizCard(biz))
             )}
           </div>
+        </section>
+
+        {/* Blog Section */}
+        <section style={{ padding: '60px 5%', backgroundColor: '#f9fafb' }}>
+          <BlogList limit={3} title="Latest Articles" subtitle="Discover beauty tips, trends, and professional advice" />
         </section>
 
         <footer className="explore-page__footer">(c) 2025 SalonHub | All Rights Reserved</footer>

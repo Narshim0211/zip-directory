@@ -53,6 +53,26 @@
   font-weight: 300;
 }
 
+/* NEW: Clickable comment button */
+.engagement-stat--button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.engagement-stat--button:hover:not(:disabled) {
+  background: #f0f0f0;
+  transform: translateY(-1px);
+}
+
+.engagement-stat--button:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
 .engagement-reactions {
   display: flex;
   gap: 8px;

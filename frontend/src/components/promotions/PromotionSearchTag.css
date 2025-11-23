@@ -1,0 +1,109 @@
+/*
+ * PromotionSearchTag Styles
+ * Small corner badge for business cards in search results
+ * Compact, eye-catching, mobile optimized
+ */
+
+.promotion-tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  animation: tagFadeIn 0.3s ease;
+}
+
+@keyframes tagFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.promotion-tag-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #ff6ec4 0%, #7873f5 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(120, 115, 245, 0.4);
+  animation: subtlePulse 2s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+@keyframes subtlePulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(120, 115, 245, 0.4);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 6px 16px rgba(120, 115, 245, 0.5);
+  }
+}
+
+.promotion-tag-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.promotion-tag-text {
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .promotion-tag {
+    top: 8px;
+    right: 8px;
+  }
+
+  .promotion-tag-content {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .promotion-tag-icon {
+    font-size: 12px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+  .promotion-tag {
+    top: 6px;
+    right: 6px;
+  }
+
+  .promotion-tag-content {
+    padding: 4px 8px;
+    font-size: 10px;
+    gap: 3px;
+  }
+
+  .promotion-tag-icon {
+    font-size: 11px;
+  }
+}
+
+/* Hover effect (desktop only) */
+@media (min-width: 769px) {
+  .promotion-tag-content:hover {
+    transform: scale(1.05);
+    animation: none; /* Stop pulse on hover */
+  }
+}
+
+/* Ensure tag stays on top of other content */
+.promotion-tag {
+  pointer-events: none; /* Allow clicks to pass through to card */
+}

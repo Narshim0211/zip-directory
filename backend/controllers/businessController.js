@@ -7,7 +7,11 @@ exports.listApproved = catchAsync(async (req, res) => {
 });
 
 exports.create = catchAsync(async (req, res) => {
-  const saved = await businessService.create({ ownerId: req.user._id, payload: req.body || {} });
+  const saved = await businessService.create({
+    ownerId: req.user._id,
+    payload: req.body || {},
+    req // Pass request object for IP tracking
+  });
   res.status(201).json(saved);
 });
 

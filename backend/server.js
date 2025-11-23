@@ -26,6 +26,14 @@ const rawOrigins = [
   'http://127.0.0.1:3002',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5174',
+  'http://localhost:5175',
+  'http://127.0.0.1:5175',
+  'http://localhost:5176',
+  'http://127.0.0.1:5176',
+  'http://localhost:5177',
+  'http://127.0.0.1:5177',
 ].filter(Boolean);
 
 const allowlist = new Set(rawOrigins);
@@ -58,6 +66,9 @@ app.use('/webhooks', stripeWebhookRoutes);
 // Handle preflight for all routes using a RegExp that matches anything.
 app.options(/.*/, cors(corsOptions));
 app.use(express.json());
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
 
 // DB connection
 mongoose
@@ -117,17 +128,57 @@ app.use('/api/auth', authRoutes);
 const adminRoutes = require("./routes/adminRoutes");
 app.use("/api/admin", adminRoutes);
 
+// 🛡️ Admin Moderation Routes (Business Quality Control)
+const adminModerationRoutes = require('./routes/admin/moderationRoutes');
+app.use('/api/admin/moderation', adminModerationRoutes);
+
+// 🚨 Report Routes (Phase 2: Reporting System)
+const reportRoutes = require('./routes/reportRoutes');
+app.use('/api/reports', reportRoutes);
+
+// 🏢 Claim Routes (Phase 3: Claim This Business)
+const claimRoutes = require('./routes/claimRoutes');
+app.use('/api/claims', claimRoutes);
+
+// 🎁 Promotion Routes (Phase 4: Promotions Feature)
+const promotionRoutes = require('./routes/promotionRoutes');
+app.use('/api/owner/promotion', promotionRoutes);
+
+// 📝 Blog Routes (SEO Content System)
+const blogRoutes = require('./routes/blogRoutes');
+app.use('/api/blog', blogRoutes);
+
+const adminBlogRoutes = require('./routes/admin/blogRoutes');
+app.use('/api/admin/blog', adminBlogRoutes);
+
+// 📤 Upload Routes (Image uploads for blogs, etc.)
+const uploadRoutes = require('./routes/uploadRoutes');
+app.use('/api/upload', uploadRoutes);
+
 // News & Activity
 const newsRoutes = require('./routes/newsRoutes');
 app.use('/api/news', newsRoutes);
 
+// 📊 Trending Surveys Routes (Owner Home Page Enhancement)
+const trendingSurveyRoutes = require('./routes/trendingSurveyRoutes');
+app.use('/api/surveys/trending', trendingSurveyRoutes);
+
 require('./cron/newsCron');
+require('./cron/promotionCron');
+
+// 🌟 Start Survey of the Day cron job (Phase 4: Daily Rotation)
+const { startSurveyOfTheDayCron } = require('./cron/surveyOfTheDayCron');
+startSurveyOfTheDayCron();
 
 // Surveys & Feed
 const surveyRoutes = require('./routes/surveyRoutes');
 app.use('/api/surveys', surveyRoutes);
 const feedRoutes = require('./routes/feedRoutes');
 app.use('/api/feed', feedRoutes);
+
+// 🌟 Survey of the Day (Phase 4: Featured Content)
+const surveyOfTheDayRoutes = require('./routes/surveyOfTheDayRoutes');
+app.use('/api/survey-of-the-day', surveyOfTheDayRoutes);
 
 // V1 API routes
 const v1FeedRoutes = require('./routes/v1/feedRoutes');
@@ -189,6 +240,14 @@ app.use('/api/v1/stripe-connect', stripeConnectRoutes);
 // Premium Subscription Routes (v1.0)
 const premiumRoutes = require('./routes/premium.routes');
 app.use('/api/v1/premium', premiumRoutes);
+
+// 💬 Chat & Messaging Routes (V2 - FOMO Pay-to-Chat System)
+const chatRoutes = require('./routes/chatRoutes');
+app.use('/api/v1/messages', chatRoutes);
+
+// 💎 Subscription Routes (Chat Pass)
+const subscriptionRoutes = require('./routes/subscriptionRoutes');
+app.use('/api/v1/subscriptions', subscriptionRoutes);
 
 // Health & Monitoring Routes
 const healthRoutes = require('./routes/health.routes');
@@ -266,9 +325,6 @@ app.use('/api/owner/time-manager', ownerTimeRoutes);
 
 const commentRoutes = require('./routes/commentRoutes');
 app.use('/api/comments', commentRoutes);
-
-const reportRoutes = require('./routes/reportRoutes');
-app.use('/api/comments/reports', reportRoutes);
 
 // Hair Goals: Weekly reports
 const weeklyReportRoutes = require('./routes/weeklyReportRoutes');

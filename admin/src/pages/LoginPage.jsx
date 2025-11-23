@@ -18,7 +18,7 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await api.post('/auth/login', { email, password });
+      const res = await api.post('/api/auth/login', { email, password });
       const user = res?.data?.user || res?.data;
       if (!user || !['admin','superadmin'].includes(user.role)) {
         setError('You are not authorized for this panel');
