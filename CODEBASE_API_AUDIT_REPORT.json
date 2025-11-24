@@ -1,0 +1,167 @@
+{
+  "audit_date": "2025-11-23",
+  "audit_summary": {
+    "total_axios_instances": 4,
+    "duplicate_api_clients": 3,
+    "files_with_direct_axios_import": 11,
+    "status": "CRITICAL - Multiple axios instances creating routing conflicts"
+  },
+  "axios_instances_found": [
+    {
+      "file": "frontend/src/api/axios.js",
+      "export": "api (default)",
+      "baseURL": "http://localhost:5000/api",
+      "has_logging": true,
+      "has_auth_interceptor": true,
+      "status": "✅ OFFICIAL - Keep this one",
+      "notes": "This is the correct, well-configured axios instance with logging"
+    },
+    {
+      "file": "frontend/src/api.js",
+      "export": "API",
+      "baseURL": "http://localhost:5000/api",
+      "has_logging": false,
+      "has_auth_interceptor": true,
+      "status": "❌ DUPLICATE - Must be removed",
+      "notes": "Duplicate axios instance without logging - causing silent failures"
+    },
+    {
+      "file": "frontend/src/api/analytics.js",
+      "export": "analyticsClient",
+      "baseURL": "http://localhost:5000/api/v1/analytics",
+      "has_logging": false,
+      "has_auth_interceptor": true,
+      "status": "⚠️ SPECIALIZED - Refactor to use main axios instance",
+      "notes": "Should use api from axios.js with /v1/analytics routes"
+    },
+    {
+      "file": "frontend/src/api/timeClient.js",
+      "export": "timeClient (default)",
+      "baseURL": "http://localhost:5000/api",
+      "has_logging": false,
+      "has_auth_interceptor": true,
+      "status": "⚠️ SPECIALIZED - Refactor to use main axios instance",
+      "notes": "Should use api from axios.js with time-manager routes"
+    }
+  ],
+  "files_with_direct_axios_import": [
+    {
+      "file": "frontend/src/api.js",
+      "action": "DELETE_ENTIRE_FILE",
+      "reason": "Duplicate axios instance - all imports should use axios.js"
+    },
+    {
+      "file": "frontend/src/api/analytics.js",
+      "action": "REFACTOR",
+      "reason": "Change to use api from axios.js instead of creating new instance"
+    },
+    {
+      "file": "frontend/src/api/axios.js",
+      "action": "KEEP",
+      "reason": "This is the official axios instance"
+    },
+    {
+      "file": "frontend/src/api/searchApi.js",
+      "action": "AUDIT_AND_REFACTOR",
+      "reason": "Check if creating duplicate instance"
+    },
+    {
+      "file": "frontend/src/api/timeClient.js",
+      "action": "REFACTOR",
+      "reason": "Change to use api from axios.js"
+    },
+    {
+      "file": "frontend/src/components/FileUpload.jsx",
+      "action": "REFACTOR",
+      "reason": "Should import api from axios.js"
+    },
+    {
+      "file": "frontend/src/components/reviews/ReviewList.jsx",
+      "action": "REFACTOR",
+      "reason": "Should import api from axios.js"
+    },
+    {
+      "file": "frontend/src/pages/owner/BookingPublicProfile.jsx",
+      "action": "REFACTOR",
+      "reason": "Should import api from axios.js"
+    },
+    {
+      "file": "frontend/src/pages/owner/StaffManagement.jsx",
+      "action": "REFACTOR",
+      "reason": "Should import api from axios.js"
+    },
+    {
+      "file": "frontend/src/pages/PublicBooking.jsx",
+      "action": "REFACTOR",
+      "reason": "Should import api from axios.js"
+    },
+    {
+      "file": "frontend/src/pages/PublicProfile.jsx",
+      "action": "REFACTOR",
+      "reason": "Should import api from axios.js"
+    }
+  ],
+  "api_routing_analysis": {
+    "correct_pattern": {
+      "import": "import api from '../api/axios';",
+      "usage": "api.get('/v1/endpoint')",
+      "resulting_url": "http://localhost:5000/api/v1/endpoint"
+    },
+    "incorrect_patterns_found": {
+      "missing_v1_prefix": {
+        "example": "api.get('/profile/${handle}')",
+        "file": "frontend/src/api/profileApi.js",
+        "should_be": "api.get('/v1/profile/${handle}')"
+      }
+    }
+  },
+  "duplicate_profile_pages": {
+    "visitor_profiles": [
+      "frontend/src/pages/VisitorProfilePage.jsx",
+      "frontend/src/pages/VisitorProfilePageV2.jsx",
+      "frontend/src/pages/PublicVisitorProfile.jsx"
+    ],
+    "owner_profiles": [
+      "frontend/src/pages/OwnerProfilePageV2.jsx",
+      "frontend/src/pages/PublicOwnerProfile.jsx",
+      "frontend/src/pages/owner/Profile.jsx",
+      "frontend/src/pages/EditOwnerProfile.jsx"
+    ],
+    "action": "Consolidate to V2 versions only, delete legacy"
+  },
+  "critical_issues": [
+    {
+      "issue": "Multiple axios instances",
+      "severity": "HIGH",
+      "impact": "Requests bypass logging, incorrect baseURL, 404 errors",
+      "files_affected": 11
+    },
+    {
+      "issue": "Duplicate API client (api.js vs axios.js)",
+      "severity": "HIGH",
+      "impact": "Silent failures, no debug logs visible",
+      "files_affected": "Unknown (need to grep for API import)"
+    },
+    {
+      "issue": "Inconsistent /v1 prefix usage",
+      "severity": "MEDIUM",
+      "impact": "Some endpoints hit wrong URLs",
+      "files_affected": ["profileApi.js"]
+    },
+    {
+      "issue": "Duplicate profile pages",
+      "severity": "MEDIUM",
+      "impact": "Maintenance burden, conflicting implementations",
+      "files_affected": 7
+    }
+  ],
+  "recommended_actions": [
+    "1. DELETE frontend/src/api.js completely",
+    "2. Refactor all 11 files to import from axios.js",
+    "3. Fix profileApi.js routes to include /v1 prefix",
+    "4. Refactor analytics.js and timeClient.js to use main axios instance",
+    "5. Delete legacy profile pages (non-V2)",
+    "6. Add ESLint rule to prevent direct axios imports",
+    "7. Test all critical flows after refactor"
+  ]
+}

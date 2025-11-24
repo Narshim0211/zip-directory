@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import ProfileHeader from '../components/SharedComponents/ProfileHeader';
 import ProfileTabs from '../components/SharedComponents/ProfileTabs';
@@ -9,6 +9,7 @@ import CreateSection from '../components/SharedComponents/CreateSection';
 import AboutCard from '../components/SharedComponents/AboutCard';
 import ErrorBoundary from '../components/SharedComponents/ErrorBoundary';
 import { ProfileInsightBar } from '../components/engagement';
+import InviteModal from '../components/InviteModal';
 import v1Client from '../api/v1';
 import '../styles/designSystem.css';
 
@@ -26,6 +27,7 @@ const OwnerProfilePageV2 = () => {
   const [nextCursor, setNextCursor] = useState(null);
   const [featuredBusinesses, setFeaturedBusinesses] = useState([]);
   const [followStats, setFollowStats] = useState({ followers: 0, following: 0 });
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   // Check if viewing own profile by /me route
   const viewingOwnProfile = slug === 'me';
@@ -39,7 +41,7 @@ const OwnerProfilePageV2 = () => {
 
         // Use /me endpoint if viewing own profile
         const endpoint = viewingOwnProfile ? `${API_BASE}/me` : `${API_BASE}/${slug}`;
-        const { data } = await axios.get(endpoint);
+        const { data } = await api.get(endpoint);
         setProfile(data);
 
         if (data.featuredBusinesses) {
@@ -55,7 +57,7 @@ const OwnerProfilePageV2 = () => {
               setIsFollowing(followData.isFollowing);
             } else {
               // Visitor checking owner profile - use profile API
-              const { data: followData } = await axios.get(`${API_BASE}/${data._id}/is-following`);
+              const { data: followData } = await api.get(`${API_BASE}/${data._id}/is-following`);
               setIsFollowing(followData.following);
             }
           } catch (err) {
@@ -81,7 +83,7 @@ const OwnerProfilePageV2 = () => {
         // If 404 on /me, try to initialize profile
         if (viewingOwnProfile && error.response?.status === 404) {
           try {
-            const { data } = await axios.post(`${API_BASE}/init`);
+            const { data } = await api.post(`${API_BASE}/init`);
             setProfile(data);
           } catch (initError) {
             console.error('Failed to initialize profile:', initError);
@@ -104,7 +106,7 @@ const OwnerProfilePageV2 = () => {
         setFeedLoading(true);
         // Use profile slug if viewing /me
         const feedSlug = viewingOwnProfile ? profile.slug : slug;
-        const { data } = await axios.get(`${API_BASE}/${feedSlug}/feed?tab=${activeTab}&limit=10`);
+        const { data } = await api.get(`${API_BASE}/${feedSlug}/feed?tab=${activeTab}&limit=10`);
         setFeed(data.items || []);
         setNextCursor(data.nextCursor);
       } catch (error) {
@@ -124,7 +126,7 @@ const OwnerProfilePageV2 = () => {
     try {
       setFeedLoading(true);
       const feedSlug = viewingOwnProfile ? profile.slug : slug;
-      const { data } = await axios.get(
+      const { data } = await api.get(
         `${API_BASE}/${feedSlug}/feed?tab=${activeTab}&limit=10&cursor=${nextCursor}`
       );
       setFeed(prev => [...prev, ...(data.items || [])]);
@@ -144,7 +146,7 @@ const OwnerProfilePageV2 = () => {
         await v1Client.owner.followOwner(profile.userId);
       } else {
         // Visitor following owner - use profile API
-        await axios.post(`${API_BASE}/${profile._id}/follow`);
+        await api.post(`${API_BASE}/${profile._id}/follow`);
       }
       setIsFollowing(true);
       setFollowStats(prev => ({ ...prev, followers: prev.followers + 1 }));
@@ -164,7 +166,7 @@ const OwnerProfilePageV2 = () => {
         await v1Client.owner.unfollowOwner(profile.userId);
       } else {
         // Visitor unfollowing owner - use profile API
-        await axios.delete(`${API_BASE}/${profile._id}/follow`);
+        await api.delete(`${API_BASE}/${profile._id}/follow`);
       }
       setIsFollowing(false);
       setFollowStats(prev => ({ ...prev, followers: Math.max(prev.followers - 1, 0) }));
@@ -180,9 +182,9 @@ const OwnerProfilePageV2 = () => {
   // Create post handler
   const handleCreatePost = async (postData) => {
     try {
-      await axios.post('/api/v1/owner/posts', postData);
+      await api.post('/v1/owner/posts', postData);
       // Reload feed
-      const { data } = await axios.get(`${API_BASE}/${slug}/feed?tab=posts&limit=10`);
+      const { data } = await api.get(`${API_BASE}/${slug}/feed?tab=posts&limit=10`);
       setFeed(data.items || []);
       setNextCursor(data.nextCursor);
     } catch (error) {
@@ -194,9 +196,9 @@ const OwnerProfilePageV2 = () => {
   // Create survey handler
   const handleCreateSurvey = async (surveyData) => {
     try {
-      await axios.post('/api/v1/owner/surveys', surveyData);
+      await api.post('/v1/owner/surveys', surveyData);
       // Reload feed
-      const { data } = await axios.get(`${API_BASE}/${slug}/feed?tab=surveys&limit=10`);
+      const { data } = await api.get(`${API_BASE}/${slug}/feed?tab=surveys&limit=10`);
       setFeed(data.items || []);
       setNextCursor(data.nextCursor);
     } catch (error) {
@@ -237,6 +239,38 @@ const OwnerProfilePageV2 = () => {
           onUnfollow={handleUnfollow}
         />
       </ErrorBoundary>
+
+      {/* Invite Friends Button - Only show on own profile */}
+      {isOwnProfile && (
+        <div style={{ padding: '0 16px', marginBottom: '16px' }}>
+          <button
+            onClick={() => setShowInviteModal(true)}
+            style={{
+              width: '100%',
+              padding: '12px 24px',
+              background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(236, 72, 153, 0.3)',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(236, 72, 153, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(236, 72, 153, 0.3)';
+            }}
+          >
+            ✨ Invite Clients & Friends
+          </button>
+        </div>
+      )}
 
       <ProfileTabs
         activeTab={activeTab}
@@ -279,6 +313,12 @@ const OwnerProfilePageV2 = () => {
           </ErrorBoundary>
         </>
       )}
+
+      {/* Invite Modal */}
+      <InviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+      />
     </div>
   );
 };

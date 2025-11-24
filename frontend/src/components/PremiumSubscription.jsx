@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import './PremiumSubscription.css';
 
 const PremiumSubscription = ({ businessId }) => {
@@ -16,14 +16,7 @@ const PremiumSubscription = ({ businessId }) => {
   const fetchSubscriptionStatus = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `/api/v1/premium/status/${businessId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
+      const response = await api.get(`/v1/premium/status/${businessId}`);
 
       if (response.data.success) {
         setSubscription(response.data.data);
@@ -39,16 +32,7 @@ const PremiumSubscription = ({ businessId }) => {
   const handleSubscribe = async () => {
     try {
       setActionLoading(true);
-      const response = await axios.post(
-        '/api/v1/premium/create-checkout',
-        { businessId },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const response = await api.post('/v1/premium/create-checkout', { businessId });
 
       if (response.data.success && response.data.data.url) {
         window.location.href = response.data.data.url;
@@ -64,16 +48,7 @@ const PremiumSubscription = ({ businessId }) => {
   const handleManage = async () => {
     try {
       setActionLoading(true);
-      const response = await axios.post(
-        '/api/v1/premium/create-portal-session',
-        { businessId },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const response = await api.post('/v1/premium/create-portal-session', { businessId });
 
       if (response.data.success && response.data.data.url) {
         window.location.href = response.data.data.url;
@@ -100,10 +75,10 @@ const PremiumSubscription = ({ businessId }) => {
   return (
     <div className="premium-subscription">
       <div className="premium-subscription__header">
-        <h2>=Ž Premium Subscription</h2>
+        <h2>=ï¿½ Premium Subscription</h2>
         <span className={`premium-subscription__status premium-subscription__status--${status}`}>
           {status === 'active' && ' Active'}
-          {status === 'past_due' && '  Past Due'}
+          {status === 'past_due' && 'ï¿½ Past Due'}
           {status === 'canceled' && ' Canceled'}
           {status === 'inactive' && 'Not Subscribed'}
         </span>
@@ -127,7 +102,7 @@ const PremiumSubscription = ({ businessId }) => {
               </div>
 
               <div className="premium-feature">
-                <div className="premium-feature__icon">=Ž</div>
+                <div className="premium-feature__icon">=ï¿½</div>
                 <div>
                   <strong>Premium Badge</strong>
                   <p>Stand out with a verified premium badge on your listing</p>
@@ -135,7 +110,7 @@ const PremiumSubscription = ({ businessId }) => {
               </div>
 
               <div className="premium-feature">
-                <div className="premium-feature__icon">=Ê</div>
+                <div className="premium-feature__icon">=ï¿½</div>
                 <div>
                   <strong>Advanced Analytics</strong>
                   <p>Detailed insights on views, clicks, and customer engagement</p>
@@ -143,7 +118,7 @@ const PremiumSubscription = ({ businessId }) => {
               </div>
 
               <div className="premium-feature">
-                <div className="premium-feature__icon">¡</div>
+                <div className="premium-feature__icon">ï¿½</div>
                 <div>
                   <strong>Priority Support</strong>
                   <p>Get faster response times and dedicated support</p>
@@ -202,7 +177,7 @@ const PremiumSubscription = ({ businessId }) => {
 
         {status === 'past_due' && (
           <div className="premium-subscription__warning">
-            <p><strong>  Payment Issue</strong></p>
+            <p><strong>ï¿½ Payment Issue</strong></p>
             <p>Your payment method failed. Update it to keep your premium benefits.</p>
             <button
               className="premium-subscription__cta"

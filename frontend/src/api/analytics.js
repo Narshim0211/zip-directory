@@ -1,30 +1,12 @@
-import axios from 'axios';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import api from './axios';
 
 /**
  * Analytics API Client
  * Clean, predictable functions for all engagement endpoints
  * NO duplication - single source of truth
+ *
+ * ✅ Now using unified axios instance from axios.js
  */
-
-// Create axios instance with default config
-const analyticsClient = axios.create({
-  baseURL: `${API_BASE_URL}/api/v1/analytics`,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
-
-// Add auth token to requests if available
-analyticsClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 /**
  * PROFILE INSIGHTS API (Business Listing Analytics)
@@ -36,7 +18,7 @@ export const profileAnalytics = {
    */
   recordView: async (ownerId) => {
     try {
-      const response = await analyticsClient.post(`/profile/view/${ownerId}`);
+      const response = await api.post(`/v1/analytics/profile/view/${ownerId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to record profile view:', error);
@@ -51,7 +33,7 @@ export const profileAnalytics = {
    */
   getInsights: async (ownerId) => {
     try {
-      const response = await analyticsClient.get(`/profile/${ownerId}`);
+      const response = await api.get(`/v1/analytics/profile/${ownerId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to fetch profile insights:', error);
@@ -70,7 +52,7 @@ export const surveyAnalytics = {
    */
   recordView: async (surveyId) => {
     try {
-      const response = await analyticsClient.post(`/survey/view/${surveyId}`);
+      const response = await api.post(`/v1/analytics/survey/view/${surveyId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to record survey view:', error);
@@ -84,7 +66,7 @@ export const surveyAnalytics = {
    */
   recordResponse: async (surveyId) => {
     try {
-      const response = await analyticsClient.post(`/survey/respond/${surveyId}`);
+      const response = await api.post(`/v1/analytics/survey/respond/${surveyId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to record survey response:', error);
@@ -99,7 +81,7 @@ export const surveyAnalytics = {
    */
   addReaction: async (surveyId, reactionType) => {
     try {
-      const response = await analyticsClient.post(`/survey/react/${surveyId}`, {
+      const response = await api.post(`/v1/analytics/survey/react/${surveyId}`, {
         reactionType
       });
       return response.data;
@@ -116,7 +98,7 @@ export const surveyAnalytics = {
    */
   getEngagement: async (surveyId) => {
     try {
-      const response = await analyticsClient.get(`/survey/${surveyId}`);
+      const response = await api.get(`/v1/analytics/survey/${surveyId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to fetch survey engagement:', error);
@@ -135,7 +117,7 @@ export const postAnalytics = {
    */
   recordView: async (postId) => {
     try {
-      const response = await analyticsClient.post(`/post/view/${postId}`);
+      const response = await api.post(`/v1/analytics/post/view/${postId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to record post view:', error);
@@ -150,7 +132,7 @@ export const postAnalytics = {
    */
   addReaction: async (postId, reactionType) => {
     try {
-      const response = await analyticsClient.post(`/post/react/${postId}`, {
+      const response = await api.post(`/v1/analytics/post/react/${postId}`, {
         reactionType
       });
       return response.data;
@@ -167,7 +149,7 @@ export const postAnalytics = {
    */
   getEngagement: async (postId) => {
     try {
-      const response = await analyticsClient.get(`/post/${postId}`);
+      const response = await api.get(`/v1/analytics/post/${postId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to fetch post engagement:', error);

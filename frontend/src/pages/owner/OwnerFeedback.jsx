@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api/axios';
 import './OwnerFeedback.css';
-
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const OwnerFeedback = () => {
   const navigate = useNavigate();
@@ -89,16 +87,7 @@ const OwnerFeedback = () => {
         return;
       }
 
-      const response = await axios.post(
-        `${API_BASE}/owner/feedback`,
-        formData,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      const response = await api.post('/owner/feedback', formData);
 
       if (response.data.success) {
         setSuccess(true);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../../api/axios';
 import MiniSurveyCard from '../../../components/owner/MiniSurveyCard';
 import '../../../styles/trendingWeekPanel.css';
 
@@ -27,7 +27,7 @@ const TrendingWeekPanel = () => {
       setLoading(true);
       setError(null);
 
-      const response = await axios.get('http://localhost:5000/api/surveys/trending/week?limit=5');
+      const response = await api.get('/surveys/trending/week?limit=5');
 
       setTrendingWeek(response.data.data || []);
     } catch (err) {

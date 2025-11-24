@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import MessageButton from '../../components/MessageButton';
 import './BusinessProfile.css';
@@ -33,12 +33,7 @@ const BusinessProfile = () => {
         setLoading(true);
         setError(null);
 
-        const token = localStorage.getItem('token');
-        const { data } = await axios.get(`/api/visitor/business/${id}/full`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const { data } = await api.get(`/visitor/business/${id}/full`);
 
         setBusiness(data.data);
       } catch (err) {

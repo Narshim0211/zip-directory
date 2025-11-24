@@ -1,4 +1,95 @@
-# 🚀 Quick Start Checklist
+# 🚀 SalonHub - Quick Start Guide
+
+---
+
+## ⚡ FASTEST WAY: Use the Startup Script
+
+```powershell
+# From project root (zip-directory):
+.\start-all.ps1
+```
+
+**This will open 3 PowerShell windows:**
+1. Backend (port 5000)
+2. Frontend (port 3000)
+3. Booking Service (port 6002)
+
+**Then open:** http://localhost:3000
+
+**Keep all 3 windows open!**
+
+---
+
+## 🔧 Manual Startup (if script doesn't work)
+
+### Terminal 1 - Backend
+```bash
+cd backend
+npm start
+```
+Wait for: `🚀 Server running on http://localhost:5000`
+
+### Terminal 2 - Frontend
+```bash
+cd frontend
+npm start
+```
+Wait for: `Compiled successfully!`
+
+**Then open the URL shown in the terminal (usually http://localhost:3000)**
+
+---
+
+## ✅ Verify It's Working
+
+1. Open http://localhost:3000/login
+2. Press F12 to open DevTools Console
+3. Try to login
+
+**You should see:**
+```
+🌐 [AXIOS] POST http://localhost:5000/api/auth/login
+```
+
+✅ **If you see this:** Everything is working! The API cleanup is active.
+
+❌ **If you see ERR_CONNECTION_REFUSED:** Servers aren't running - restart them
+
+❌ **If you see 404:** Backend route configuration issue
+
+---
+
+## 🐛 Troubleshooting
+
+### Check if servers are running:
+```powershell
+netstat -ano | findstr :5000    # Backend
+netstat -ano | findstr :3000    # Frontend
+```
+
+### Kill stuck processes:
+```powershell
+# Find PID from netstat output, then:
+taskkill /PID <PID_NUMBER> /F
+```
+
+### MongoDB not connected:
+```powershell
+net start MongoDB
+```
+
+---
+
+## 📚 After Startup - Read These
+
+Once servers are running, check out:
+- [API_ROUTING_CLEANUP_COMPLETE.md](API_ROUTING_CLEANUP_COMPLETE.md) - What was fixed
+- [API_ROUTING_QUICK_REFERENCE.md](API_ROUTING_QUICK_REFERENCE.md) - Developer guide
+- [START_SERVERS_GUIDE.md](START_SERVERS_GUIDE.md) - Detailed server startup help
+
+---
+
+# 🧩 Original Setup Instructions Below
 
 ## ✅ Pre-Flight Checklist (5 minutes)
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/axios';
 import BlogCard from './BlogCard';
 import '../../styles/blog.css';
 
@@ -31,9 +31,7 @@ const BlogList = ({
         params.append('category', category);
       }
 
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/blog?${params.toString()}`
-      );
+      const response = await api.get(`/blog?${params.toString()}`);
 
       if (response.data.success) {
         setBlogs(response.data.blogs || []);

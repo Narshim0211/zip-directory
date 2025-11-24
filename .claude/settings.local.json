@@ -105,7 +105,12 @@
       "Bash(timeout 10 npm start:*)",
       "Bash(timeout 5 bash:*)",
       "Bash(timeout /t 30 /nobreak)",
-      "Bash(git check-ignore:*)"
+      "Bash(git check-ignore:*)",
+      "Bash(timeout /t 15 /nobreak)",
+      "Bash(start /B npm start)",
+      "Bash(chmod:*)",
+      "Bash(bash verify-api-routing.sh:*)",
+      "Bash(cross-env PORT=3001 npm start)"
     ],
     "deny": [],
     "ask": []

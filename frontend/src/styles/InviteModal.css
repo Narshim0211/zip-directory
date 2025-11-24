@@ -1,0 +1,386 @@
+/**
+ * InviteModal Styles - World-Class Design
+ *
+ * Design principles:
+ * - Clean, modern, minimalist
+ * - Smooth animations (0.3s ease)
+ * - Focus states for accessibility
+ * - Mobile-first responsive
+ * - Pink gradient theme matching SalonHub brand
+ */
+
+/* Overlay */
+.invite-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: inviteFadeIn 0.3s ease;
+  padding: 20px;
+}
+
+@keyframes inviteFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Container */
+.invite-modal {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 100%;
+  animation: inviteSlideUp 0.3s ease;
+  overflow: hidden;
+}
+
+@keyframes inviteSlideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Header */
+.invite-modal-header {
+  padding: 32px 32px 24px;
+  text-align: center;
+  background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+  color: white;
+}
+
+.invite-modal-title {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+}
+
+.invite-modal-subtitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Body */
+.invite-modal-body {
+  padding: 32px;
+}
+
+.invite-form-group {
+  margin-bottom: 24px;
+}
+
+.invite-form-group:last-child {
+  margin-bottom: 0;
+}
+
+.invite-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+/* Input Field */
+.invite-input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.invite-input:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.1);
+}
+
+.invite-input-error {
+  border-color: #ef4444;
+}
+
+.invite-input-error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+.invite-input:disabled,
+.invite-textarea:disabled {
+  background-color: #f9fafb;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Textarea */
+.invite-textarea {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.invite-textarea:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.1);
+}
+
+.invite-char-count {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: right;
+}
+
+/* Error Text */
+.invite-error-text {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #ef4444;
+  font-weight: 500;
+}
+
+/* Footer */
+.invite-modal-footer {
+  padding: 24px 32px 32px;
+  display: flex;
+  gap: 12px;
+}
+
+/* Buttons */
+.invite-btn {
+  flex: 1;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  outline: none;
+}
+
+.invite-btn:focus-visible {
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.2);
+}
+
+.invite-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Primary Button */
+.invite-btn-primary {
+  background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+}
+
+.invite-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(236, 72, 153, 0.4);
+}
+
+.invite-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Secondary Button */
+.invite-btn-secondary {
+  background: white;
+  color: #6b7280;
+  border: 2px solid #e5e7eb;
+}
+
+.invite-btn-secondary:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* Loading State */
+.invite-btn-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.invite-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: inviteSpin 0.6s linear infinite;
+}
+
+@keyframes inviteSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Success Modal */
+.invite-modal-success {
+  text-align: center;
+  padding: 48px 32px;
+  background: white;
+}
+
+.invite-success-icon {
+  font-size: 72px;
+  margin-bottom: 20px;
+  animation: inviteBounce 0.6s ease;
+}
+
+@keyframes inviteBounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.invite-success-title {
+  margin: 0 0 12px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1d1d1f;
+}
+
+.invite-success-text {
+  margin: 0 0 32px 0;
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.invite-modal-success .invite-btn-primary {
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .invite-modal {
+    border-radius: 20px;
+    max-width: calc(100% - 32px);
+  }
+
+  .invite-modal-header {
+    padding: 24px 24px 20px;
+  }
+
+  .invite-modal-title {
+    font-size: 22px;
+  }
+
+  .invite-modal-subtitle {
+    font-size: 15px;
+  }
+
+  .invite-modal-body {
+    padding: 24px;
+  }
+
+  .invite-modal-footer {
+    padding: 20px 24px 24px;
+    flex-direction: column;
+  }
+
+  .invite-btn {
+    width: 100%;
+  }
+
+  .invite-success-icon {
+    font-size: 60px;
+  }
+
+  .invite-success-title {
+    font-size: 24px;
+  }
+
+  .invite-modal-success {
+    padding: 36px 24px;
+  }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+  .invite-modal {
+    background: #1f2937;
+  }
+
+  .invite-modal-title {
+    color: white;
+  }
+
+  .invite-label {
+    color: #f3f4f6;
+  }
+
+  .invite-input,
+  .invite-textarea {
+    background: #374151;
+    border-color: #4b5563;
+    color: white;
+  }
+
+  .invite-input:focus,
+  .invite-textarea:focus {
+    border-color: #ec4899;
+    background: #374151;
+  }
+
+  .invite-btn-secondary {
+    background: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+  }
+
+  .invite-btn-secondary:hover:not(:disabled) {
+    background: #4b5563;
+  }
+
+  .invite-success-title {
+    color: white;
+  }
+
+  .invite-success-text {
+    color: #9ca3af;
+  }
+
+  .invite-modal-success {
+    background: #1f2937;
+  }
+}

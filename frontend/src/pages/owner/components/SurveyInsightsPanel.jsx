@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../../api/axios';
 import MiniSurveyCard from '../../../components/owner/MiniSurveyCard';
 import '../../../styles/surveyInsightsPanel.css';
 
@@ -29,8 +29,8 @@ const SurveyInsightsPanel = () => {
 
       // Fetch both in parallel
       const [sodResponse, ttResponse] = await Promise.all([
-        axios.get('http://localhost:5000/api/surveys/trending/survey-of-the-day'),
-        axios.get('http://localhost:5000/api/surveys/trending/today?limit=5')
+        api.get('/surveys/trending/survey-of-the-day'),
+        api.get('/surveys/trending/today?limit=5')
       ]);
 
       setSurveyOfDay(sodResponse.data.data);

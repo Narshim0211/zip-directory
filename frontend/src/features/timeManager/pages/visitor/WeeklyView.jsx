@@ -86,7 +86,7 @@ export default function WeeklyView({ role = "visitor" }) {
   const handleDateClick = (date) => {
     // Navigate to daily view for that date
     const dateStr = date.toISOString().split('T')[0];
-    navigate(`/${role}/time/daily?date=${dateStr}`);
+    navigate(`/visitor/time/daily?date=${dateStr}`);
   };
 
   const handleSubmit = async (payload) => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import VerificationBadge from './VerificationBadge';
 import './VerificationProgress.css';
 
@@ -28,9 +28,7 @@ const VerificationProgress = ({ businessId }) => {
     const fetchProgress = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          `/api/v1/verification/progress/${businessId}`
-        );
+        const response = await api.get(`/v1/verification/progress/${businessId}`);
 
         if (response.data.success) {
           setProgress(response.data.data);

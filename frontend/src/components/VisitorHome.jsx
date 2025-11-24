@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import v1Client from '../api/v1';
 import followService from '../visitor/services/followService';
 import FeedPostCard from '../visitor/components/FeedPostCard';
 import FeedSurveyCard from '../visitor/components/FeedSurveyCard';
 import SearchSection from '../visitor/components/SearchSection';
 import CreateSurveyModal from './CreateSurveyModal';
+import ProfileAvatar from './ProfileAvatar';
 import '../styles/visitorHomePage.css';
 
 const VisitorHome = () => {
+  const { user } = useAuth();
   const [feed, setFeed] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -56,6 +59,9 @@ const VisitorHome = () => {
 
   return (
     <div className="visitor-home-page">
+      {/* Profile Avatar - Instagram/TikTok style */}
+      {user && <ProfileAvatar user={user} />}
+
       <div className="visitor-home-page__container">
         <header className="visitor-home-page__hero">
           <h1 className="visitor-home-page__title">Welcome to SalonHub</h1>

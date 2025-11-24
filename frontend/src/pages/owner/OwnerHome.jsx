@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import v1Client from '../../api/v1';
 import FeedPostCard from '../../visitor/components/FeedPostCard';
 import FeedSurveyCard from '../../visitor/components/FeedSurveyCard';
@@ -7,6 +8,7 @@ import CreateSurveyModal from '../../components/CreateSurveyModal';
 import CreatePostModal from '../../components/CreatePostModal';
 import SurveyInsightsPanel from './components/SurveyInsightsPanel';
 import TrendingWeekPanel from './components/TrendingWeekPanel';
+import ProfileAvatar from '../../components/ProfileAvatar';
 import '../../styles/ownerHome.css';
 
 /**
@@ -17,6 +19,7 @@ import '../../styles/ownerHome.css';
  * Follow state is now managed globally by FollowContext - no need to fetch it here!
  */
 const OwnerHome = () => {
+  const { user } = useAuth();
   const [feed, setFeed] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -66,6 +69,9 @@ const OwnerHome = () => {
 
   return (
     <div className="owner-home-page">
+      {/* Profile Avatar - Instagram/TikTok style */}
+      {user && <ProfileAvatar user={user} isPremium={user.role === 'owner'} />}
+
       <div className="owner-home-page__grid">
         {/* Left Sidebar - Survey Insights */}
         <aside className="owner-home-page__sidebar-left">

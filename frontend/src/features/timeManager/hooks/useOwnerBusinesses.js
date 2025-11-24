@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import api from '../../../api/axios';
 
 /**
  * Hook to fetch owner's businesses for assignedTo suggestions
  * Returns array of business/staff options
+ * ✅ Now using unified axios instance
  */
 export default function useOwnerBusinesses() {
   const [options, setOptions] = useState([]);
@@ -14,23 +16,8 @@ export default function useOwnerBusinesses() {
     const fetchBusinesses = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
-        const res = await fetch(
-          `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/owner/business`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-        
-        if (!res.ok) {
-          console.warn('Failed to fetch businesses for assignment suggestions');
-          return;
-        }
-
-        const data = await res.json();
+        const res = await api.get('/owner/business');
+        const data = res.data;
         const businesses = Array.isArray(data) ? data : data?.data || data?.businesses || [];
         
         if (!mounted) return;

@@ -287,11 +287,117 @@ const sendCampaignEmails = async (campaign, subscribers, onProgress) => {
   return results;
 };
 
+// Invite email template (world-class, simple, beautiful)
+const getInviteEmailTemplate = (senderName, message, signupUrl) => {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>You're invited to SalonHub!</title>
+  <style>
+    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f7; }
+    .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+    .header { background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); padding: 50px 30px; text-align: center; }
+    .header h1 { color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; }
+    .header p { color: rgba(255, 255, 255, 0.95); margin: 15px 0 0 0; font-size: 18px; font-weight: 500; }
+    .content { padding: 40px 30px; color: #1d1d1f; line-height: 1.6; }
+    .content p { margin: 0 0 20px 0; font-size: 17px; color: #424245; }
+    .personal-message { background-color: #f9fafb; border-left: 4px solid #ec4899; padding: 20px; margin: 25px 0; border-radius: 8px; font-style: italic; color: #1d1d1f; }
+    .cta-button { display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 18px; margin: 20px 0; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3); }
+    .features { margin: 30px 0; }
+    .feature { display: flex; align-items: flex-start; margin: 15px 0; }
+    .feature-icon { font-size: 24px; margin-right: 15px; }
+    .feature-text { font-size: 16px; color: #424245; line-height: 1.5; }
+    .footer { background-color: #f5f5f7; padding: 30px; text-align: center; border-top: 1px solid #e5e5e7; }
+    .footer p { margin: 5px 0; font-size: 13px; color: #6e6e73; }
+    @media only screen and (max-width: 600px) {
+      .content { padding: 30px 20px !important; }
+      .header { padding: 40px 20px !important; }
+      .header h1 { font-size: 28px !important; }
+      .cta-button { padding: 14px 30px !important; font-size: 16px !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>You're Invited! 🎉</h1>
+      <p>${senderName} thinks you'll love SalonHub</p>
+    </div>
+    <div class="content">
+      <p>Hi there!</p>
+
+      ${message ? `<div class="personal-message">${message}</div>` : ''}
+
+      <p><strong>${senderName}</strong> invited you to join <strong>SalonHub</strong> — the best way to discover top-rated salons and stylists.</p>
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">🏆</div>
+          <div class="feature-text"><strong>Discover top-rated salons</strong> in your area with verified reviews</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📍</div>
+          <div class="feature-text"><strong>Book trusted professionals</strong> and manage appointments easily</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">💬</div>
+          <div class="feature-text"><strong>Chat with stylists</strong> and get personalized recommendations</div>
+        </div>
+      </div>
+
+      <center>
+        <a href="${signupUrl}" class="cta-button">Join SalonHub Now</a>
+      </center>
+
+      <p style="margin-top: 30px; font-size: 15px; color: #6e6e73;">See you inside!</p>
+    </div>
+    <div class="footer">
+      <p><strong>SalonHub</strong></p>
+      <p>Your trusted beauty community</p>
+      <p style="margin-top: 15px; font-size: 12px; color: #86868b;">
+        You received this email because ${senderName} invited you to join SalonHub.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+};
+
+// Send invite email
+const sendInviteEmail = async ({ recipientEmail, senderName, message, inviteId }) => {
+  try {
+    const signupUrl = `${getBaseUrl()}/signup?ref=${inviteId}`;
+
+    const html = getInviteEmailTemplate(
+      senderName,
+      message,
+      signupUrl
+    );
+
+    const result = await sendEmail({
+      to: recipientEmail,
+      subject: `${senderName} invited you to join SalonHub! 🎉`,
+      html,
+    });
+
+    return result;
+  } catch (error) {
+    console.error('Failed to send invite email:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
   verifyEmailService,
   sendEmail,
   sendTestEmail,
   sendCampaignEmails,
+  sendInviteEmail,
   generateUnsubscribeToken,
   verifyUnsubscribeToken,
   getBaseUrl,

@@ -380,6 +380,10 @@ app.use('/api/admin/newsletters', adminNewsletterRoutes);
 const publicNewsletterRoutes = require('./routes/publicRoutes');
 app.use('/api/newsletter', publicNewsletterRoutes);
 
+// Invite/Referral Routes
+const inviteRoutes = require('./routes/inviteRoutes');
+app.use('/api/invite', inviteRoutes);
+
 // Dev-only: Seed an admin user if missing
 if (process.env.NODE_ENV !== 'production') {
   app.post('/api/dev/seed-admin', async (req, res) => {

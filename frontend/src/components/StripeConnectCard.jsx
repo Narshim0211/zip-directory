@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import './StripeConnectCard.css';
 
 /**
@@ -26,7 +26,7 @@ const StripeConnectCard = ({ businessId }) => {
 
   const fetchStripeStatus = async () => {
     try {
-      const response = await axios.get(`/api/v1/stripe-connect/status/${businessId}`);
+      const response = await api.get(`/v1/stripe-connect/status/${businessId}`);
       if (response.data.success) {
         setStripeStatus(response.data.data);
       }
@@ -41,7 +41,7 @@ const StripeConnectCard = ({ businessId }) => {
       setError(null);
 
       // Create Stripe Connect account link
-      const response = await axios.post('/api/v1/stripe-connect/create-account-link', {
+      const response = await api.post('/v1/stripe-connect/create-account-link', {
         businessId
       });
 

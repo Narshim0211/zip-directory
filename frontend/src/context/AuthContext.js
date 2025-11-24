@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { API } from '../api';
+import api from '../api/axios';
 
 export const AuthContext = createContext(null);
 
@@ -7,7 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Hydrate from localStorage and validate token with /auth/me
+  // Hydrate from localStorage and validate token with /api/auth/me
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
 
     (async () => {
       try {
-        const { data } = await API.get('/auth/me');
+        const { data } = await api.get('/auth/me');
         localStorage.setItem('user', JSON.stringify(data));
         setUser(data);
       } catch (_) {
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const { data } = await API.post('/auth/login', { email, password });
+    const { data } = await api.post('/auth/login', { email, password });
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data));
     setUser(data);
@@ -39,10 +39,27 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (payload) => {
-    const { data } = await API.post('/auth/register', payload);
+    // Check for referral invite ID in URL (?ref=INVITE_ID)
+    const urlParams = new URLSearchParams(window.location.search);
+    const referralInviteId = urlParams.get('ref');
+
+    // Include referral ID in registration payload if present
+    const registrationData = {
+      ...payload,
+      ...(referralInviteId && { referralInviteId })
+    };
+
+    const { data } = await api.post('/auth/register', registrationData);
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data));
     setUser(data);
+
+    // Clear referral param from URL after successful registration
+    if (referralInviteId) {
+      const newUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+
     return data;
   };
 

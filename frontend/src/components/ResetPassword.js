@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import AuthForm from './AuthForm';
-import { API } from '../api';
+import api from '../api/axios';
 
 const ResetPassword = () => {
   const [email, setEmail] = useState('');
@@ -15,7 +15,7 @@ const ResetPassword = () => {
     setMessage('');
     setLoading(true);
     try {
-      await API.post('/auth/forgot-password', { email });
+      await api.post('/auth/forgot-password', { email });
       setMessage('If the email exists, we sent a reset link.');
     } catch (err) {
       // Intentionally generic to avoid enumeration

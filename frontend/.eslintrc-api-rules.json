@@ -1,0 +1,42 @@
+{
+  "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["axios"],
+            "importNames": ["default"],
+            "message": "❌ Direct axios imports are forbidden. Use 'import api from \"../api/axios\"' or the appropriate relative path instead. This ensures all API calls go through the unified axios instance with proper logging and auth."
+          }
+        ],
+        "paths": [
+          {
+            "name": "axios",
+            "message": "❌ Direct axios imports are forbidden. Use 'import api from \"../api/axios\"' instead."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "CallExpression[callee.object.name='axios'][callee.property.name='create']",
+        "message": "❌ Creating new axios instances is forbidden. Use the unified 'api' instance from '../api/axios' instead."
+      },
+      {
+        "selector": "CallExpression[callee.name='fetch']",
+        "message": "⚠️  Consider using the unified 'api' instance from '../api/axios' instead of fetch() for consistency and proper auth/logging."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/api/axios.js"],
+      "rules": {
+        "no-restricted-imports": "off",
+        "no-restricted-syntax": "off"
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api/axios';
 import DOMPurify from 'dompurify';
 import BlogCard from './BlogCard';
 import '../../styles/blog.css';
@@ -27,9 +27,7 @@ const BlogReader = () => {
       setError(null);
 
       // Fetch blog by slug
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/blog/${slug}`
-      );
+      const response = await api.get(`/blog/${slug}`);
 
       if (response.data.success && response.data.blog) {
         setBlog(response.data.blog);
@@ -53,9 +51,7 @@ const BlogReader = () => {
 
   const fetchRelatedBlogs = async (currentSlug) => {
     try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/blog/${currentSlug}/related?limit=3`
-      );
+      const response = await api.get(`/blog/${currentSlug}/related?limit=3`);
 
       if (response.data.success) {
         setRelatedBlogs(response.data.blogs || []);

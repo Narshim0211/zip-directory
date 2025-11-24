@@ -1,32 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
+import api from '../../api/axios';
+import InviteModal from '../../components/InviteModal';
 import '../../styles/profileOwner.css';
 
+/**
+ * Owner Profile Page
+ * ✅ Now using unified axios instance
+ */
 export default function OwnerProfilePage() {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/v2/owner-profiles/me`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          }
-        });
-        const data = await res.json();
+        const res = await api.get('/v2/owner-profiles/me');
         if (!mounted) return;
-        if (!res.ok) throw new Error(data?.message || 'Failed to load profile');
-        setProfile(data?.data || data);
+        setProfile(res.data?.data || res.data);
       } catch (e) {
-        setError(e.message);
+        if (mounted) {
+          setError(e.response?.data?.message || e.message || 'Failed to load profile');
+        }
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     })();
     return () => { mounted = false; };
@@ -50,6 +53,17 @@ export default function OwnerProfilePage() {
         </div>
         <div className="owner-profile__actions">
           <a className="btn-primary" href="/owner/me/edit">Edit Profile</a>
+          <button
+            className="btn-primary"
+            onClick={() => setShowInviteModal(true)}
+            style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              border: 'none',
+              marginLeft: '8px'
+            }}
+          >
+            ✨ Invite Clients & Friends
+          </button>
         </div>
       </div>
 
@@ -77,6 +91,11 @@ export default function OwnerProfilePage() {
           <div className="empty">Posts and surveys will appear here (coming soon).</div>
         </section>
       </div>
+
+      <InviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+      />
     </div>
   );
 }

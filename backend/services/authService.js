@@ -9,7 +9,7 @@ const signToken = (payload) =>
 
 const NAME_REGEX = /^[A-Za-z\-\' ]{2,50}$/;
 
-async function register({ firstName, lastName, email, password, role, newsletterOptIn }) {
+async function register({ firstName, lastName, email, password, role, newsletterOptIn, referralInviteId }) {
   if (!firstName || !lastName || !email || !password) {
     const err = new Error('firstName, lastName, email and password are required');
     err.status = 400;
@@ -31,7 +31,7 @@ async function register({ firstName, lastName, email, password, role, newsletter
 
   const name = `${firstName} ${lastName}`.trim();
   const userData = { name, firstName, lastName, email, password, role };
-  
+
   // Handle newsletter opt-in based on role
   if (newsletterOptIn === true) {
     userData.newsletter = {};
@@ -41,9 +41,21 @@ async function register({ firstName, lastName, email, password, role, newsletter
       userData.newsletter.businessGrowth = true;
     }
   }
-  
+
   const user = new User(userData);
   await user.save();
+
+  // Handle referral tracking (after user is created)
+  if (referralInviteId) {
+    try {
+      const inviteService = require('./inviteService');
+      await inviteService.completeInvite(email, user._id);
+      console.log(`✅ Referral tracked for new user: ${email}`);
+    } catch (e) {
+      // Don't block registration if referral tracking fails
+      console.error('Referral tracking warning:', e.message || e);
+    }
+  }
   // create corresponding profile right away for owner/visitor
   try {
     if (user.role === 'owner') {

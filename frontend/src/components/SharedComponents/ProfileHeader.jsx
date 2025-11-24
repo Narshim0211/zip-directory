@@ -8,7 +8,8 @@ const ProfileHeader = ({
   isOwnProfile,
   isFollowing,
   onFollow,
-  onUnfollow
+  onUnfollow,
+  onInviteFriends // New prop for invite button
 }) => {
   const {
     firstName,
@@ -72,9 +73,24 @@ const ProfileHeader = ({
 
           <div className="profile-header__actions">
             {isOwnProfile ? (
-              <Link to={editPath} className="btn btn-secondary">
-                Edit Profile
-              </Link>
+              <>
+                <Link to={editPath} className="btn btn-secondary">
+                  Edit Profile
+                </Link>
+                {onInviteFriends && (
+                  <button
+                    className="btn btn-primary"
+                    onClick={onInviteFriends}
+                    style={{
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      border: 'none',
+                      marginLeft: '8px'
+                    }}
+                  >
+                    ✨ Invite Friends
+                  </button>
+                )}
+              </>
             ) : (
               <button
                 className={`btn ${isFollowing ? 'btn-secondary' : 'btn-primary'}`}

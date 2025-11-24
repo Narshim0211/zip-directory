@@ -7,6 +7,7 @@ import ProfileFeed from '../components/SharedComponents/ProfileFeed';
 import CreateSection from '../components/SharedComponents/CreateSection';
 import AboutCard from '../components/SharedComponents/AboutCard';
 import ErrorBoundary from '../components/SharedComponents/ErrorBoundary';
+import InviteModal from '../components/InviteModal';
 import '../styles/designSystem.css';
 
 /**
@@ -21,6 +22,7 @@ const VisitorProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [feedLoading, setFeedLoading] = useState(false);
   const [nextCursor, setNextCursor] = useState(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   // Load current user's profile
   useEffect(() => {
@@ -30,7 +32,7 @@ const VisitorProfilePage = () => {
       try {
         setLoading(true);
         console.log('[VisitorProfilePage] Fetching profile from /v1/visitor-profiles/me');
-        // Fetch own profile from v1 endpoint (api already has /api prefix)
+        // Fetch own profile from v1 endpoint
         const { data } = await api.get('/v1/visitor-profiles/me');
         console.log('[VisitorProfilePage] Profile loaded:', data);
         setProfile(data);
@@ -158,8 +160,14 @@ const VisitorProfilePage = () => {
           isFollowing={false}
           onFollow={() => {}}
           onUnfollow={() => {}}
+          onInviteFriends={() => setShowInviteModal(true)}
         />
       </ErrorBoundary>
+
+      <InviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+      />
 
       <ProfileTabs
         activeTab={activeTab}

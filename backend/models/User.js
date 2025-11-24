@@ -140,6 +140,23 @@ const userSchema = new mongoose.Schema(
         ref: 'User'
       }
     }],
+
+    // ✨ REFERRAL TRACKING (Invite System)
+    referredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+      index: true
+    },
+    referralSource: {
+      type: String,
+      enum: ['direct', 'invite_link', 'organic_share'],
+      default: 'direct'
+    },
+    referredAt: {
+      type: Date,
+      default: null
+    }
   },
   { timestamps: true }
 );
