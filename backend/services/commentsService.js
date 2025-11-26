@@ -1,140 +1,103 @@
+/**
+ * Comments Service - V1 (Zero Paywall)
+ * Handles all comment CRUD operations
+ * Clean schema - no premium/paywall logic
+ */
+
 const Comment = require('../models/Comment');
-const Business = require('../models/Business');
 
 async function listByContent(contentType, contentId) {
-  return Comment.find({
+  // Find all parent comments (no parentId)
+  const parentComments = await Comment.find({
     contentType,
     contentId,
-    isDeleted: false,
-    isHidden: false // NEW: Don't show hidden/reported comments
+    parentId: null,
   })
-    .populate('author', 'name firstName lastName avatarUrl role') // ENHANCED: Better populate
-    .populate('reactions.user', 'name')
-    .sort([
-      ['isPinned', -1],
-      ['createdAt', -1],
-    ]);
+    .populate('userId', 'firstName lastName avatarUrl role')
+    .sort({ createdAt: -1 });
+
+  // For each parent, fetch its replies
+  const commentsWithReplies = await Promise.all(
+    parentComments.map(async (parent) => {
+      const replies = await Comment.find({
+        parentId: parent._id,
+      })
+        .populate('userId', 'firstName lastName avatarUrl role')
+        .sort({ createdAt: 1 }); // Oldest reply first
+
+      return {
+        ...parent.toObject(),
+        replies: replies,
+      };
+    })
+  );
+
+  return commentsWithReplies;
 }
 
 async function listByUser(userId) {
-  return Comment.find({ userId, isDeleted: false })
-    .populate('contentId')
+  return Comment.find({ userId })
     .sort({ createdAt: -1 });
 }
 
 async function createComment(userId, payload) {
   const { contentType, contentId, text, parentId } = payload || {};
 
-  // Existing validation
+  // V1: Simple validation
   if (!contentType || !contentId || !text || !text.trim()) {
     const error = new Error('contentType, contentId, and text are required');
     error.status = 400;
     throw error;
   }
 
-  // NEW: Get user to determine authorType
-  const User = require('../models/User');
-  const user = await User.findById(userId);
-  if (!user) {
-    const error = new Error('User not found');
-    error.status = 404;
+  if (text.trim().length > 500) {
+    const error = new Error('Comment text cannot exceed 500 characters');
+    error.status = 400;
     throw error;
   }
 
-  // NEW: Determine if Premium owner (for gold orbit)
-  let isPremiumAuthor = false;
-  if (user.role === 'owner') {
-    const business = await Business.findOne({ owner: userId });
-    isPremiumAuthor = business?.listingType === 'premium' && business?.premiumSubscription?.active === true;
-  }
-
-  // Create comment with NEW fields
+  // Create comment with clean V1 schema
   const comment = new Comment({
-    // Use postId for backward compatibility (will be mapped to contentId)
-    postId: contentId,
-    author: userId,
-    content: text.trim(),
+    contentId,
+    contentType,
+    userId,
+    text: text.trim(),
     parentId: parentId || null,
-
-    // NEW fields:
-    contentType: contentType || 'post',
-    authorType: user.role,
-    isPremiumAuthor: isPremiumAuthor,
-    reportCount: 0,
-    isHidden: false,
   });
 
-  return comment.save();
-}
+  const saved = await comment.save();
 
-async function editComment(userId, commentId, text) {
-  const comment = await Comment.findById(commentId);
-  if (!comment) throw new Error('Comment not found');
-  if (String(comment.userId) !== String(userId)) {
-    const err = new Error('Not authorized');
-    err.status = 403;
-    throw err;
-  }
-  if (!text || !text.trim()) {
-    const err = new Error('Updated text is required');
-    err.status = 400;
-    throw err;
-  }
-  comment.text = text.trim();
-  return comment.save();
+  // Populate userId before returning
+  await saved.populate('userId', 'firstName lastName avatarUrl role');
+
+  return saved;
 }
 
 async function softDeleteComment(userId, commentId) {
   const comment = await Comment.findById(commentId);
-  if (!comment) throw new Error('Comment not found');
+
+  if (!comment) {
+    const error = new Error('Comment not found');
+    error.status = 404;
+    throw error;
+  }
+
+  // V1: Only the author can delete their own comment
   if (String(comment.userId) !== String(userId)) {
-    const err = new Error('Not authorized');
-    err.status = 403;
-    throw err;
+    const error = new Error('Not authorized to delete this comment');
+    error.status = 403;
+    throw error;
   }
-  comment.isDeleted = true;
-  return comment.save();
-}
 
-async function toggleLike(userId, commentId) {
-  const comment = await Comment.findById(commentId);
-  if (!comment) throw new Error('Comment not found');
-  const strUser = String(userId);
-  const index = comment.likes.findIndex((id) => String(id) === strUser);
-  if (index === -1) comment.likes.push(userId);
-  else comment.likes.splice(index, 1);
-  await comment.save();
-  return comment.likes.length;
-}
+  // Hard delete in V1 (can change to soft delete later if needed)
+  await Comment.findByIdAndDelete(commentId);
 
-async function addReaction(userId, commentId, emoji) {
-  if (!emoji || !emoji.trim()) {
-    const err = new Error('Emoji is required');
-    err.status = 400;
-    throw err;
-  }
-  const comment = await Comment.findById(commentId);
-  if (!comment) throw new Error('Comment not found');
-  comment.reactions.push({ emoji: emoji.trim(), user: userId });
-  await comment.save();
-  return comment.reactions;
-}
-
-async function togglePin(commentId) {
-  const comment = await Comment.findById(commentId);
-  if (!comment) throw new Error('Comment not found');
-  comment.isPinned = !comment.isPinned;
-  await comment.save();
-  return comment.isPinned;
+  return { success: true };
 }
 
 module.exports = {
   listByContent,
   listByUser,
   createComment,
-  editComment,
   softDeleteComment,
-  toggleLike,
-  addReaction,
-  togglePin,
 };

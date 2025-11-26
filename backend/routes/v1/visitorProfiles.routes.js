@@ -7,6 +7,7 @@ const visitorController = require('../../controllers/v1/visitorProfileController
 
 router.get('/me', protect, visitorController.getMe);
 router.put('/me', protect, rateLimit({ windowMs: 60 * 1000, max: 30 }), validateVisitorUpdate, visitorController.updateMe);
+router.post('/me/upload', protect, rateLimit({ windowMs: 60 * 1000, max: 20 }), visitorController.uploadImage);
 
 router.get('/:slug', visitorController.getPublic);
 router.get('/:slug/timeline', visitorController.getTimeline);

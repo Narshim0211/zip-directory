@@ -1,6 +1,7 @@
 const asyncWrap = require('../../middleWare/asyncHandler');
 const visitorService = require('../../services/visitor/visitorProfileService');
 const VisitorProfile = require('../../models/VisitorProfile');
+const User = require('../../models/User');
 
 exports.getMe = asyncWrap(async (req, res) => {
   // Try to find existing profile
@@ -16,9 +17,9 @@ exports.getMe = asyncWrap(async (req, res) => {
 });
 
 exports.updateMe = asyncWrap(async (req, res) => {
-  const { firstName, lastName, bio, handle, avatarUrl, bannerUrl, socialLinks } = req.body;
+  const { firstName, lastName, bio, handle, avatarUrl, bannerUrl, socialLinks, title } = req.body;
   if (!firstName || !lastName) return res.status(400).json({ message: 'First and last name required' });
-  const p = await visitorService.updateProfile(req.user._id, { firstName, lastName, bio, handle, avatarUrl, bannerUrl, socialLinks });
+  const p = await visitorService.updateProfile(req.user._id, { firstName, lastName, bio, handle, avatarUrl, bannerUrl, socialLinks, title });
   res.json(p);
 });
 
@@ -56,6 +57,28 @@ exports.getTimeline = asyncWrap(async (req, res) => {
   const items = surveys.map(s => ({ type: 'survey', data: s }));
   const nextCursor = items.length ? items[items.length - 1].data.createdAt : null;
   res.json({ items, nextCursor });
+});
+
+exports.uploadImage = asyncWrap(async (req, res) => {
+  const { type, base64, originalName } = req.body;
+  if (!type || (type !== 'avatar' && type !== 'banner')) return res.status(400).json({ message: 'type must be avatar or banner' });
+  if (!base64) return res.status(400).json({ message: 'base64 payload required' });
+
+  const galleryService = require('../../services/galleryService');
+  const visitorProfile = await VisitorProfile.findOne({ userId: req.user._id });
+  if (!visitorProfile) return res.status(404).json({ message: 'Profile not found' });
+
+  const upload = await galleryService.uploadBase64({ base64, originalName: originalName || `${type}.png`, folder: req.user._id.toString() });
+  const url = upload.url;
+  if (type === 'avatar') {
+    visitorProfile.avatarUrl = url;
+    // Also update User model so avatar syncs everywhere (top-right nav, etc.)
+    await User.findByIdAndUpdate(req.user._id, { avatarUrl: url });
+  } else {
+    visitorProfile.bannerUrl = url;
+  }
+  await visitorProfile.save();
+  res.json({ url });
 });
 
 exports.follow = asyncWrap(async (req, res) => {

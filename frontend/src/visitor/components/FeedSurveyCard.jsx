@@ -5,7 +5,7 @@ import FollowButton from "../../components/FollowButton";
 import SurveyEngagementBar from "../../components/engagement/SurveyEngagementBar";
 import VerificationBadgeInline from "../../components/VerificationBadgeInline";
 import SurveyOfTheDayBadge from "../../components/SurveyOfTheDayBadge";
-import CommentsSheet from "../../components/CommentsSheet";
+import CommentSection from "../../components/CommentSection";
 import { toggleReaction } from "../../api/engagementApi";
 import { useAuth } from "../../context/AuthContext";
 import v1Client from "../../api/v1";
@@ -49,7 +49,6 @@ const FeedSurveyCard = React.memo(function FeedSurveyCard({ survey }) {
     love: 0,
     total: 0
   });
-  const [showComments, setShowComments] = useState(false); // NEW: Comments sheet state
 
   /**
    * Create ripple effect on button click
@@ -244,19 +243,11 @@ const FeedSurveyCard = React.memo(function FeedSurveyCard({ survey }) {
         <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #eee' }}>
           <SurveyEngagementBar
             surveyId={localSurvey._id}
-            onCommentsClick={() => setShowComments(true)}
           />
         </div>
 
-        {/* Comments Sheet - Instagram Threads Style */}
-        <CommentsSheet
-          isOpen={showComments}
-          onClose={() => setShowComments(false)}
-          contentType="survey"
-          contentId={localSurvey._id}
-          contentTitle={localSurvey.question}
-          currentUser={currentUser}
-        />
+        {/* Comment Section */}
+        <CommentSection contentType="survey" contentId={localSurvey._id} />
       </article>
     );
   }
@@ -285,16 +276,12 @@ const FeedSurveyCard = React.memo(function FeedSurveyCard({ survey }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Link
-                to={`/profile/${survey.author?._id}`}
-                state={{ from: 'feed' }}
-                style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}
-              >
+              <div style={{ display: 'flex', alignItems: 'center' }}>
                 <IdentityBadge identity={survey.identity} author={survey.author} />
                 {survey.author?.role === 'owner' && survey.business?.verificationStatus && (
                   <VerificationBadgeInline status={survey.business.verificationStatus} />
                 )}
-              </Link>
+              </div>
               <span style={{
                 display: 'inline-block',
                 padding: '2px 8px',
@@ -376,19 +363,11 @@ const FeedSurveyCard = React.memo(function FeedSurveyCard({ survey }) {
       <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #eee' }}>
         <SurveyEngagementBar
           surveyId={localSurvey._id}
-          onCommentsClick={() => setShowComments(true)}
         />
       </div>
 
-      {/* Comments Sheet - Instagram Threads Style */}
-      <CommentsSheet
-        isOpen={showComments}
-        onClose={() => setShowComments(false)}
-        contentType="survey"
-        contentId={localSurvey._id}
-        contentTitle={localSurvey.question}
-        currentUser={currentUser}
-      />
+      {/* Comment Section */}
+      <CommentSection contentType="survey" contentId={localSurvey._id} />
     </article>
   );
 });

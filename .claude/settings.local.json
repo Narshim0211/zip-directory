@@ -110,7 +110,10 @@
       "Bash(start /B npm start)",
       "Bash(chmod:*)",
       "Bash(bash verify-api-routing.sh:*)",
-      "Bash(cross-env PORT=3001 npm start)"
+      "Bash(cross-env PORT=3001 npm start)",
+      "Bash(timeout:*)",
+      "Bash(npx kill-port:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

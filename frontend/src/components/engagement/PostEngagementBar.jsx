@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { getPostEngagement, toggleReaction, sendImpression } from '../../api/engagementApi';
-import { useImpressionTracking } from '../../hooks/useImpressionTracking';
+import { useEffect, useState } from 'react';
+import { getPostEngagement, toggleReaction } from '../../api/engagementApi';
 import './EngagementBar.css';
 import '../../styles/feedAnimations.css';
 
@@ -45,24 +44,26 @@ const PostEngagementBar = ({ postId, onReact }) => {
   };
 
   // Track impression when component enters viewport
-  const handleImpression = async (contentType, contentId) => {
-    try {
-      const response = await sendImpression(contentType, contentId);
-      console.log('✅ [Impression] Sent successfully:', response);
+  // TEMPORARILY DISABLED - causing infinite loop
+  // const handleImpression = async (contentType, contentId) => {
+  //   try {
+  //     const response = await sendImpression(contentType, contentId);
+  //     console.log('✅ [Impression] Sent successfully:', response);
 
-      // Update local view count
-      if (response?.data?.impressions !== undefined) {
-        setEngagement(prev => ({
-          ...prev,
-          views: response.data.impressions
-        }));
-      }
-    } catch (err) {
-      console.error('❌ [Impression] Failed to send:', err);
-    }
-  };
+  //     // Update local view count
+  //     if (response?.data?.impressions !== undefined) {
+  //       setEngagement(prev => ({
+  //         ...prev,
+  //         views: response.data.impressions
+  //       }));
+  //     }
+  //   } catch (err) {
+  //     console.error('❌ [Impression] Failed to send:', err);
+  //   }
+  // };
 
-  const cardRef = useImpressionTracking(postId, 'post', handleImpression);
+  // const cardRef = useImpressionTracking(postId, 'post', handleImpression);
+  const cardRef = null; // Disabled impression tracking
 
   const fetchEngagement = async () => {
     try {

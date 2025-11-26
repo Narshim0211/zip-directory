@@ -6,6 +6,10 @@ const Review = require("../models/Review");
 const { protect, adminOnly } = require("../middleWare/authMiddleware");
 const geocodeLocation = require("../config/openCage");
 
+// Mount admin config routes (comment paywall toggle, etc.)
+const adminConfigRoutes = require('./admin/configRoutes');
+router.use('/config', adminConfigRoutes);
+
 // High-level overview metrics for the dashboard
 // Returns users, businesses and reviews counts plus business status breakdown
 router.get("/stats", protect, adminOnly, async (req, res) => {

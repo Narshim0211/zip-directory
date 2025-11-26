@@ -1,53 +1,80 @@
 const mongoose = require('mongoose');
 
+/**
+ * Comment Model - SalonHub V1 (Clean Version)
+ *
+ * Purpose: Enable commenting on surveys and posts
+ * Features:
+ * - 1-level threading (parent → reply)
+ * - Works for both surveys and posts (polymorphic via contentType)
+ * - Zero paywall logic in V1 (all logged-in users have equal rights)
+ * - Simple, stable schema
+ *
+ * @see COMMENT_SYSTEM_V1.md for full documentation
+ */
+
 const commentSchema = new mongoose.Schema(
   {
-    postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', required: true },
-    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment', default: null },
-    content: { type: String, required: true },
-    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    // ========================================
+    // CONTENT REFERENCE (Polymorphic)
+    // ========================================
+    contentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      index: true,
+      // Can reference Survey._id OR OwnerPost._id
+    },
 
-    // ========================================
-    // 💬 COMMENTS SYSTEM ENHANCEMENTS
-    // ========================================
-    // Allows comments on both posts AND surveys (unified system)
     contentType: {
       type: String,
-      enum: ['post', 'survey'],
-      default: 'post', // Backward compatible default
+      required: true,
+      enum: ['survey', 'post'],
+      // Determines which collection contentId points to
     },
-    // Enables permission checks (owner vs visitor)
-    authorType: {
+
+    // ========================================
+    // AUTHOR
+    // ========================================
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
+
+    // ========================================
+    // CONTENT
+    // ========================================
+    text: {
       type: String,
-      enum: ['owner', 'visitor', 'admin'],
-      required: false, // Optional for backward compatibility with existing comments
+      required: true,
+      maxlength: 500,
+      trim: true,
     },
-    // Triggers gold orbit visual in frontend for premium owners
-    isPremiumAuthor: {
-      type: Boolean,
-      default: false,
-    },
-    // Enables community moderation (auto-hide at threshold)
-    reportCount: {
-      type: Number,
-      default: 0,
-    },
-    // Soft delete for reported comments (preserves data for appeals)
-    isHidden: {
-      type: Boolean,
-      default: false,
+
+    // ========================================
+    // THREADING (1-level only)
+    // ========================================
+    parentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Comment',
+      default: null,
+      index: true,
+      // null = top-level comment
+      // commentId = reply to that comment
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true, // Auto-adds createdAt, updatedAt
+  }
 );
 
-// EXISTING INDEX (keep for backward compatibility)
-commentSchema.index({ postId: 1, createdAt: -1 });
-
-// NEW INDEXES (for performance with surveys and moderation)
-commentSchema.index({ postId: 1, contentType: 1, createdAt: -1 });
-commentSchema.index({ author: 1, isHidden: 1 });
-commentSchema.index({ reportCount: -1 }); // For moderation dashboard
+// ========================================
+// PERFORMANCE INDEXES
+// ========================================
+commentSchema.index({ contentId: 1, createdAt: -1 }); // Fast loading of comments for content
+commentSchema.index({ parentId: 1 }); // Fast loading of replies
+commentSchema.index({ userId: 1 }); // Fast user comment history queries
+commentSchema.index({ contentId: 1, contentType: 1 }); // Fast filtering by content type
 
 module.exports = mongoose.model('Comment', commentSchema);

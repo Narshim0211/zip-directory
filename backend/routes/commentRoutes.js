@@ -1,18 +1,34 @@
+/**
+ * Comment Routes - V1 (Zero Paywall)
+ * All logged-in users (Owner or Visitor) can comment/reply/delete
+ * Guests can read only (no auth required)
+ *
+ * V2 Features Removed (will be re-added in V2):
+ * - Like/Love reactions
+ * - Pinning
+ * - Reporting
+ * - Text moderation middleware
+ */
+
 const createRouter = require('./asyncRouter');
 const router = createRouter();
-const { protect, adminOnly } = require('../middleWare/authMiddleware');
-const { moderateText } = require('../middleWare/commentModeration');
+const { protect } = require('../middleWare/authMiddleware');
 const controller = require('../controllers/commentsController');
 
+// GET /api/comments?contentType=survey&contentId=123
+// No auth required - guests can read comments
 router.get('/', controller.getComments);
-router.post('/', protect, moderateText, controller.create);
-router.post('/:id/reply', protect, moderateText, controller.reply);
-router.put('/:id', protect, moderateText, controller.edit);
+
+// POST /api/comments
+// Auth required - all logged-in users can create comments
+router.post('/', protect, controller.create);
+
+// POST /api/comments/:id/reply
+// Auth required - all logged-in users can reply
+router.post('/:id/reply', protect, controller.reply);
+
+// DELETE /api/comments/:id
+// Auth required - users can delete their own comments only (enforced in controller)
 router.delete('/:id', protect, controller.softDelete);
-router.post('/:id/like', protect, controller.toggleLike);
-router.post('/:id/react', protect, controller.react);
-router.post('/:id/pin', protect, adminOnly, controller.pin);
-router.get('/user/my', protect, controller.userComments);
-router.post('/:id/report', protect, controller.report); // NEW: Report comment endpoint
 
 module.exports = router;

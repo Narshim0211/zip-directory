@@ -15,18 +15,22 @@ const AdminDashboard = () => {
   const [articleLoading, setArticleLoading] = useState(false);
   const [newsRefreshLoading, setNewsRefreshLoading] = useState(false);
   const [newsRefreshMessage, setNewsRefreshMessage] = useState("");
+  const [commentPaywallEnabled, setCommentPaywallEnabled] = useState(true);
+  const [paywallLoading, setPaywallLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsRes, pendingRes, reportsRes] = await Promise.all([
+        const [statsRes, pendingRes, reportsRes, paywallRes] = await Promise.all([
           api.get("/admin/stats"),
           api.get("/admin/businesses?status=pending"),
           api.get("/comments/reports/pending"),
+          api.get("/admin/config/comment-paywall"),
         ]);
         setStats(statsRes.data || {});
         setPending(pendingRes.data.businesses || []);
         setReports(reportsRes.data || []);
+        setCommentPaywallEnabled(paywallRes.data?.enabled ?? true);
       } catch (err) {
         console.error("Error loading dashboard:", err);
       } finally {
@@ -75,6 +79,22 @@ const AdminDashboard = () => {
     } catch (e) {
       console.error(e);
       alert('Deleting comment failed');
+    }
+  };
+
+  const toggleCommentPaywall = async () => {
+    const newValue = !commentPaywallEnabled;
+    setPaywallLoading(true);
+
+    try {
+      await api.post("/admin/config/comment-paywall", { enabled: newValue });
+      setCommentPaywallEnabled(newValue);
+      console.log(`[AdminDashboard] Comment paywall ${newValue ? 'ENABLED' : 'DISABLED'}`);
+    } catch (error) {
+      console.error("[AdminDashboard] Failed to toggle comment paywall:", error);
+      alert("Failed to update paywall setting. Please try again.");
+    } finally {
+      setPaywallLoading(false);
     }
   };
 
@@ -272,6 +292,88 @@ const AdminDashboard = () => {
           {newsRefreshMessage && (
             <p style={{ margin: 0, fontSize: 12, color: "#475569" }}>{newsRefreshMessage}</p>
           )}
+        </div>
+      </section>
+
+      {/* Comment Paywall Toggle */}
+      <section className="panel" style={{ marginTop: 16 }}>
+        <div className="panel-head">
+          <div>
+            <div className="panel-title">💬 Comment Paywall Control</div>
+            <div className="panel-sub">Global toggle for comment monetization</div>
+          </div>
+        </div>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '24px',
+          padding: '20px',
+          background: 'white',
+          borderRadius: '12px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+        }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
+              Require payment to comment
+            </div>
+            <div style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.5' }}>
+              {commentPaywallEnabled ? (
+                <>
+                  <strong style={{ color: '#dc2626' }}>Paywall is ON</strong> - Visitors need Chat Pass ($9.99/mo) · Owners need Premium ($49/mo)
+                </>
+              ) : (
+                <>
+                  <strong style={{ color: '#059669' }}>Paywall is OFF</strong> - Comments are FREE for everyone (great for testing or promotions)
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Toggle Switch */}
+          <button
+            onClick={toggleCommentPaywall}
+            disabled={paywallLoading}
+            style={{
+              position: 'relative',
+              width: '80px',
+              height: '48px',
+              borderRadius: '24px',
+              border: 'none',
+              background: paywallLoading ? '#9ca3af' : (commentPaywallEnabled ? 'linear-gradient(135deg, #E91E63 0%, #F06292 100%)' : '#d1d5db'),
+              cursor: paywallLoading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: commentPaywallEnabled && !paywallLoading ? '0 4px 12px rgba(233, 30, 99, 0.4)' : 'none'
+            }}
+          >
+            <span style={{
+              position: 'absolute',
+              top: '4px',
+              left: commentPaywallEnabled ? '36px' : '4px',
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              background: 'white',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px'
+            }}>
+              {paywallLoading ? '⏳' : (commentPaywallEnabled ? '🔒' : '🔓')}
+            </span>
+          </button>
+
+          {/* Status Label */}
+          <div style={{
+            fontSize: '20px',
+            fontWeight: '700',
+            color: paywallLoading ? '#9ca3af' : (commentPaywallEnabled ? '#dc2626' : '#059669'),
+            minWidth: '60px',
+            textAlign: 'center'
+          }}>
+            {paywallLoading ? '...' : (commentPaywallEnabled ? 'ON' : 'OFF')}
+          </div>
         </div>
       </section>
 

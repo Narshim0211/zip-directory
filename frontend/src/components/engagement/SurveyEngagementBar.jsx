@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { getSurveyEngagement, toggleReaction, sendImpression } from '../../api/engagementApi';
-import { useImpressionTracking } from '../../hooks/useImpressionTracking';
+import { useEffect, useState } from 'react';
+import { getSurveyEngagement, toggleReaction } from '../../api/engagementApi';
 import './EngagementBar.css';
 import '../../styles/feedAnimations.css';
 
@@ -11,12 +10,11 @@ import '../../styles/feedAnimations.css';
  * NO duplication - used ONLY on survey cards
  * PHASE 2: Added ripple reward animations on reaction clicks
  */
-const SurveyEngagementBar = ({ surveyId, onReact, onCommentsClick }) => {
+const SurveyEngagementBar = ({ surveyId, onReact }) => {
   const [engagement, setEngagement] = useState({
     views: 0,
     responses: 0,
-    reactions: { like: 0, love: 0, total: 0 },
-    comments: 0 // NEW: Comment count
+    reactions: { like: 0, love: 0, total: 0 }
   });
   const [loading, setLoading] = useState(true);
   const [userReaction, setUserReaction] = useState(null);
@@ -47,33 +45,26 @@ const SurveyEngagementBar = ({ surveyId, onReact, onCommentsClick }) => {
   };
 
   // Track impression when component enters viewport
-  const handleImpression = async (contentType, contentId) => {
-    try {
-      const response = await sendImpression(contentType, contentId);
-      console.log('✅ [Impression] Sent successfully:', response);
+  // TEMPORARILY DISABLED - causing infinite loop
+  // const handleImpression = async (contentType, contentId) => {
+  //   try {
+  //     const response = await sendImpression(contentType, contentId);
+  //     console.log('✅ [Impression] Sent successfully:', response);
 
-      // Update local view count
-      if (response?.data?.impressions !== undefined) {
-        setEngagement(prev => ({
-          ...prev,
-          views: response.data.impressions
-        }));
-      }
-    } catch (err) {
-      console.error('❌ [Impression] Failed to send:', err);
-    }
-  };
+  //     // Update local view count
+  //     if (response?.data?.impressions !== undefined) {
+  //       setEngagement(prev => ({
+  //         ...prev,
+  //         views: response.data.impressions
+  //       }));
+  //     }
+  //   } catch (err) {
+  //     console.error('❌ [Impression] Failed to send:', err);
+  //   }
+  // };
 
-  const cardRef = useImpressionTracking(surveyId, 'survey', handleImpression);
-
-  useEffect(() => {
-    if (!surveyId) {
-      setLoading(false);
-      return;
-    }
-
-    fetchEngagement();
-  }, [surveyId]);
+  // const cardRef = useImpressionTracking(surveyId, 'survey', handleImpression);
+  const cardRef = null; // Disabled impression tracking
 
   const fetchEngagement = async () => {
     try {
@@ -91,8 +82,7 @@ const SurveyEngagementBar = ({ surveyId, onReact, onCommentsClick }) => {
             love: data.reactions?.love ?? 0,
             total: (data.reactions?.like ?? 0) + (data.reactions?.love ?? 0)
           },
-          responses: data.responses ?? 0,
-          comments: data.comments ?? 0 // NEW: Comment count from API
+          responses: data.responses ?? 0
         });
         // IMPORTANT: Set user's current reaction from backend
         setUserReaction(data.userReaction || null);
@@ -103,14 +93,22 @@ const SurveyEngagementBar = ({ surveyId, onReact, onCommentsClick }) => {
       setEngagement({
         views: 0,
         responses: 0,
-        reactions: { like: 0, love: 0, total: 0 },
-        comments: 0 // NEW: Default comment count
+        reactions: { like: 0, love: 0, total: 0 }
       });
       setUserReaction(null);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!surveyId) {
+      setLoading(false);
+      return;
+    }
+
+    fetchEngagement();
+  }, [surveyId]); // fetchEngagement is now stable since it's defined before useEffect
 
   const handleReaction = async (reactionType) => {
     console.log('🔵 [Survey] handleReaction called:', { surveyId, reactionType, currentUserReaction: userReaction });
@@ -172,20 +170,6 @@ const SurveyEngagementBar = ({ surveyId, onReact, onCommentsClick }) => {
         <span className="stat-value">{engagement.responses}</span>
         <span className="stat-label">responses</span>
       </div>
-
-      <div className="engagement-divider">•</div>
-
-      {/* NEW: Comments count - clickable */}
-      <button
-        className="engagement-stat engagement-stat--button"
-        onClick={onCommentsClick}
-        disabled={!onCommentsClick}
-        title="View comments"
-      >
-        <span className="stat-icon">💭</span>
-        <span className="stat-value">{engagement.comments}</span>
-        <span className="stat-label">comments</span>
-      </button>
 
       <div className="engagement-divider">•</div>
       

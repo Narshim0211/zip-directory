@@ -1,45 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { getOwnerInbox } from '../api/chat';
-import ownerApi from '../api/owner';
+import { getOwnerInbox } from '../api/chatApi';
 import ChatThread from './ChatThread';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * OwnerInbox Component
+ * 100% FREE - NO PAYWALL
  *
- * Shows list of client conversations.
- * Displays FOMO banner if owner is not premium.
+ * Shows owner's conversations with visitors and clients.
+ * Clean, futuristic design with tab filtering support.
  */
 const OwnerInbox = () => {
+  const { user } = useAuth();
   const [threads, setThreads] = useState([]);
   const [selectedThread, setSelectedThread] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [businessData, setBusinessData] = useState(null);
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'business' | 'owner'
 
   useEffect(() => {
     loadInbox();
-    loadBusiness();
-  }, []);
+  }, [activeTab]);
 
   const loadInbox = async () => {
     try {
-      const response = await getOwnerInbox();
+      setLoading(true);
+      setError('');
+      const response = await getOwnerInbox(activeTab);
+
       if (response.success) {
-        setThreads(response.threads);
+        setThreads(response.threads || []);
+      } else {
+        setError(response.message || 'Failed to load conversations');
       }
-    } catch (error) {
-      console.error('Failed to load inbox:', error);
+    } catch (err) {
+      console.error('Failed to load inbox:', err);
+      setError('Failed to load conversations. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const loadBusiness = async () => {
-    try {
-      const { data } = await ownerApi.get('/business');
-      setBusinessData(data);
-    } catch (error) {
-      console.error('Failed to load business:', error);
-    }
+  const handleThreadClick = (thread) => {
+    setSelectedThread(thread);
   };
 
   const handleCloseThread = () => {
@@ -47,164 +50,248 @@ const OwnerInbox = () => {
     loadInbox(); // Refresh to update unread counts
   };
 
-  const isPremium = businessData?.listingType === 'premium' && businessData?.premiumSubscription?.active === true;
-  const totalUnread = threads.reduce((sum, thread) => sum + (thread.unreadCount || 0), 0);
+  const totalUnread = threads.filter(t => t.unreadByOwner).length;
 
+  // If thread is selected, show the thread view
   if (selectedThread) {
     return (
       <ChatThread
         threadId={selectedThread._id}
-        visitorName={selectedThread.visitor?.name}
+        thread={selectedThread}
         onClose={handleCloseThread}
         role="owner"
-        isPremium={isPremium}
       />
     );
   }
 
   return (
-    <div style={{ padding: '24px', backgroundColor: '#f5f7fa', minHeight: '100vh' }}>
+    <div style={{
+      padding: '24px',
+      backgroundColor: '#0a0a0a',
+      minHeight: '100vh',
+      color: '#ffffff'
+    }}>
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
         {/* Header */}
         <header style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: '700', color: '#1a202c', marginBottom: '8px' }}>
+          <h1 style={{
+            fontSize: '32px',
+            fontWeight: '700',
+            color: '#ffffff',
+            marginBottom: '8px',
+            background: 'linear-gradient(135deg, #E91E63 0%, #9C27B0 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
             Client Messages
           </h1>
-          <p style={{ fontSize: '16px', color: '#718096' }}>
+          <p style={{ fontSize: '16px', color: '#888' }}>
             {totalUnread > 0 ? `${totalUnread} unread message${totalUnread !== 1 ? 's' : ''}` : 'All caught up!'}
           </p>
         </header>
 
-        {/* FOMO Banner for Free Owners */}
-        {!isPremium && threads.length > 0 && (
-          <div
-            style={{
-              padding: '20px',
-              marginBottom: '24px',
-              background: 'linear-gradient(135deg, #fdf2f8 0%, #fae8ff 100%)',
-              border: '2px solid #E91E63',
-              borderRadius: '12px',
-            }}
-          >
-            <div style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a', marginBottom: '8px' }}>
-              💎 Upgrade to Premium to Reply to Clients
-            </div>
-            <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '16px' }}>
-              You have {threads.length} message{threads.length !== 1 ? 's' : ''} from potential clients. Upgrade to
-              Premium ($49/mo) to respond and grow your business.
-            </p>
-            <a
-              href="/owner/my-business"
+        {/* Tab Navigation */}
+        <div style={{
+          display: 'flex',
+          gap: '12px',
+          marginBottom: '24px',
+          borderBottom: '1px solid #333',
+          paddingBottom: '12px'
+        }}>
+          {['all', 'business', 'owner'].map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
               style={{
-                display: 'inline-block',
-                padding: '12px 24px',
-                background: 'linear-gradient(135deg, #E91E63 0%, #F06292 100%)',
-                color: 'white',
-                textDecoration: 'none',
+                padding: '8px 16px',
+                backgroundColor: activeTab === tab ? '#E91E63' : 'transparent',
+                color: activeTab === tab ? '#ffffff' : '#888',
+                border: activeTab === tab ? 'none' : '1px solid #333',
                 borderRadius: '8px',
-                fontSize: '15px',
+                fontSize: '14px',
                 fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                textTransform: 'capitalize'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== tab) {
+                  e.currentTarget.style.borderColor = '#E91E63';
+                  e.currentTarget.style.color = '#ffffff';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== tab) {
+                  e.currentTarget.style.borderColor = '#333';
+                  e.currentTarget.style.color = '#888';
+                }
               }}
             >
-              Upgrade Now
-            </a>
+              {tab === 'all' ? 'All' : tab === 'business' ? 'Business' : 'Personal'}
+            </button>
+          ))}
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div style={{
+            padding: '16px 20px',
+            marginBottom: '24px',
+            backgroundColor: 'rgba(244, 67, 54, 0.1)',
+            border: '1px solid #F44336',
+            borderRadius: '12px',
+            color: '#F44336'
+          }}>
+            {error}
           </div>
         )}
 
-        {/* Thread List */}
+        {/* Loading State */}
         {loading ? (
           <div style={{ textAlign: 'center', padding: '48px' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>💬</div>
-            <p style={{ color: '#718096' }}>Loading messages...</p>
+            <p style={{ color: '#888' }}>Loading messages...</p>
           </div>
         ) : threads.length === 0 ? (
+          /* Empty State */
           <div
             style={{
-              backgroundColor: 'white',
+              backgroundColor: '#1a1a1a',
               borderRadius: '12px',
               padding: '48px',
               textAlign: 'center',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+              border: '1px solid #333',
             }}
           >
             <div style={{ fontSize: '64px', marginBottom: '16px' }}>💬</div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#2d3748', marginBottom: '8px' }}>
+            <h3 style={{
+              fontSize: '20px',
+              fontWeight: '600',
+              color: '#ffffff',
+              marginBottom: '8px'
+            }}>
               No messages yet
             </h3>
-            <p style={{ color: '#718096', marginBottom: '24px' }}>
-              {isPremium
-                ? 'When clients message you, conversations will appear here'
-                : 'Upgrade to Premium to receive and reply to client messages'}
+            <p style={{ color: '#888', marginBottom: '24px' }}>
+              When clients message you, conversations will appear here
             </p>
           </div>
         ) : (
+          /* Thread List */
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {threads.map((thread) => (
-              <div
-                key={thread._id}
-                onClick={() => setSelectedThread(thread)}
-                style={{
-                  backgroundColor: 'white',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  cursor: 'pointer',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                  transition: 'all 0.2s ease',
-                  border: thread.unreadCount > 0 ? '2px solid #667eea' : '2px solid transparent',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1a202c', margin: 0 }}>
-                        {thread.visitor?.name || 'Client'}
-                      </h3>
-                      {thread.unreadCount > 0 && (
-                        <span
-                          style={{
-                            backgroundColor: '#667eea',
-                            color: 'white',
-                            fontSize: '12px',
-                            fontWeight: '700',
-                            padding: '2px 8px',
-                            borderRadius: '12px',
-                          }}
-                        >
-                          {thread.unreadCount} new
-                        </span>
+            {threads.map((thread) => {
+              // Determine who to display based on thread type
+              const displayName = thread.visitor?.firstName
+                ? `${thread.visitor.firstName} ${thread.visitor.lastName || ''}`.trim()
+                : 'Client';
+
+              const displaySubtext = thread.threadType === 'business'
+                ? `Re: ${thread.business?.businessName || 'Your Business'}`
+                : thread.visitor?.handle || '@visitor';
+
+              const avatarUrl = thread.visitor?.avatarUrl;
+
+              return (
+                <div
+                  key={thread._id}
+                  onClick={() => handleThreadClick(thread)}
+                  style={{
+                    backgroundColor: '#1a1a1a',
+                    borderRadius: '12px',
+                    padding: '20px',
+                    cursor: 'pointer',
+                    border: thread.unreadByOwner ? '2px solid #E91E63' : '1px solid #333',
+                    transition: 'all 0.2s ease',
+                    position: 'relative',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#E91E63';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = thread.unreadByOwner ? '#E91E63' : '#333';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: '16px', alignItems: 'start' }}>
+                    {/* Avatar */}
+                    {avatarUrl && (
+                      <img
+                        src={avatarUrl}
+                        alt={displayName}
+                        style={{
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                          border: '2px solid #333'
+                        }}
+                      />
+                    )}
+
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#ffffff', margin: 0 }}>
+                          {displayName}
+                        </h3>
+                        {thread.unreadByOwner && (
+                          <span
+                            style={{
+                              backgroundColor: '#E91E63',
+                              color: 'white',
+                              fontSize: '10px',
+                              fontWeight: '700',
+                              padding: '2px 6px',
+                              borderRadius: '10px',
+                            }}
+                          >
+                            NEW
+                          </span>
+                        )}
+                        {thread.threadType && (
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              color: '#666',
+                              padding: '2px 8px',
+                              backgroundColor: '#222',
+                              borderRadius: '6px',
+                              textTransform: 'uppercase'
+                            }}
+                          >
+                            {thread.threadType}
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ fontSize: '14px', color: '#888', margin: '4px 0 0 0' }}>
+                        {displaySubtext}
+                      </p>
+
+                      {/* Last Message Preview */}
+                      {thread.lastMessage && (
+                        <p style={{
+                          fontSize: '14px',
+                          color: '#666',
+                          margin: '8px 0 0 0',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {thread.lastMessage}
+                        </p>
                       )}
                     </div>
-                    <p style={{ fontSize: '14px', color: '#718096', margin: '4px 0 0 0' }}>
-                      Last message: {new Date(thread.lastMessageAt).toLocaleString()}
-                    </p>
-                  </div>
 
-                  {!isPremium && (
-                    <div
-                      style={{
-                        padding: '6px 12px',
-                        background: '#fef3c7',
-                        border: '1px solid #f59e0b',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        color: '#92400e',
-                      }}
-                    >
-                      Premium Required
+                    {/* Timestamp */}
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '13px', color: '#666' }}>
+                        {new Date(thread.lastMessageAt).toLocaleDateString()}
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

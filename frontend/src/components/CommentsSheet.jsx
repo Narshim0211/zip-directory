@@ -61,7 +61,8 @@ const CommentsSheet = ({ isOpen, onClose, contentType, contentId, contentTitle, 
     if (isOpen && contentId) {
       fetchComments();
     }
-  }, [isOpen, contentId, fetchComments]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, contentId]); // fetchComments is stable via useCallback, safe to omit
 
   const handleSubmit = async (e) => {
     e.preventDefault();

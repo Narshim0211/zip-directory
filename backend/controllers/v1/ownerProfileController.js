@@ -1,6 +1,7 @@
 const asyncWrap = require('../../middleWare/asyncHandler');
 const ownerProfileService = require('../../services/owner/ownerProfileService');
 const OwnerProfile = require('../../models/OwnerProfile');
+const User = require('../../models/User');
 
 exports.getMe = asyncWrap(async (req, res) => {
   // Auto-create profile if it doesn't exist
@@ -10,9 +11,9 @@ exports.getMe = asyncWrap(async (req, res) => {
 });
 
 exports.updateMe = asyncWrap(async (req, res) => {
-  const { firstName, lastName, bio, handle, avatarUrl } = req.body;
+  const { firstName, lastName, bio, handle, avatarUrl, title, headerImageUrl, socialLinks } = req.body;
   if (!firstName || !lastName) return res.status(400).json({ message: 'First and last name required' });
-  const p = await ownerProfileService.updateProfile(req.user._id, { firstName, lastName, bio, handle, avatarUrl });
+  const p = await ownerProfileService.updateProfile(req.user._id, { firstName, lastName, bio, handle, avatarUrl, title, headerImageUrl, socialLinks });
   res.json(p);
 });
 
@@ -85,8 +86,13 @@ exports.uploadImage = asyncWrap(async (req, res) => {
 
   const upload = await galleryService.uploadBase64({ base64, originalName: originalName || `${type}.png`, folder: req.user._id.toString() });
   const url = upload.url;
-  if (type === 'avatar') ownerProfile.avatarUrl = url;
-  else ownerProfile.headerImageUrl = url;
+  if (type === 'avatar') {
+    ownerProfile.avatarUrl = url;
+    // Also update User model so avatar syncs everywhere (top-right nav, etc.)
+    await User.findByIdAndUpdate(req.user._id, { avatarUrl: url });
+  } else {
+    ownerProfile.headerImageUrl = url;
+  }
   await ownerProfile.save();
   res.json({ url });
 });

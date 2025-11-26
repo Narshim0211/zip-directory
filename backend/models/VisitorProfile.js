@@ -9,10 +9,13 @@ const VisitorProfileSchema = new mongoose.Schema({
   avatarUrl: { type: String, default: '' },
   bannerUrl: { type: String, default: '' },
   bio: { type: String, maxlength: 280, default: '' },
+  title: { type: String, maxlength: 100, default: '' },
   socialLinks: {
     twitter: { type: String, default: '' },
     instagram: { type: String, default: '' },
     website: { type: String, default: '' },
+    tiktok: { type: String, default: '' },
+    youtube: { type: String, default: '' },
   },
   followersCount: { type: Number, default: 0 },
   followingCount: { type: Number, default: 0 },

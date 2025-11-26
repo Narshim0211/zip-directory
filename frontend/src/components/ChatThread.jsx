@@ -1,43 +1,65 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getThreadMessages, visitorSendMessage, ownerReplyMessage, markMessagesRead } from '../api/chat';
-import ChatPassPaywall from './ChatPassPaywall';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getThreadMessages, sendMessage, replyMessage, markMessagesRead } from '../api/chatApi';
+import { useAuth } from '../context/AuthContext';
+import '../styles/chat.css';
 
 /**
- * ChatThread Component
+ * ChatThread - Conversation view with gradient message bubbles
  *
- * Displays conversation messages between visitor and owner.
- * Handles blurred messages and FOMO paywalls.
+ * Features:
+ * - Gradient message bubbles (owner: pink→purple, visitor: blue→cyan)
+ * - Auto-scroll to bottom on new messages
+ * - Mark messages as read on open
+ * - Photo support
+ * - Back button to inbox
+ * - 100% FREE - NO PAYWALL
  */
-const ChatThread = ({ threadId, businessName, visitorName, onClose, role, isPremium }) => {
+const ChatThread = () => {
+  const { threadId } = useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const messagesEndRef = useRef(null);
+
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [thread, setThread] = useState(null);
+  const [messageText, setMessageText] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
-  const [showPaywall, setShowPaywall] = useState(false);
-  const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    loadMessages();
-    // Mark messages as read
-    markMessagesRead(threadId).catch(console.error);
+    if (threadId) {
+      fetchMessages();
+      markAsRead();
+    }
   }, [threadId]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const loadMessages = async () => {
+  const fetchMessages = async () => {
+    setLoading(true);
+    setError('');
     try {
-      const response = await getThreadMessages(threadId);
-      if (response.success) {
-        setMessages(response.messages);
-      }
-    } catch (error) {
-      console.error('Failed to load messages:', error);
-      setError('Failed to load messages');
+      const data = await getThreadMessages(threadId);
+      setMessages(data.messages || []);
+      setThread(data.thread);
+    } catch (err) {
+      console.error('Failed to load messages:', err);
+      setError('Failed to load conversation');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const markAsRead = async () => {
+    try {
+      await markMessagesRead(threadId);
+    } catch (err) {
+      console.error('Failed to mark as read:', err);
     }
   };
 
@@ -45,275 +67,161 @@ const ChatThread = ({ threadId, businessName, visitorName, onClose, role, isPrem
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSend = async () => {
-    if (!newMessage.trim()) return;
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+
+    if (!messageText.trim()) {
+      return;
+    }
 
     setSending(true);
-    setError('');
-
     try {
-      let response;
-      if (role === 'visitor') {
-        response = await visitorSendMessage(null, newMessage.trim(), ''); // threadId will be handled by backend
+      if (user.role === 'owner') {
+        // Owner replying to visitor
+        await replyMessage(threadId, messageText.trim(), photoUrl);
       } else {
-        response = await ownerReplyMessage(threadId, newMessage.trim());
+        // Visitor sending message (would need threadType and targetId from thread context)
+        // For simplicity, we'll use replyMessage for both since we're in an existing thread
+        // In a real implementation, visitor would also use the reply endpoint
+        await replyMessage(threadId, messageText.trim(), photoUrl);
       }
 
-      if (response.success) {
-        setNewMessage('');
-        await loadMessages();
-      }
+      // Clear input
+      setMessageText('');
+      setPhotoUrl('');
+
+      // Refresh messages
+      await fetchMessages();
+      scrollToBottom();
     } catch (err) {
-      if (err.response?.status === 403) {
-        const errorData = err.response.data;
-        if (errorData.requiresPayment) {
-          // Visitor needs chat pass
-          setShowPaywall(true);
-        } else if (errorData.requiresUpgrade) {
-          // Owner needs premium
-          setError('Premium subscription required to reply');
-        } else {
-          setError(errorData.message || 'Unable to send message');
-        }
-      } else {
-        setError('Failed to send message');
-      }
+      console.error('Failed to send message:', err);
+      setError('Failed to send message');
     } finally {
       setSending(false);
     }
   };
 
-  const hasBlurredMessages = messages.some((msg) => msg.isBlurred);
+  const getMessageBubbleClass = (message) => {
+    const isCurrentUser = message.senderId?._id === user.id || message.senderId === user.id;
+    const senderRole = message.senderRole;
 
-  return (
-    <>
-      {/* CSS Animations for Blurred Messages */}
-      <style>
-        {`
-          @keyframes pulse {
-            0%, 100% {
-              transform: scale(1);
-              opacity: 1;
-            }
-            50% {
-              transform: scale(1.2);
-              opacity: 0.8;
-            }
-          }
-        `}
-      </style>
+    if (isCurrentUser) {
+      return senderRole === 'owner' ? 'message-bubble--owner-self' : 'message-bubble--visitor-self';
+    } else {
+      return senderRole === 'owner' ? 'message-bubble--owner-other' : 'message-bubble--visitor-other';
+    }
+  };
 
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#f5f7fa' }}>
-      {/* Header */}
-      <div
-        style={{
-          padding: '16px 24px',
-          backgroundColor: 'white',
-          borderBottom: '1px solid #e2e8f0',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-        }}
-      >
-        <button
-          onClick={onClose}
-          style={{
-            padding: '8px 12px',
-            backgroundColor: '#f7fafc',
-            border: '1px solid #e2e8f0',
-            borderRadius: '6px',
-            fontSize: '14px',
-            cursor: 'pointer',
-          }}
-        >
-          ← Back
-        </button>
-        <div>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#1a202c', margin: 0 }}>
-            {businessName || visitorName || 'Conversation'}
-          </h2>
-        </div>
+  const getSenderName = (message) => {
+    if (typeof message.senderId === 'object' && message.senderId !== null) {
+      const sender = message.senderId;
+      return `${sender.firstName || ''} ${sender.lastName || ''}`.trim() || 'User';
+    }
+    return message.senderRole === 'owner' ? 'Owner' : 'Visitor';
+  };
+
+  const getSenderAvatar = (message) => {
+    if (typeof message.senderId === 'object' && message.senderId !== null) {
+      return message.senderId.avatarUrl || '/default-avatar.png';
+    }
+    return '/default-avatar.png';
+  };
+
+  if (loading) {
+    return (
+      <div className="chat-thread">
+        <div className="chat-loading">Loading conversation...</div>
       </div>
+    );
+  }
 
-      {/* FOMO Banner for Blurred Messages (Visitor) */}
-      {role === 'visitor' && hasBlurredMessages && (
-        <div
-          style={{
-            padding: '16px 24px',
-            background: 'linear-gradient(135deg, #fdf2f8 0%, #fae8ff 100%)',
-            border: '2px solid #E91E63',
-            borderBottom: 'none',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a' }}>
-              🔒 {businessName} replied! Unlock to read.
-            </div>
-            <div style={{ fontSize: '14px', color: '#64748b' }}>
-              Get unlimited messaging with all premium salons for $9.99/mo
-            </div>
-          </div>
-          <button
-            onClick={() => setShowPaywall(true)}
-            style={{
-              padding: '10px 20px',
-              background: 'linear-gradient(135deg, #E91E63 0%, #F06292 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            Unlock Now
+  if (error && messages.length === 0) {
+    return (
+      <div className="chat-thread">
+        <div className="chat-thread__header">
+          <button onClick={() => navigate('/inbox')} className="chat-thread__back-btn">
+            ← Back
           </button>
         </div>
-      )}
-
-      {/* FOMO Banner for Non-Premium Owner */}
-      {role === 'owner' && !isPremium && (
-        <div
-          style={{
-            padding: '16px 24px',
-            backgroundColor: '#fef3c7',
-            border: '2px solid #f59e0b',
-            borderBottom: 'none',
-          }}
-        >
-          <div style={{ fontSize: '16px', fontWeight: '700', color: '#92400e', marginBottom: '4px' }}>
-            💎 Premium Required to Reply
-          </div>
-          <div style={{ fontSize: '14px', color: '#92400e' }}>
-            Upgrade to Premium ($49/mo) to respond to client messages and grow your business.{' '}
-            <a href="/owner/my-business" style={{ color: '#92400e', fontWeight: '600', textDecoration: 'underline' }}>
-              Upgrade Now
-            </a>
-          </div>
+        <div className="chat-empty">
+          <div className="chat-empty__icon">⚠️</div>
+          <p className="chat-empty__text">{error}</p>
+          <button onClick={fetchMessages} className="message-btn" style={{ marginTop: '16px' }}>
+            Retry
+          </button>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {/* Messages Area */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-        }}
-      >
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '48px' }}>
-            <p style={{ color: '#718096' }}>Loading messages...</p>
+  return (
+    <div className="chat-thread">
+      {/* Header with back button */}
+      <div className="chat-thread__header">
+        <button onClick={() => navigate('/inbox')} className="chat-thread__back-btn">
+          ← Back to Messages
+        </button>
+        {thread && (
+          <div className="chat-thread__info">
+            <span className="chat-thread__type-badge">{thread.threadType}</span>
           </div>
-        ) : messages.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '48px' }}>
-            <p style={{ color: '#718096' }}>No messages yet</p>
+        )}
+      </div>
+
+      {/* Messages container */}
+      <div className="chat-thread__messages">
+        {messages.length === 0 ? (
+          <div className="chat-empty">
+            <div className="chat-empty__icon">💬</div>
+            <p className="chat-empty__text">No messages yet. Start the conversation!</p>
           </div>
         ) : (
-          messages.map((msg) => {
-            const isOwnMessage = msg.senderRole === role;
-            const isBlurred = msg.isBlurred && role === 'visitor';
+          messages.map((message) => {
+            const isCurrentUser = message.senderId?._id === user.id || message.senderId === user.id;
 
             return (
               <div
-                key={msg._id}
-                style={{
-                  display: 'flex',
-                  justifyContent: isOwnMessage ? 'flex-end' : 'flex-start',
-                }}
+                key={message._id}
+                className={`message-wrapper ${isCurrentUser ? 'message-wrapper--self' : 'message-wrapper--other'}`}
               >
-                <div
-                  style={{
-                    maxWidth: '70%',
-                    padding: '12px 16px',
-                    borderRadius: '12px',
-                    backgroundColor: isOwnMessage ? '#667eea' : 'white',
-                    color: isOwnMessage ? 'white' : '#1a202c',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                    position: 'relative',
-                    cursor: isBlurred ? 'pointer' : 'default',
-                  }}
-                  onClick={isBlurred ? () => setShowPaywall(true) : undefined}
-                >
-                  {isBlurred ? (
-                    <>
-                      {/* Blurred Message Preview with FOMO Overlay */}
-                      <div style={{
-                        filter: 'blur(8px)',
-                        userSelect: 'none',
-                        pointerEvents: 'none',
-                        color: '#718096'
-                      }}>
-                        This message has been blurred to protect privacy and create intrigue
-                      </div>
+                {!isCurrentUser && (
+                  <img
+                    src={getSenderAvatar(message)}
+                    alt="Avatar"
+                    className="message-avatar"
+                  />
+                )}
 
-                      {/* Unlock Overlay */}
-                      <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'linear-gradient(135deg, rgba(233, 30, 99, 0.15) 0%, rgba(240, 98, 146, 0.15) 100%)',
-                        backdropFilter: 'blur(2px)',
-                        borderRadius: '12px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px'
-                      }}>
-                        <div style={{
-                          fontSize: '24px',
-                          animation: 'pulse 2s ease-in-out infinite'
-                        }}>
-                          🔒
-                        </div>
-                        <div style={{
-                          fontSize: '14px',
-                          fontWeight: '700',
-                          color: '#E91E63',
-                          textAlign: 'center',
-                          textShadow: '0 1px 2px rgba(255,255,255,0.8)'
-                        }}>
-                          Tap to Unlock
-                        </div>
-                        <div style={{
-                          fontSize: '11px',
-                          color: '#64748b',
-                          textAlign: 'center',
-                          textShadow: '0 1px 2px rgba(255,255,255,0.8)'
-                        }}>
-                          $9.99/mo
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
+                <div className={`message-bubble ${getMessageBubbleClass(message)}`}>
+                  {!isCurrentUser && (
+                    <div className="message-bubble__sender">{getSenderName(message)}</div>
                   )}
-                  {!isBlurred && (
-                    <div
-                      style={{
-                        marginTop: '4px',
-                        fontSize: '11px',
-                        opacity: 0.7,
-                        textAlign: 'right',
-                      }}
-                    >
-                      {new Date(msg.createdAt).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </div>
+
+                  <div className="message-bubble__text">{message.text}</div>
+
+                  {message.photoUrl && (
+                    <img
+                      src={message.photoUrl}
+                      alt="Attachment"
+                      className="message-bubble__photo"
+                    />
                   )}
+
+                  <div className="message-bubble__timestamp">
+                    {new Date(message.createdAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </div>
                 </div>
+
+                {isCurrentUser && (
+                  <img
+                    src={getSenderAvatar(message)}
+                    alt="Avatar"
+                    className="message-avatar"
+                  />
+                )}
               </div>
             );
           })
@@ -321,88 +229,36 @@ const ChatThread = ({ threadId, businessName, visitorName, onClose, role, isPrem
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div
-          style={{
-            padding: '12px 24px',
-            backgroundColor: '#fee2e2',
-            color: '#dc2626',
-            fontSize: '14px',
-          }}
-        >
-          {error}
+      {/* Message input */}
+      <form onSubmit={handleSendMessage} className="chat-thread__input-form">
+        <div className="chat-thread__input-container">
+          <textarea
+            value={messageText}
+            onChange={(e) => setMessageText(e.target.value)}
+            placeholder="Type your message..."
+            className="chat-thread__input"
+            rows="1"
+            disabled={sending}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage(e);
+              }
+            }}
+          />
+
+          <button
+            type="submit"
+            className="chat-thread__send-btn"
+            disabled={!messageText.trim() || sending}
+          >
+            {sending ? '...' : '→'}
+          </button>
         </div>
-      )}
 
-      {/* Message Input */}
-      <div
-        style={{
-          padding: '16px 24px',
-          backgroundColor: 'white',
-          borderTop: '1px solid #e2e8f0',
-          display: 'flex',
-          gap: '12px',
-          alignItems: 'center',
-        }}
-      >
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && !sending && handleSend()}
-          placeholder="Type a message..."
-          maxLength={500}
-          disabled={sending || (role === 'owner' && !isPremium)}
-          style={{
-            flex: 1,
-            padding: '12px 16px',
-            border: '2px solid #e2e8f0',
-            borderRadius: '8px',
-            fontSize: '15px',
-            outline: 'none',
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = '#667eea';
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = '#e2e8f0';
-          }}
-        />
-        <button
-          onClick={handleSend}
-          disabled={sending || !newMessage.trim() || (role === 'owner' && !isPremium)}
-          style={{
-            padding: '12px 24px',
-            background:
-              sending || !newMessage.trim() || (role === 'owner' && !isPremium)
-                ? '#cbd5e1'
-                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '15px',
-            fontWeight: '600',
-            cursor:
-              sending || !newMessage.trim() || (role === 'owner' && !isPremium) ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {sending ? 'Sending...' : 'Send'}
-        </button>
-      </div>
-
-      {/* Chat Pass Paywall */}
-      {showPaywall && (
-        <ChatPassPaywall
-          onClose={() => setShowPaywall(false)}
-          onSuccess={() => {
-            setShowPaywall(false);
-            loadMessages(); // Reload to see unblurred messages
-          }}
-        />
-      )}
+        {error && <div className="chat-thread__error">{error}</div>}
+      </form>
     </div>
-    </>
   );
 };
 

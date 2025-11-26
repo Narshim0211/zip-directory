@@ -1,0 +1,401 @@
+/**
+ * Comment Section CSS - V1 (Zero Paywall)
+ * Clean, modern comment UI matching SalonHub design
+ *
+ * Features:
+ * - Responsive layout
+ * - 1-level threading (parent → replies)
+ * - Clean card-based design
+ * - Smooth transitions
+ */
+
+/* ========================================
+   COMMENT SECTION CONTAINER
+   ======================================== */
+
+.comment-section {
+  width: 100%;
+  max-width: 800px;
+  margin: 24px auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.comment-section.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+/* ========================================
+   COMMENT INPUT FORM
+   ======================================== */
+
+.comment-input-container {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.replying-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #f3f4f6;
+  border-left: 3px solid #6366f1;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.cancel-reply-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0 8px;
+  transition: color 0.2s;
+}
+
+.cancel-reply-btn:hover {
+  color: #ef4444;
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.comment-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.2s;
+}
+
+.comment-textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+}
+
+.comment-textarea:disabled {
+  background: #f9fafb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.comment-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.char-count {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.submit-comment-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+}
+
+.submit-comment-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.submit-comment-btn:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.comment-login-prompt {
+  text-align: center;
+  padding: 24px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 2px dashed #e5e7eb;
+}
+
+.comment-login-prompt p {
+  margin-bottom: 12px;
+  color: #6b7280;
+  font-size: 15px;
+}
+
+.login-btn {
+  padding: 10px 32px;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.login-btn:hover {
+  background: #4f46e5;
+}
+
+.comment-error {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #dc2626;
+  font-size: 14px;
+}
+
+/* ========================================
+   COMMENTS LIST
+   ======================================== */
+
+.comments-list {
+  margin-top: 24px;
+}
+
+.comments-header {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.no-comments {
+  text-align: center;
+  padding: 48px 20px;
+  color: #9ca3af;
+}
+
+.no-comments p {
+  font-size: 15px;
+}
+
+/* ========================================
+   COMMENT ITEM (Parent Comment)
+   ======================================== */
+
+.comment-item {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.comment-content {
+  display: flex;
+  gap: 12px;
+}
+
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.comment-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.comment-author {
+  font-weight: 600;
+  color: #111827;
+  font-size: 15px;
+}
+
+.comment-role {
+  color: #6b7280;
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+.comment-time {
+  color: #9ca3af;
+  font-size: 13px;
+  margin-left: auto;
+}
+
+.comment-text {
+  color: #374151;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  word-wrap: break-word;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.reply-btn,
+.delete-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+
+.reply-btn:hover {
+  color: #6366f1;
+}
+
+.delete-btn:hover {
+  color: #ef4444;
+}
+
+/* ========================================
+   REPLY ITEM (Nested Reply)
+   ======================================== */
+
+.comment-replies {
+  margin-top: 16px;
+  margin-left: 52px;
+  padding-left: 16px;
+  border-left: 2px solid #e5e7eb;
+}
+
+.reply-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.reply-item:last-child {
+  margin-bottom: 0;
+}
+
+.reply-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.reply-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.reply-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.reply-author {
+  font-weight: 600;
+  color: #111827;
+  font-size: 14px;
+}
+
+.reply-role {
+  color: #6b7280;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.reply-time {
+  color: #9ca3af;
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.reply-text {
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 8px;
+  word-wrap: break-word;
+}
+
+.delete-btn.small {
+  font-size: 13px;
+  padding: 2px 0;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 640px) {
+  .comment-section {
+    padding: 16px;
+    margin: 16px 8px;
+  }
+
+  .comment-replies {
+    margin-left: 24px;
+    padding-left: 12px;
+  }
+
+  .comment-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .reply-avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .comment-textarea {
+    min-height: 70px;
+    font-size: 14px;
+  }
+
+  .submit-comment-btn {
+    padding: 8px 20px;
+    font-size: 14px;
+  }
+}

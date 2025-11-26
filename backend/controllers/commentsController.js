@@ -17,20 +17,9 @@ exports.getComments = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    // NEW: Check entitlements before creating comment
-    const permission = await canComment(req.user._id, req.user.role);
+    // V1: NO PAYWALL - All logged-in users can comment
+    // (canComment check REMOVED for V1 - will be re-added in V2)
 
-    if (!permission.allowed) {
-      return res.status(403).json({
-        message: permission.reason,
-        requiresUpgrade: permission.requiresUpgrade || false,
-        requiresPayment: permission.requiresPayment || false,
-        upgradePrice: permission.upgradePrice,
-        upgradeBenefits: permission.upgradeBenefits
-      });
-    }
-
-    // EXISTING: Create comment (keep existing logic)
     const comment = await commentsService.createComment(req.user._id, req.body || {});
     res.status(201).json(comment);
   } catch (error) {
@@ -40,18 +29,10 @@ exports.create = async (req, res) => {
 
 exports.reply = async (req, res) => {
   try {
+    // When replying, the parentId is the comment being replied to
     const payload = { ...req.body, parentId: req.params.id };
     const comment = await commentsService.createComment(req.user._id, payload);
     res.status(201).json(comment);
-  } catch (error) {
-    res.status(error.status || 500).json({ message: error.message });
-  }
-};
-
-exports.edit = async (req, res) => {
-  try {
-    const updated = await commentsService.editComment(req.user._id, req.params.id, req.body.text);
-    res.json(updated);
   } catch (error) {
     res.status(error.status || 500).json({ message: error.message });
   }
@@ -63,80 +44,5 @@ exports.softDelete = async (req, res) => {
     res.status(204).end();
   } catch (error) {
     res.status(error.status || 500).json({ message: error.message });
-  }
-};
-
-exports.toggleLike = async (req, res) => {
-  try {
-    const count = await commentsService.toggleLike(req.user._id, req.params.id);
-    res.json({ likes: count });
-  } catch (error) {
-    res.status(error.status || 500).json({ message: error.message });
-  }
-};
-
-exports.react = async (req, res) => {
-  try {
-    const reactions = await commentsService.addReaction(req.user._id, req.params.id, req.body.emoji);
-    res.json({ reactions });
-  } catch (error) {
-    res.status(error.status || 500).json({ message: error.message });
-  }
-};
-
-exports.pin = async (req, res) => {
-  try {
-    const pinned = await commentsService.togglePin(req.params.id);
-    res.json({ pinned });
-  } catch (error) {
-    res.status(error.status || 500).json({ message: error.message });
-  }
-};
-
-exports.userComments = async (req, res) => {
-  try {
-    const list = await commentsService.listByUser(req.user._id);
-    res.json(list);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/**
- * NEW: Report comment endpoint
- * Increments report count and auto-hides if threshold reached (5 reports)
- */
-exports.report = async (req, res) => {
-  try {
-    const { reason } = req.body;
-    if (!reason || !reason.trim()) {
-      return res.status(400).json({ message: 'Report reason is required' });
-    }
-
-    const comment = await Comment.findById(req.params.id);
-    if (!comment) {
-      return res.status(404).json({ message: 'Comment not found' });
-    }
-
-    // Increment report count
-    comment.reportCount += 1;
-
-    // Auto-hide if reportCount exceeds threshold (e.g., 5 reports)
-    if (comment.reportCount >= 5) {
-      comment.isHidden = true;
-    }
-
-    await comment.save();
-
-    // TODO: Create Report record for admin dashboard (future enhancement)
-    // await Report.create({ commentId: comment._id, reporterId: req.user._id, reason });
-
-    res.json({
-      success: true,
-      message: 'Comment reported successfully',
-      isHidden: comment.isHidden
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
 };

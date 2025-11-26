@@ -9,6 +9,7 @@ const User = require('../models/User');
 const Business = require('../models/Business');
 const MessageThread = require('../models/MessageThread');
 const Message = require('../models/Message');
+const { isCommentPaywallEnabled } = require('./configService');
 
 /**
  * Check if visitor can send a message
@@ -160,9 +161,17 @@ const shouldShowFomoBanner = async (userId, role, threadId = null) => {
  * Check if user can write comments on surveys
  * Rule: Premium owners OR Chat Pass subscribers only
  * Used by comments system to enforce paywall
+ *
+ * GLOBAL OVERRIDE: If admin disables paywall via toggle, everyone can comment freely
  */
 const canComment = async (userId, role) => {
   if (!userId || !role) return { allowed: false, reason: 'User not authenticated' };
+
+  // 🌐 GLOBAL ADMIN OVERRIDE - Check if paywall is disabled
+  const paywallEnabled = await isCommentPaywallEnabled();
+  if (!paywallEnabled) {
+    return { allowed: true, reason: 'Paywall disabled by admin' };
+  }
 
   if (role === 'owner') {
     // Check if owner's business is Premium

@@ -7,6 +7,7 @@ const navItems = [
   { label: "Explore", path: "/visitor/explore", icon: "E" },
   { label: "Survey", path: "/visitor/surveys", icon: "S" },
   { label: "Notifications", path: "/visitor/notifications", icon: "N" },
+  { label: "Inbox", path: "/visitor/inbox", icon: "✉️" },
   { label: "My Toolkit", path: "/visitor/toolkit", icon: "T" },
   { label: "Feedback", path: "/visitor/feedback", icon: "💬" },
   { label: "Profile", path: "/visitor/profile", icon: "P" },

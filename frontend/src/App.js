@@ -19,7 +19,6 @@ import WeeklyReportPage from "./features/toolkit/pages/WeeklyReportPage";
 import HairGoalsJourneyHistoryPage from "./features/toolkit/pages/HairGoalsJourneyHistoryPage";
 import HairGoalsJourneyDetailPage from "./features/toolkit/pages/HairGoalsJourneyDetailPage";
 import TimeManagerToolkitPage from "./features/toolkit/pages/TimeManagerToolkitPage";
-import VisitorProfileEditPage from "./visitor/pages/VisitorProfileEditPage";
 import VisitorHome from "./visitor/pages/VisitorHome";
 import VisitorFeedback from "./visitor/pages/VisitorFeedback";
 import NewsList from "./components/NewsList";
@@ -39,7 +38,6 @@ import Notifications from "./pages/owner/Notifications";
 import PublicLayout from "./layouts/PublicLayout";
 import PublicOwnerProfile from "./pages/PublicOwnerProfile";
 import OwnerProfilePageV2 from "./pages/OwnerProfilePageV2";
-import EditOwnerProfile from "./pages/EditOwnerProfile";
 import DirectorySearchResults from "./pages/public/DirectorySearchResults";
 import VisitorBusinessProfile from "./pages/visitor/BusinessProfile";
 import PublicVisitorProfile from "./pages/PublicVisitorProfile";
@@ -51,6 +49,8 @@ import TimeManagerPage from "./features/timeManager/pages/TimeManagerPage";
 import TimeManagerOwnerPage from "./features/timeManager/pages/owner/TimeManagerOwnerPage";
 import VisitorInbox from "./components/VisitorInbox";
 import OwnerInbox from "./components/OwnerInbox";
+import ChatInbox from "./components/ChatInbox";
+import ChatThread from "./components/ChatThread";
 import OwnerProfilePage from "./pages/owner/Profile";
 import BookingPublicProfile from "./pages/owner/BookingPublicProfile";
 import OwnerBookingManager from "./pages/owner/BookingManager";
@@ -124,6 +124,7 @@ function Frame() {
           <Route path="notifications" element={<VisitorNotifications />} />
           <Route path="feedback" element={<VisitorFeedback />} />
           <Route path="inbox" element={<VisitorInbox />} />
+          <Route path="chat/:threadId" element={<ChatThread />} />
           <Route path="settings/newsletter" element={<VisitorNewsletterSettings />} />
             <Route path="toolkit">
               <Route index element={<ToolkitPage />} />
@@ -136,7 +137,6 @@ function Frame() {
               <Route path="goals/report/:reportId" element={<WeeklyReportPage />} />
             </Route>
           <Route path="profile" element={<VisitorProfilePage />} />
-          <Route path="profile/edit" element={<VisitorProfileEditPage />} />
           <Route path="time/*" element={<TimeManagerPage />} />
         </Route>
 
@@ -161,6 +161,7 @@ function Frame() {
           <Route path="surveys" element={<ErrorBoundary><Surveys /></ErrorBoundary>} />
           <Route path="notifications" element={<ErrorBoundary><Notifications /></ErrorBoundary>} />
           <Route path="inbox" element={<ErrorBoundary><OwnerInbox /></ErrorBoundary>} />
+          <Route path="chat/:threadId" element={<ErrorBoundary><ChatThread /></ErrorBoundary>} />
           <Route path="profile/me" element={<ErrorBoundary><OwnerProfilePage /></ErrorBoundary>} />
           <Route path="booking/public-profile" element={<ErrorBoundary fallbackTitle="Booking Profile Error"><BookingPublicProfile /></ErrorBoundary>} />
           <Route path="booking/staff" element={<ErrorBoundary><StaffManagement /></ErrorBoundary>} />
@@ -196,9 +197,6 @@ function Frame() {
         {/* Legacy Profile Routes (for reference) */}
         <Route path="/o-legacy/:slug" element={<PublicOwnerProfile />} />
         <Route path="/v-legacy/:slug" element={<PublicVisitorProfile />} />
-
-        {/* Edit Profile Routes */}
-        <Route path="/owner/me/edit" element={<ProtectedRoute roles={["owner"]} element={<EditOwnerProfile />} />} />
       </Routes>
     </ErrorBoundary>
   );

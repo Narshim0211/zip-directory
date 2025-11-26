@@ -29,13 +29,7 @@ const messageSchema = new mongoose.Schema({
     default: '',
   },
 
-  // Paywall control
-  isBlurred: {
-    type: Boolean,
-    default: false, // Locked reply that visitor hasn't paid to read
-  },
-
-  // Read tracking
+  // Read tracking (100% free - no paywall)
   isRead: {
     type: Boolean,
     default: false,

@@ -65,7 +65,8 @@ app.use('/webhooks', stripeWebhookRoutes);
 // Express 5 (path-to-regexp v6): use a RegExp or omit path.
 // Handle preflight for all routes using a RegExp that matches anything.
 app.options(/.*/, cors(corsOptions));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static('uploads'));
@@ -73,7 +74,7 @@ app.use('/uploads', express.static('uploads'));
 // DB connection
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => {
+  .then(async () => {
     logger.info('MongoDB connected');
     
     // Start reminder schedulers after DB connection (wrapped in try-catch)
@@ -96,7 +97,16 @@ mongoose
     } catch (err) {
       logger.warn('Smart Search cron jobs failed to start:', err.message);
     }
-    
+
+    // Initialize global config service (comment paywall, feature flags, etc.)
+    try {
+      const { initializeDefaults } = require('./services/configService');
+      await initializeDefaults();
+      logger.info('Config service initialized with defaults');
+    } catch (err) {
+      logger.warn('Config service initialization failed:', err.message);
+    }
+
     // Verify email service configuration (non-blocking, suppressed)
     try {
       const { verifyEmailService } = require('./services/emailService');
@@ -155,6 +165,10 @@ app.use('/api/admin/blog', adminBlogRoutes);
 const uploadRoutes = require('./routes/uploadRoutes');
 app.use('/api/upload', uploadRoutes);
 
+// 💬 Comment Routes (V1: Zero Paywall - All logged-in users can comment)
+const commentRoutes = require('./routes/commentRoutes');
+app.use('/api/comments', commentRoutes);
+
 // News & Activity
 const newsRoutes = require('./routes/newsRoutes');
 app.use('/api/news', newsRoutes);
@@ -205,7 +219,7 @@ app.use('/api/v1/follow', v1FollowRoutes);
 
 // Unified Profile Resolver Routes (works for all user types)
 const profileResolverRoutes = require('./routes/profileResolverRoutes');
-app.use('/api/profile', profileResolverRoutes);
+app.use('/api/v1/profile', profileResolverRoutes);
 
 // V1 owner profiles (public + owner)
 const v1OwnerProfilesRoutes = require('./routes/v1/ownerProfiles.routes');
@@ -214,6 +228,10 @@ app.use('/api/v1/owner-profiles', v1OwnerProfilesRoutes);
 // V1 visitor profiles
 const v1VisitorProfilesRoutes = require('./routes/v1/visitorProfiles.routes');
 app.use('/api/v1/visitor-profiles', v1VisitorProfilesRoutes);
+
+// V1 Businesses (Salon/Spa entities owned by users)
+const v1BusinessesRoutes = require('./routes/v1/businesses.routes');
+app.use('/api/v1/businesses', v1BusinessesRoutes);
 
 // V1 Analytics (Engagement Metrics System)
 const analyticsRoutes = require('./modules/analytics');
@@ -322,9 +340,6 @@ app.use('/api/visitor/time-manager', visitorTimeRoutes);
 
 const ownerTimeRoutes = require('./owner/time/routes/timeRoutes');
 app.use('/api/owner/time-manager', ownerTimeRoutes);
-
-const commentRoutes = require('./routes/commentRoutes');
-app.use('/api/comments', commentRoutes);
 
 // Hair Goals: Weekly reports
 const weeklyReportRoutes = require('./routes/weeklyReportRoutes');

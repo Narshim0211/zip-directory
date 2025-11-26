@@ -10,6 +10,7 @@ import { getProfileById } from '../api/profileApi';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import ProfileStats from '../components/profile/ProfileStats';
 import ProfileFollowButton from '../components/profile/ProfileFollowButton';
+import ProfileMessageButton from '../components/profile/ProfileMessageButton';
 import ProfileTabs from '../components/profile/ProfileTabs';
 import ErrorBoundary from '../components/SharedComponents/ErrorBoundary';
 
@@ -105,6 +106,10 @@ const ProfilePage = () => {
 
           <ErrorBoundary>
             <ProfileFollowButton profileUser={profile} onFollowChange={fetchProfile} />
+          </ErrorBoundary>
+
+          <ErrorBoundary>
+            <ProfileMessageButton profileUser={profile} />
           </ErrorBoundary>
 
           <ErrorBoundary>

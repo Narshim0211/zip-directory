@@ -9,7 +9,8 @@ const ProfileHeader = ({
   isFollowing,
   onFollow,
   onUnfollow,
-  onInviteFriends // New prop for invite button
+  onInviteFriends, // New prop for invite button
+  onEditProfile // New prop for edit profile modal
 }) => {
   const {
     firstName,
@@ -74,9 +75,27 @@ const ProfileHeader = ({
           <div className="profile-header__actions">
             {isOwnProfile ? (
               <>
-                <Link to={editPath} className="btn btn-secondary">
-                  Edit Profile
-                </Link>
+                {onEditProfile ? (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={onEditProfile}
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(200,100,255,0.9), rgba(255,100,200,0.9))',
+                      border: 'none',
+                      padding: '10px 20px',
+                      borderRadius: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      color: 'white'
+                    }}
+                  >
+                    ✏️ Edit Profile
+                  </button>
+                ) : (
+                  <Link to={editPath} className="btn btn-secondary">
+                    Edit Profile
+                  </Link>
+                )}
                 {onInviteFriends && (
                   <button
                     className="btn btn-primary"

@@ -1,11 +1,24 @@
 const mongoose = require('mongoose');
 
 const messageThreadSchema = new mongoose.Schema({
+  // ========================================
+  // DUAL-IDENTITY SUPPORT (V2)
+  // ========================================
+  threadType: {
+    type: String,
+    enum: ['business', 'owner', 'visitor'],
+    required: true,
+    index: true,
+    // "business" = Message to Business Listing
+    // "owner" = Message to Owner Personal Profile
+    // "visitor" = Message to Visitor Personal Profile
+  },
+
   // Core relationship
   businessId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Business',
-    required: true,
+    default: null, // null for "owner" threads, businessId for "business" threads
     index: true,
   },
   visitorId: {
@@ -21,6 +34,14 @@ const messageThreadSchema = new mongoose.Schema({
     index: true,
   },
 
+  // Universal messaging participants (for visitor-visitor, owner-owner conversations)
+  targetUserId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null, // Used for 'visitor' threadType
+    index: true,
+  },
+
   // Thread status
   status: {
     type: String,
@@ -29,14 +50,14 @@ const messageThreadSchema = new mongoose.Schema({
     index: true,
   },
 
-  // FOMO tracking
-  hasOwnerReplied: {
+  // Unread tracking (100% free - no paywall)
+  unreadByOwner: {
     type: Boolean,
-    default: false,
+    default: true, // New thread = unread by owner
   },
-  visitorHasSeenOwnerReply: {
+  unreadByVisitor: {
     type: Boolean,
-    default: false, // CRITICAL for FOMO email trigger
+    default: false, // Visitor created thread = read by visitor
   },
 
   // Timestamps
@@ -81,11 +102,13 @@ const messageThreadSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-// ⚡ CRITICAL INDEX: One thread per visitor-business pair
-messageThreadSchema.index({ businessId: 1, visitorId: 1 }, { unique: true });
+// ⚡ CRITICAL INDEX: One thread per visitor-business/owner pair
+// Supports dual-identity: businessId + visitorId + threadType
+messageThreadSchema.index({ businessId: 1, visitorId: 1, threadType: 1 }, { unique: true, sparse: true });
+messageThreadSchema.index({ ownerId: 1, visitorId: 1, threadType: 1 }); // For owner personal threads
 
 // Compound indexes for fast inbox queries
-messageThreadSchema.index({ ownerId: 1, status: 1, lastMessageAt: -1 }); // Owner inbox
+messageThreadSchema.index({ ownerId: 1, threadType: 1, lastMessageAt: -1 }); // Owner inbox with tabs
 messageThreadSchema.index({ visitorId: 1, status: 1, lastMessageAt: -1 }); // Visitor inbox
 
 module.exports = mongoose.model('MessageThread', messageThreadSchema);

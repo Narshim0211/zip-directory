@@ -19,6 +19,9 @@ const ProfileAvatar = ({ user, isPremium = false, className = '' }) => {
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
   const profileLink = user.role === 'owner' ? '/owner/profile/me' : '/visitor/profile';
 
+  // Add cache-busting parameter to force reload when avatar changes
+  const avatarUrlWithCache = avatarUrl ? `${avatarUrl}${avatarUrl.includes('?') ? '&' : '?'}t=${Date.now()}` : null;
+
   return (
     <Link to={profileLink} className={`profile-avatar-link ${className}`}>
       <div className={`profile-avatar ${isPremium ? 'profile-avatar--premium' : ''}`}>
@@ -29,9 +32,9 @@ const ProfileAvatar = ({ user, isPremium = false, className = '' }) => {
 
         {/* Avatar content */}
         <div className="profile-avatar__content">
-          {avatarUrl ? (
+          {avatarUrlWithCache ? (
             <img
-              src={avatarUrl}
+              src={avatarUrlWithCache}
               alt={`${firstName} ${lastName}`}
               className="profile-avatar__image"
             />

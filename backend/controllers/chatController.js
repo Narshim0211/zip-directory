@@ -2,68 +2,156 @@ const MessageThread = require('../models/MessageThread');
 const Message = require('../models/Message');
 const Business = require('../models/Business');
 const User = require('../models/User');
-const { canVisitorSend, canOwnerReply, canVisitorReadReply, shouldShowFomoBanner } = require('../services/chatEntitlementsService');
 const logger = require('../utils/logger');
 
 /**
- * VISITOR: Send a message to a business
- * POST /api/v1/visitor/messages/send
+ * UNIVERSAL: Send a message (100% FREE - NO PAYWALL)
+ * POST /api/v1/messages/send
+ *
+ * Supports universal messaging:
+ * - threadType='business' → Message to business listing
+ * - threadType='owner' → Message to owner personal profile
+ * - threadType='visitor' → Message to visitor personal profile
  */
-const visitorSendMessage = async (req, res) => {
+const sendMessage = async (req, res) => {
   try {
-    const visitorId = req.user.id;
-    const { businessId, text, photoUrl } = req.body;
+    const senderId = req.user.id;
+    const senderRole = req.user.role;
+    const { threadType, businessId, ownerId, visitorId: targetVisitorId, text, photoUrl } = req.body;
 
-    if (!businessId || !text) {
-      return res.status(400).json({ success: false, message: 'Business ID and message text required' });
+    // DEBUG: Log incoming request
+    logger.info('sendMessage request received', {
+      senderId,
+      senderRole,
+      body: req.body
+    });
+
+    // Validation
+    if (!threadType || !text || !text.trim()) {
+      return res.status(400).json({ success: false, message: 'threadType and text are required' });
+    }
+
+    if (!['business', 'owner', 'visitor'].includes(threadType)) {
+      return res.status(400).json({ success: false, message: 'threadType must be "business", "owner", or "visitor"' });
     }
 
     // Find or create thread
-    let thread = await MessageThread.findOne({ businessId, visitorId });
+    let thread;
+    let targetOwnerId;
+    let visitorId = senderRole === 'visitor' ? senderId : null;
 
-    // Check entitlement
-    const entitlement = await canVisitorSend(visitorId, thread?._id);
-    if (!entitlement.allowed) {
-      return res.status(403).json({
-        success: false,
-        message: entitlement.reason,
-        requiresPayment: entitlement.requiresPayment,
-      });
-    }
-
-    // If no thread exists, create one
-    if (!thread) {
-      const business = await Business.findById(businessId);
-      if (!business) {
-        return res.status(404).json({ success: false, message: 'Business not found' });
+    if (threadType === 'business') {
+      // Business thread
+      if (!businessId) {
+        return res.status(400).json({ success: false, message: 'businessId required for business threads' });
       }
 
-      thread = await MessageThread.create({
-        businessId,
-        visitorId,
-        ownerId: business.owner,
-        status: 'OPEN',
-        lastMessageAt: new Date(),
+      thread = await MessageThread.findOne({ businessId, visitorId: senderId, threadType: 'business' });
+
+      if (!thread) {
+        const business = await Business.findById(businessId);
+        if (!business) {
+          return res.status(404).json({ success: false, message: 'Business not found' });
+        }
+
+        targetOwnerId = business.owner;
+
+        thread = await MessageThread.create({
+          threadType: 'business',
+          businessId,
+          visitorId: senderId,
+          ownerId: targetOwnerId,
+          status: 'OPEN',
+          lastMessageAt: new Date(),
+        });
+
+        logger.info('New business thread created', { threadId: thread._id, senderId, businessId });
+      }
+    } else if (threadType === 'owner') {
+      // Owner personal thread
+      if (!ownerId) {
+        return res.status(400).json({ success: false, message: 'ownerId required for owner threads' });
+      }
+
+      // Find existing thread (could be from either direction)
+      thread = await MessageThread.findOne({
+        $or: [
+          { ownerId, visitorId: senderId, threadType: 'owner' },
+          { ownerId: senderId, visitorId: ownerId, threadType: 'owner' } // Reverse for owner-to-owner
+        ]
       });
 
-      logger.info('New message thread created', { threadId: thread._id, visitorId, businessId });
+      if (!thread) {
+        const owner = await User.findById(ownerId);
+        if (!owner) {
+          return res.status(404).json({ success: false, message: 'Target user not found' });
+        }
+
+        // Determine who is visitor and who is owner for the thread
+        visitorId = senderRole === 'visitor' ? senderId : ownerId;
+        targetOwnerId = senderRole === 'visitor' ? ownerId : senderId;
+
+        thread = await MessageThread.create({
+          threadType: 'owner',
+          businessId: null,
+          visitorId,
+          ownerId: targetOwnerId,
+          status: 'OPEN',
+          lastMessageAt: new Date(),
+        });
+
+        logger.info('New owner thread created', { threadId: thread._id, senderId, ownerId });
+      }
+    } else if (threadType === 'visitor') {
+      // Visitor personal thread (visitor-to-visitor or owner-to-visitor)
+      if (!targetVisitorId) {
+        return res.status(400).json({ success: false, message: 'visitorId required for visitor threads' });
+      }
+
+      // Find existing thread (bidirectional)
+      thread = await MessageThread.findOne({
+        $or: [
+          { visitorId: senderId, targetUserId: targetVisitorId, threadType: 'visitor' },
+          { visitorId: targetVisitorId, targetUserId: senderId, threadType: 'visitor' }
+        ]
+      });
+
+      if (!thread) {
+        const targetUser = await User.findById(targetVisitorId);
+        if (!targetUser) {
+          return res.status(404).json({ success: false, message: 'Target user not found' });
+        }
+
+        thread = await MessageThread.create({
+          threadType: 'visitor',
+          businessId: null,
+          visitorId: senderId,
+          ownerId: senderId, // Set to sender for indexing purposes
+          targetUserId: targetVisitorId,
+          status: 'OPEN',
+          lastMessageAt: new Date(),
+        });
+
+        logger.info('New visitor thread created', { threadId: thread._id, senderId, targetVisitorId });
+      }
     }
 
-    // Create message
+    // Create message (100% free, no blur logic)
     const message = await Message.create({
       threadId: thread._id,
-      senderId: visitorId,
-      senderRole: 'visitor',
-      text,
+      senderId,
+      senderRole,
+      text: text.trim(),
       photoUrl: photoUrl || '',
-      isBlurred: false,
     });
 
-    // Update thread timestamp
+    // Update thread
     thread.lastMessageAt = new Date();
+    thread.unreadByOwner = senderId.toString() !== thread.ownerId.toString();
+    thread.unreadByVisitor = senderId.toString() !== thread.visitorId.toString();
     await thread.save();
 
-    logger.info('Visitor message sent', { messageId: message._id, threadId: thread._id });
+    logger.info('Message sent', { messageId: message._id, threadId: thread._id, threadType });
 
     res.json({
       success: true,
@@ -72,22 +160,22 @@ const visitorSendMessage = async (req, res) => {
       messageId: message._id,
     });
   } catch (error) {
-    logger.error('Visitor send message failed', { error: error.message });
+    logger.error('Send message failed', { error: error.message });
     res.status(500).json({ success: false, message: 'Failed to send message' });
   }
 };
 
 /**
- * OWNER: Reply to a visitor message
- * POST /api/v1/owner/messages/reply
+ * OWNER: Reply to a visitor message (100% FREE - NO PAYWALL)
+ * POST /api/v1/messages/reply
  */
-const ownerReplyMessage = async (req, res) => {
+const replyMessage = async (req, res) => {
   try {
     const ownerId = req.user.id;
     const { threadId, text, photoUrl } = req.body;
 
-    if (!threadId || !text) {
-      return res.status(400).json({ success: false, message: 'Thread ID and message text required' });
+    if (!threadId || !text || !text.trim()) {
+      return res.status(400).json({ success: false, message: 'threadId and text are required' });
     }
 
     const thread = await MessageThread.findById(threadId);
@@ -100,52 +188,27 @@ const ownerReplyMessage = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
-    // Check if business is premium
-    const entitlement = await canOwnerReply(thread.businessId);
-    if (!entitlement.allowed) {
-      return res.status(403).json({
-        success: false,
-        message: entitlement.reason,
-        requiresUpgrade: entitlement.requiresUpgrade,
-      });
-    }
-
-    // Check if visitor has chat pass to determine if message should be blurred
-    const visitor = await User.findById(thread.visitorId);
-    const hasActiveChatPass = visitor.hasChatPass && visitor.chatPassExpiresAt && visitor.chatPassExpiresAt > new Date();
-    const inGracePeriod = visitor.chatPassGraceEndsAt && visitor.chatPassGraceEndsAt > new Date();
-
-    const shouldBlur = !hasActiveChatPass && !inGracePeriod;
-
-    // Create owner's reply
+    // Create owner's reply (100% free, no blur logic)
     const message = await Message.create({
       threadId: thread._id,
       senderId: ownerId,
       senderRole: 'owner',
-      text,
+      text: text.trim(),
       photoUrl: photoUrl || '',
-      isBlurred: shouldBlur,
     });
 
     // Update thread
     thread.lastMessageAt = new Date();
-    thread.hasOwnerReplied = true;
-    if (shouldBlur) {
-      thread.visitorHasSeenOwnerReply = false; // Reset for FOMO email trigger
-    }
+    thread.unreadByOwner = false;
+    thread.unreadByVisitor = true;
     await thread.save();
 
-    logger.info('Owner reply sent', {
-      messageId: message._id,
-      threadId: thread._id,
-      isBlurred: shouldBlur,
-    });
+    logger.info('Owner reply sent', { messageId: message._id, threadId: thread._id });
 
     res.json({
       success: true,
       message: 'Reply sent',
       messageId: message._id,
-      isBlurred: shouldBlur,
     });
   } catch (error) {
     logger.error('Owner reply failed', { error: error.message });
@@ -155,22 +218,23 @@ const ownerReplyMessage = async (req, res) => {
 
 /**
  * VISITOR: Get inbox (list of threads)
- * GET /api/v1/visitor/messages/inbox
+ * GET /api/v1/messages/inbox/visitor
  */
-const visitorGetInbox = async (req, res) => {
+const getVisitorInbox = async (req, res) => {
   try {
     const visitorId = req.user.id;
     const { page = 1, limit = 20 } = req.query;
 
     const threads = await MessageThread.find({ visitorId })
       .populate('businessId', 'name logoUrl city')
+      .populate('ownerId', 'firstName lastName avatarUrl')
       .sort({ lastMessageAt: -1 })
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
 
     const total = await MessageThread.countDocuments({ visitorId });
 
-    // Get unread counts and FOMO banners for each thread
+    // Get unread counts for each thread (no FOMO, 100% free)
     const threadsWithMeta = await Promise.all(
       threads.map(async (thread) => {
         const unreadCount = await Message.countDocuments({
@@ -180,15 +244,14 @@ const visitorGetInbox = async (req, res) => {
           isDeleted: false,
         });
 
-        const fomo = await shouldShowFomoBanner(visitorId, 'visitor', thread._id);
-
         return {
           _id: thread._id,
+          threadType: thread.threadType,
           business: thread.businessId,
+          owner: thread.ownerId,
           lastMessageAt: thread.lastMessageAt,
           status: thread.status,
           unreadCount,
-          hasBlurredReplies: fomo.show,
         };
       })
     );
@@ -210,21 +273,35 @@ const visitorGetInbox = async (req, res) => {
 };
 
 /**
- * OWNER: Get inbox (list of threads)
- * GET /api/v1/owner/messages/inbox
+ * OWNER: Get inbox with dual-identity tabs (100% FREE)
+ * GET /api/v1/messages/inbox/owner?filter=all|business|owner
+ *
+ * Supports filtering by threadType for tabbed UI:
+ * - all: All threads
+ * - business: Business listing threads
+ * - owner: Owner personal profile threads
  */
-const ownerGetInbox = async (req, res) => {
+const getOwnerInbox = async (req, res) => {
   try {
     const ownerId = req.user.id;
-    const { page = 1, limit = 20 } = req.query;
+    const { page = 1, limit = 20, filter = 'all' } = req.query;
 
-    const threads = await MessageThread.find({ ownerId })
-      .populate('visitorId', 'name avatarUrl')
+    // Build query based on filter
+    const query = { ownerId };
+    if (filter === 'business') {
+      query.threadType = 'business';
+    } else if (filter === 'owner') {
+      query.threadType = 'owner';
+    }
+
+    const threads = await MessageThread.find(query)
+      .populate('visitorId', 'firstName lastName avatarUrl')
+      .populate('businessId', 'name logoUrl')
       .sort({ lastMessageAt: -1 })
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
 
-    const total = await MessageThread.countDocuments({ ownerId });
+    const total = await MessageThread.countDocuments(query);
 
     // Get unread counts for each thread
     const threadsWithMeta = await Promise.all(
@@ -238,7 +315,9 @@ const ownerGetInbox = async (req, res) => {
 
         return {
           _id: thread._id,
+          threadType: thread.threadType,
           visitor: thread.visitorId,
+          business: thread.businessId,
           lastMessageAt: thread.lastMessageAt,
           status: thread.status,
           unreadCount,
@@ -263,7 +342,7 @@ const ownerGetInbox = async (req, res) => {
 };
 
 /**
- * Get thread messages
+ * Get thread messages (100% FREE - NO BLUR LOGIC)
  * GET /api/v1/messages/thread/:threadId
  */
 const getThreadMessages = async (req, res) => {
@@ -283,31 +362,21 @@ const getThreadMessages = async (req, res) => {
     }
 
     const messages = await Message.find({ threadId, isDeleted: false })
+      .populate('senderId', 'firstName lastName avatarUrl role')
       .sort({ createdAt: 1 })
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
 
     const total = await Message.countDocuments({ threadId, isDeleted: false });
 
-    // Filter blurred messages for visitor
-    const userRole = thread.visitorId.toString() === userId ? 'visitor' : 'owner';
-    const processedMessages = messages.map((msg) => {
-      if (msg.isBlurred && userRole === 'visitor') {
-        return {
-          _id: msg._id,
-          threadId: msg.threadId,
-          senderRole: msg.senderRole,
-          text: '[Message locked - Unlock with Chat Pass]',
-          isBlurred: true,
-          createdAt: msg.createdAt,
-        };
-      }
-      return msg;
-    });
-
     res.json({
       success: true,
-      messages: processedMessages,
+      messages,
+      thread: {
+        _id: thread._id,
+        threadType: thread.threadType,
+        status: thread.status,
+      },
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -357,10 +426,10 @@ const markMessagesRead = async (req, res) => {
 };
 
 module.exports = {
-  visitorSendMessage,
-  ownerReplyMessage,
-  visitorGetInbox,
-  ownerGetInbox,
+  sendMessage,
+  replyMessage,
+  getVisitorInbox,
+  getOwnerInbox,
   getThreadMessages,
   markMessagesRead,
 };

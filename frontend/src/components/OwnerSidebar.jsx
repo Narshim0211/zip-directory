@@ -16,6 +16,7 @@ const ownerItems = [
       { label: 'Booking Public Profile', path: '/owner/booking/public-profile' },
     ]
   },
+  { label: 'Inbox', path: '/owner/inbox' },
   { label: 'Notifications', path: '/owner/notifications' },
   { label: 'Support & Feedback', path: '/owner/feedback' },
 ];

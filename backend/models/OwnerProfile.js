@@ -10,14 +10,18 @@ const OwnerProfileSchema = new mongoose.Schema({
   avatarUrl: { type: String, default: '' },
   headerImageUrl: { type: String, default: '' },
   bio: { type: String, maxlength: 1000, default: '' },
+  title: { type: String, maxlength: 100, default: '' },
   featuredBusinesses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Business' }],
   pinnedPostIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
   socialLinks: {
     twitter: { type: String, default: '' },
     instagram: { type: String, default: '' },
     website: { type: String, default: '' },
+    tiktok: { type: String, default: '' },
+    youtube: { type: String, default: '' },
   },
   verified: { type: Boolean, default: false },
+  premium: { type: Boolean, default: false },
   counts: {
     posts: { type: Number, default: 0 },
     followers: { type: Number, default: 0 },

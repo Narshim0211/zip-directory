@@ -8,6 +8,7 @@ import CreateSection from '../components/SharedComponents/CreateSection';
 import AboutCard from '../components/SharedComponents/AboutCard';
 import ErrorBoundary from '../components/SharedComponents/ErrorBoundary';
 import InviteModal from '../components/InviteModal';
+import ProfileEditModal from '../components/profile/ProfileEditModal';
 import '../styles/designSystem.css';
 
 /**
@@ -23,6 +24,7 @@ const VisitorProfilePage = () => {
   const [feedLoading, setFeedLoading] = useState(false);
   const [nextCursor, setNextCursor] = useState(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Load current user's profile
   useEffect(() => {
@@ -161,12 +163,22 @@ const VisitorProfilePage = () => {
           onFollow={() => {}}
           onUnfollow={() => {}}
           onInviteFriends={() => setShowInviteModal(true)}
+          onEditProfile={() => setShowEditModal(true)}
         />
       </ErrorBoundary>
 
       <InviteModal
         isOpen={showInviteModal}
         onClose={() => setShowInviteModal(false)}
+      />
+
+      <ProfileEditModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onSave={(updatedProfile) => {
+          // Refresh profile data after save
+          setProfile(updatedProfile);
+        }}
       />
 
       <ProfileTabs

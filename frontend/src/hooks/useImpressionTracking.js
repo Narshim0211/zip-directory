@@ -22,53 +22,16 @@ import { useEffect, useRef } from 'react';
  */
 export const useImpressionTracking = (contentId, contentType, onVisible) => {
   const elementRef = useRef(null);
-  const hasBeenSeen = useRef(false);
-  const lastImpressionTime = useRef(0);
 
-  useEffect(() => {
-    if (!elementRef.current || !contentId || hasBeenSeen.current) return;
+  // COMPLETELY DISABLED - causing infinite loop
+  // Will re-enable after fixing the root cause
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          // Content is visible in viewport
-          if (entry.isIntersecting) {
-            const now = Date.now();
-            const timeSinceLastImpression = now - lastImpressionTime.current;
-
-            // Throttle: Only send if 5 seconds have passed since last impression
-            // OR this is the first impression (lastImpressionTime === 0)
-            if (timeSinceLastImpression > 5000 || lastImpressionTime.current === 0) {
-              console.log(`👁️ [Impression] ${contentType} ${contentId} visible`);
-
-              // Call the callback function (should send API request)
-              if (onVisible) {
-                onVisible(contentType, contentId);
-              }
-
-              lastImpressionTime.current = now;
-              hasBeenSeen.current = true; // Only send once per mount
-
-            } else {
-              console.log(`⏱️ [Throttle] Skipped impression for ${contentType} ${contentId} - too soon`);
-            }
-          }
-        });
-      },
-      {
-        threshold: 0.5, // At least 50% of content must be visible
-        rootMargin: '0px'
-      }
-    );
-
-    observer.observe(elementRef.current);
-
-    return () => {
-      if (elementRef.current) {
-        observer.unobserve(elementRef.current);
-      }
-    };
-  }, [contentId, contentType, onVisible]);
+  // useEffect(() => {
+  //   if (!elementRef.current || !contentId || hasBeenSeen.current) return;
+  //   const observer = new IntersectionObserver(...);
+  //   observer.observe(elementRef.current);
+  //   return () => { if (elementRef.current) observer.unobserve(elementRef.current); };
+  // }, [contentId, contentType, onVisible]);
 
   return elementRef;
 };
