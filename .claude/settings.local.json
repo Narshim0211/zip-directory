@@ -113,7 +113,9 @@
       "Bash(cross-env PORT=3001 npm start)",
       "Bash(timeout:*)",
       "Bash(npx kill-port:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nchore: remove node_modules and package-lock from git tracking\n\n- Remove all node_modules directories from git (backend, services)\n- Remove all package-lock.json files from git\n- Update .gitignore to properly ignore:\n  - node_modules folders\n  - package-lock.json files\n  - uploads and data folders\n  - gallery images\n- Update .env.example files with Google Places API key placeholder\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

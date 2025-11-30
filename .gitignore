@@ -148,3 +148,19 @@ pnpm-lock.yaml
 .env.development.local
 .env.test.local
 .env.production.local
+
+# ====================================
+# User Uploads & Data
+# ====================================
+# User uploaded files (images, documents)
+backend/uploads/
+uploads/
+**/uploads/
+
+# Seeded/generated data
+backend/data/
+data/
+
+# Gallery images
+backend/uploads/gallery/
+**/gallery/

@@ -12,6 +12,34 @@ export function useHairGoals() {
   return context;
 }
 
+/**
+ * Helper: Format date as "Mar 15"
+ */
+function formatShortDate(date) {
+  const d = new Date(date);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+/**
+ * Helper: Add days to a date
+ */
+function addDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+/**
+ * Helper: Get days remaining until end date
+ */
+function getDaysRemaining(endDate) {
+  const now = new Date();
+  const end = new Date(endDate);
+  const diffTime = end - now;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(0, diffDays);
+}
+
 export function HairGoalsProvider({ children, userId = 'default' }) {
   const [weeklyEntries, setWeeklyEntries] = useState([]);
   const [currentStreak, setCurrentStreak] = useState(0);
@@ -22,16 +50,16 @@ export function HairGoalsProvider({ children, userId = 'default' }) {
   useEffect(() => {
     try {
       const data = loadHairGoals(userId);
-      
+
       if (data.WEEKLY_ENTRIES) {
         setWeeklyEntries(data.WEEKLY_ENTRIES);
         setCurrentStreak(getStreak(data.WEEKLY_ENTRIES));
       }
-      
+
       if (data.START_DATE) {
         setStartDate(data.START_DATE);
       }
-      
+
     } catch (error) {
       console.error('Failed to load hair goals:', error);
     } finally {
@@ -67,16 +95,50 @@ export function HairGoalsProvider({ children, userId = 'default' }) {
 
   /**
    * Get current week number based on start date
+   * Week = 7 days from journey start, personal to each user
    */
   const getCurrentWeekNumber = () => {
     if (!startDate) return 1;
-    
+
     const start = new Date(startDate);
     const now = new Date();
-    const diffTime = Math.abs(now - start);
-    const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
-    
-    return diffWeeks || 1;
+    const diffTime = now - start;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const weekNumber = Math.floor(diffDays / 7) + 1;
+
+    return Math.max(1, weekNumber);
+  };
+
+  /**
+   * Get detailed info about a specific week (start date, end date, days remaining)
+   * @param {number} weekNumber - The week number (1-based)
+   * @returns {Object} - Week info with startDate, endDate, formatted strings, daysRemaining
+   */
+  const getWeekInfo = (weekNumber = null) => {
+    const targetWeek = weekNumber || getCurrentWeekNumber();
+    const journeyStart = startDate ? new Date(startDate) : new Date();
+
+    // Calculate this week's start date (journey start + (weekNumber - 1) * 7 days)
+    const weekStartDate = addDays(journeyStart, (targetWeek - 1) * 7);
+    const weekEndDate = addDays(weekStartDate, 6);
+
+    // Calculate progress through the week (0-100)
+    const now = new Date();
+    const dayOfWeek = Math.floor((now - weekStartDate) / (1000 * 60 * 60 * 24));
+    const progressPercent = Math.min(100, Math.max(0, ((dayOfWeek + 1) / 7) * 100));
+
+    return {
+      weekNumber: targetWeek,
+      startDate: weekStartDate,
+      endDate: weekEndDate,
+      startFormatted: formatShortDate(weekStartDate),
+      endFormatted: formatShortDate(weekEndDate),
+      daysRemaining: getDaysRemaining(weekEndDate),
+      progressPercent: Math.round(progressPercent),
+      isCurrentWeek: targetWeek === getCurrentWeekNumber(),
+      isPastWeek: targetWeek < getCurrentWeekNumber(),
+      isFutureWeek: targetWeek > getCurrentWeekNumber()
+    };
   };
 
   /**
@@ -185,24 +247,36 @@ export function HairGoalsProvider({ children, userId = 'default' }) {
     );
   };
 
+  /**
+   * Initialize journey with a start date (called when user starts their journey)
+   */
+  const initializeJourney = (customStartDate = null) => {
+    const journeyStartDate = customStartDate || new Date().toISOString();
+    setStartDate(journeyStartDate);
+    saveField('START_DATE', journeyStartDate, userId);
+    return journeyStartDate;
+  };
+
   const value = {
     // State
     weeklyEntries,
     currentStreak,
     startDate,
     isLoading,
-    
+
     // Getters
     getCurrentWeekNumber,
+    getWeekInfo,
     getCurrentWeekEntry,
     getLatestEntry,
     getEntryByWeek,
     isEntryComplete,
-    
+
     // Setters
     addOrUpdateWeeklyEntry,
     deleteEntry,
     resetAllData,
+    initializeJourney,
   };
 
   return (

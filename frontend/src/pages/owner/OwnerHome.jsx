@@ -8,6 +8,7 @@ import CreateSurveyModal from '../../components/CreateSurveyModal';
 import CreatePostModal from '../../components/CreatePostModal';
 import SurveyInsightsPanel from './components/SurveyInsightsPanel';
 import TrendingWeekPanel from './components/TrendingWeekPanel';
+import TrendingMobileSection from './components/TrendingMobileSection';
 import ProfileAvatar from '../../components/ProfileAvatar';
 import '../../styles/ownerHome.css';
 
@@ -88,6 +89,9 @@ const OwnerHome = () => {
           </header>
 
           <SearchSection />
+
+          {/* Mobile Trending Section - Shows only on tablet/mobile */}
+          <TrendingMobileSection />
 
           {loading && <p className="owner-home-page__status">Loading your feed...</p>}
           {error && <p className="owner-home-page__status-error">{error}</p>}

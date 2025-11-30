@@ -113,6 +113,11 @@ async function initializeDefaults() {
       value: true,
       description: 'Require premium/chat pass to comment on posts and surveys'
     },
+    {
+      key: 'messagingPaywallEnabled',
+      value: false, // Default: disabled (everyone can message)
+      description: 'Require premium subscription for business messaging'
+    },
     // Add more default configs here as needed
     // { key: 'maintenanceMode', value: false, description: 'Platform maintenance mode' },
   ];
@@ -142,11 +147,21 @@ async function isCommentPaywallEnabled() {
   return await getConfig('commentPaywallEnabled', true); // Default: enabled
 }
 
+/**
+ * Check if messaging paywall is enabled
+ * When disabled, all users can message any business
+ * @returns {Promise<boolean>}
+ */
+async function isMessagingPaywallEnabled() {
+  return await getConfig('messagingPaywallEnabled', false); // Default: disabled
+}
+
 // Export public API
 module.exports = {
   getConfig,
   setConfig,
   initializeDefaults,
   isCommentPaywallEnabled,
+  isMessagingPaywallEnabled,
   refreshCache // Exposed for testing/debugging
 };

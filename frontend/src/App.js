@@ -18,6 +18,9 @@ import HairGoalsPhotoTimelinePage from "./features/toolkit/pages/HairGoalsPhotoT
 import WeeklyReportPage from "./features/toolkit/pages/WeeklyReportPage";
 import HairGoalsJourneyHistoryPage from "./features/toolkit/pages/HairGoalsJourneyHistoryPage";
 import HairGoalsJourneyDetailPage from "./features/toolkit/pages/HairGoalsJourneyDetailPage";
+import ReportCardPage from "./features/toolkit/pages/ReportCardPage";
+import ReportCardArchivePage from "./features/toolkit/pages/ReportCardArchivePage";
+
 import TimeManagerToolkitPage from "./features/toolkit/pages/TimeManagerToolkitPage";
 import VisitorHome from "./visitor/pages/VisitorHome";
 import VisitorFeedback from "./visitor/pages/VisitorFeedback";
@@ -39,6 +42,7 @@ import PublicLayout from "./layouts/PublicLayout";
 import PublicOwnerProfile from "./pages/PublicOwnerProfile";
 import OwnerProfilePageV2 from "./pages/OwnerProfilePageV2";
 import DirectorySearchResults from "./pages/public/DirectorySearchResults";
+import BusinessPreview from "./pages/public/BusinessPreview";
 import VisitorBusinessProfile from "./pages/visitor/BusinessProfile";
 import PublicVisitorProfile from "./pages/PublicVisitorProfile";
 import VisitorProfilePageV2 from "./pages/VisitorProfilePageV2";
@@ -98,6 +102,9 @@ function Frame() {
           {/* Public Directory Search Results (Search form is on landing page) */}
           <Route path="/directory/search" element={<DirectorySearchResults />} />
 
+          {/* Public Business Preview (Soft Profile - No Auth Required) */}
+          <Route path="/business/:id/preview" element={<BusinessPreview />} />
+
           {/* Blog Routes */}
           <Route path="/blog" element={<BlogList title="SalonHub Insights" subtitle="Tips · Trends · Glow-Up Guides · Salon Business Advice" />} />
           <Route path="/blog/:slug" element={<BlogReader />} />
@@ -135,6 +142,10 @@ function Frame() {
               <Route path="goals/history" element={<HairGoalsJourneyHistoryPage />} />
               <Route path="goals/history/:journeyId" element={<HairGoalsJourneyDetailPage />} />
               <Route path="goals/report/:reportId" element={<WeeklyReportPage />} />
+              <Route path="hair-goals" element={<HairGoalsPage />} />
+              <Route path="hair-goals/report-card" element={<ReportCardPage />} />
+              <Route path="hair-goals/archives" element={<ReportCardArchivePage />} />
+              <Route path="hair-goals/archives/:archiveId" element={<ReportCardArchivePage />} />
             </Route>
           <Route path="profile" element={<VisitorProfilePage />} />
           <Route path="time/*" element={<TimeManagerPage />} />

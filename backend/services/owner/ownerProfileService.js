@@ -41,7 +41,7 @@ async function getBySlug(slug) {
     .populate('featuredBusinesses', 'name city category slug');
 }
 
-async function updateProfile(userId, { firstName, lastName, bio, handle, avatarUrl }) {
+async function updateProfile(userId, { firstName, lastName, bio, handle, avatarUrl, title, headerImageUrl, socialLinks }) {
   if (!firstName || !lastName) throw new Error('First and last name are required');
   const profile = await OwnerProfile.findOne({ userId });
   if (!profile) throw new Error('Profile not found');
@@ -58,8 +58,19 @@ async function updateProfile(userId, { firstName, lastName, bio, handle, avatarU
   profile.lastName = lastName;
   profile.bio = bio || '';
   if (avatarUrl) profile.avatarUrl = avatarUrl;
+  if (title !== undefined) profile.title = title;
+  if (headerImageUrl !== undefined) profile.headerImageUrl = headerImageUrl;
+  if (socialLinks !== undefined) profile.socialLinks = socialLinks;
   profile.needsCompletion = false;
   await profile.save();
+
+  // Also sync name to User model so it shows correctly across the platform
+  await User.findByIdAndUpdate(userId, {
+    firstName,
+    lastName,
+    name: `${firstName} ${lastName}`.trim()
+  });
+
   return profile;
 }
 

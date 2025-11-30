@@ -1,0 +1,875 @@
+/**
+ * Hair Glow-Up Diary - Phase 1 Styles
+ * Clean, minimal, mobile-first
+ * Background: soft pink gradient
+ * Primary: warm magenta #E91E63
+ */
+
+/* ============================================
+   BASE & LAYOUT
+   ============================================ */
+
+.hair-diary {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #FDF4FA 0%, #FAF5FF 100%);
+  padding: 20px;
+  padding-bottom: 100px;
+}
+
+.hair-diary__container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ============================================
+   PROGRESS STEPPER
+   ============================================ */
+
+.progress-stepper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+  padding: 16px 0;
+}
+
+.progress-stepper__step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.progress-stepper__step--active {
+  background: linear-gradient(135deg, #E91E63, #9C27B0);
+  color: white;
+  box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+}
+
+.progress-stepper__step--completed {
+  background: #10b981;
+  color: white;
+}
+
+.progress-stepper__step--upcoming {
+  background: white;
+  color: #9ca3af;
+  border: 2px solid #e5e7eb;
+}
+
+.progress-stepper__line {
+  width: 40px;
+  height: 3px;
+  background: #e5e7eb;
+  border-radius: 2px;
+}
+
+.progress-stepper__line--completed {
+  background: linear-gradient(90deg, #10b981, #E91E63);
+}
+
+/* ============================================
+   PAGE HEADER
+   ============================================ */
+
+.hair-diary__header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.hair-diary__title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.hair-diary__subtitle {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ============================================
+   GOAL CARDS GRID
+   ============================================ */
+
+.goal-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 400px) {
+  .goal-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.goal-card {
+  background: white;
+  border-radius: 20px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.goal-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(233, 30, 99, 0.15);
+}
+
+.goal-card--selected {
+  border-color: #E91E63;
+  background: linear-gradient(135deg, #FDF4FA, #FCE4EC);
+  box-shadow: 0 8px 25px rgba(233, 30, 99, 0.25);
+}
+
+.goal-card__emoji {
+  font-size: 48px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.goal-card__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 6px 0;
+}
+
+.goal-card__description {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ============================================
+   TEXT INPUT (Why it matters)
+   ============================================ */
+
+.hair-diary__input-group {
+  margin-bottom: 24px;
+}
+
+.hair-diary__label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.hair-diary__textarea {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  font-size: 16px;
+  font-family: inherit;
+  resize: none;
+  transition: all 0.2s ease;
+  background: white;
+  box-sizing: border-box;
+}
+
+.hair-diary__textarea:focus {
+  outline: none;
+  border-color: #E91E63;
+  box-shadow: 0 0 0 4px rgba(233, 30, 99, 0.1);
+}
+
+.hair-diary__textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* ============================================
+   PRIMARY BUTTON (Fixed Bottom)
+   ============================================ */
+
+.hair-diary__button-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 20px;
+  background: linear-gradient(to top, white 80%, transparent);
+  z-index: 100;
+}
+
+.hair-diary__button {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  display: block;
+  padding: 18px 32px;
+  background: linear-gradient(135deg, #E91E63, #9C27B0);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+}
+
+.hair-diary__button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(233, 30, 99, 0.5);
+}
+
+.hair-diary__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hair-diary__button--secondary {
+  background: white;
+  color: #E91E63;
+  border: 2px solid #E91E63;
+  box-shadow: none;
+}
+
+.hair-diary__button--secondary:hover:not(:disabled) {
+  background: #FDF4FA;
+  box-shadow: 0 4px 15px rgba(233, 30, 99, 0.2);
+}
+
+/* ============================================
+   ROUTINE BUILDER
+   ============================================ */
+
+.routine-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.routine-step {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.routine-step__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.routine-step__number {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #E91E63, #9C27B0);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.routine-step__delete {
+  width: 32px;
+  height: 32px;
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.2s ease;
+}
+
+.routine-step__delete:hover {
+  background: #fecaca;
+}
+
+.routine-step__row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.routine-step__row:last-child {
+  margin-bottom: 0;
+}
+
+.routine-step__input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.routine-step__input:focus {
+  outline: none;
+  border-color: #E91E63;
+}
+
+.routine-step__select {
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  background: white;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.routine-step__select:focus {
+  outline: none;
+  border-color: #E91E63;
+}
+
+.add-step-button {
+  width: 100%;
+  padding: 16px;
+  background: white;
+  border: 2px dashed #E91E63;
+  border-radius: 16px;
+  color: #E91E63;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.add-step-button:hover {
+  background: #FDF4FA;
+}
+
+/* ============================================
+   DASHBOARD
+   ============================================ */
+
+.dashboard-hero {
+  background: white;
+  border-radius: 24px;
+  padding: 32px 24px;
+  text-align: center;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-hero__goal {
+  font-size: 14px;
+  color: #E91E63;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 8px 0;
+}
+
+.dashboard-hero__title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+}
+
+.dashboard-hero__quote {
+  font-size: 16px;
+  color: #6b7280;
+  font-style: italic;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.streak-counter {
+  background: linear-gradient(135deg, #E91E63, #9C27B0);
+  border-radius: 20px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 24px;
+  color: white;
+}
+
+.streak-counter__number {
+  font-size: 56px;
+  font-weight: 900;
+  display: block;
+  line-height: 1;
+}
+
+.streak-counter__label {
+  font-size: 16px;
+  font-weight: 600;
+  opacity: 0.9;
+  margin-top: 8px;
+}
+
+.weekly-checklist {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.weekly-checklist__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.checklist-item:last-child {
+  border-bottom: none;
+}
+
+.checklist-item:hover {
+  background: #FDF4FA;
+  margin: 0 -12px;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.checklist-item__checkbox {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.checklist-item__checkbox--checked {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-color: #10b981;
+  color: white;
+}
+
+.checklist-item__text {
+  font-size: 16px;
+  color: #374151;
+  flex: 1;
+}
+
+.checklist-item__text--checked {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+
+.checklist-item__day {
+  font-size: 13px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* ============================================
+   PHOTO TIMELINE
+   ============================================ */
+
+.photo-timeline {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.photo-timeline__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+}
+
+.photo-timeline__scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.photo-timeline__scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.photo-timeline__scroll::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.photo-timeline__scroll::-webkit-scrollbar-thumb {
+  background: #E91E63;
+  border-radius: 3px;
+}
+
+.week-thumbnail {
+  flex-shrink: 0;
+  width: 80px;
+  text-align: center;
+}
+
+.week-thumbnail__image {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.week-thumbnail__image--empty {
+  border: 2px dashed #e5e7eb;
+}
+
+.week-thumbnail__label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+/* ============================================
+   FLOATING ACTION BUTTON
+   ============================================ */
+
+.fab {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #E91E63, #9C27B0);
+  border-radius: 50%;
+  border: none;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(233, 30, 99, 0.4);
+  transition: all 0.3s ease;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(233, 30, 99, 0.5);
+}
+
+/* ============================================
+   COMPARE PAGE
+   ============================================ */
+
+.compare-container {
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.compare-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.compare-selector {
+  text-align: center;
+}
+
+.compare-selector__label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.compare-selector__select {
+  padding: 10px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  background: white;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.compare-selector__select:focus {
+  outline: none;
+  border-color: #E91E63;
+}
+
+.compare-images {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 500px) {
+  .compare-images {
+    grid-template-columns: 1fr;
+  }
+}
+
+.compare-image {
+  aspect-ratio: 3/4;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compare-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.compare-image__placeholder {
+  text-align: center;
+  color: #9ca3af;
+}
+
+.compare-image__placeholder-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.compare-image__placeholder-text {
+  font-size: 14px;
+}
+
+.compare-slider-container {
+  position: relative;
+  aspect-ratio: 3/4;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.compare-slider__before,
+.compare-slider__after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.compare-slider__before img,
+.compare-slider__after img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.compare-slider__after {
+  clip-path: inset(0 50% 0 0);
+}
+
+.compare-slider__handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  background: white;
+  cursor: ew-resize;
+  z-index: 10;
+  transform: translateX(-50%);
+}
+
+.compare-slider__handle::before {
+  content: '◀ ▶';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.compare-message {
+  text-align: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #FDF4FA, #FCE4EC);
+  border-radius: 16px;
+}
+
+.compare-message__text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #E91E63;
+  margin: 0;
+}
+
+/* ============================================
+   EMPTY STATES
+   ============================================ */
+
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.empty-state__icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.empty-state__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.empty-state__text {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ============================================
+   CONFETTI ANIMATION
+   ============================================ */
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.confetti__piece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  animation: confetti-fall 3s ease-out forwards;
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px;
+}
+
+.loading-spinner::after {
+  content: '';
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top-color: #E91E63;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   BACK BUTTON
+   ============================================ */
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background: #f3f4f6;
+  color: #374151;
+}

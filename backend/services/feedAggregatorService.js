@@ -152,7 +152,7 @@ async function fetchVisitorPosts(dateCursor, limit) {
   })
     .sort({ createdAt: -1 })
     .limit(limit)
-    .populate('author', 'firstName lastName role')
+    .populate('author', 'name firstName lastName role avatarUrl')
     .lean();
 }
 
@@ -166,7 +166,7 @@ async function fetchOwnerPosts(dateCursor, limit) {
   })
     .sort({ createdAt: -1 })
     .limit(limit)
-    .populate('ownerId', 'firstName lastName role')
+    .populate('ownerId', 'name firstName lastName role avatarUrl')
     .lean();
 }
 
@@ -182,7 +182,7 @@ async function fetchSurveys(dateCursor, limit) {
   })
     .sort({ createdAt: -1 })
     .limit(limit)
-    .populate('author', 'firstName lastName role')
+    .populate('author', 'name firstName lastName role avatarUrl')
     .lean();
 }
 
@@ -191,15 +191,24 @@ async function fetchSurveys(dateCursor, limit) {
  */
 function normalizePost(post, authorRole, type = 'post') {
   const author = post.author || post.ownerId;
+  // Build display name with fallbacks: firstName+lastName > name > 'User'
+  const fullName = author?.firstName && author?.lastName
+    ? `${author.firstName} ${author.lastName}`.trim()
+    : '';
+  const displayName = fullName || author?.name || 'User';
+
   return {
     _id: post._id,
     type, // 'post'
     authorRole, // 'owner' or 'visitor'
     author: {
       _id: author?._id,
-      firstName: author?.firstName || 'Unknown',
+      name: author?.name || displayName,
+      firstName: author?.firstName || '',
       lastName: author?.lastName || '',
+      displayName,
       role: authorRole,
+      avatarUrl: author?.avatarUrl || '',
       // Will be enriched with profile data (avatar, handle) in controller
     },
     content: post.content || post.text || '',
@@ -219,6 +228,12 @@ function normalizeSurvey(survey) {
   const author = survey.author;
   const authorRole = author?.role === 'owner' ? 'owner' : 'visitor';
 
+  // Build display name with fallbacks: firstName+lastName > name > 'User'
+  const fullName = author?.firstName && author?.lastName
+    ? `${author.firstName} ${author.lastName}`.trim()
+    : '';
+  const displayName = fullName || author?.name || 'User';
+
   return {
     _id: survey._id,
     type: 'survey',
@@ -226,9 +241,12 @@ function normalizeSurvey(survey) {
     authorRole,
     author: {
       _id: author?._id,
-      firstName: author?.firstName || 'Unknown',
+      name: author?.name || displayName,
+      firstName: author?.firstName || '',
       lastName: author?.lastName || '',
+      displayName,
       role: authorRole,
+      avatarUrl: author?.avatarUrl || '',
     },
     question: survey.question,
     options: survey.options,
@@ -343,10 +361,17 @@ async function enrichWithProfiles(items) {
     const profile = profileMap.get(item.author._id?.toString());
 
     if (profile) {
-      item.author.avatarUrl = profile.avatarUrl || profile.avatar || '';
+      item.author.avatarUrl = profile.avatarUrl || profile.avatar || item.author.avatarUrl || '';
       item.author.handle = profile.handle || profile.slug || '';
       item.author.slug = profile.slug || profile.handle || '';
-      item.author.displayName = profile.displayName || `${item.author.firstName} ${item.author.lastName}`.trim();
+      // Build display name with fallbacks: profile name > author name > User model name > 'User'
+      const profileFullName = profile.firstName && profile.lastName
+        ? `${profile.firstName} ${profile.lastName}`.trim()
+        : (profile.fullName || profile.displayName || '');
+      item.author.displayName = profileFullName || item.author.displayName || item.author.name || 'User';
+    } else {
+      // No profile found - use User model data as fallback
+      item.author.displayName = item.author.displayName || item.author.name || 'User';
     }
 
     return item;

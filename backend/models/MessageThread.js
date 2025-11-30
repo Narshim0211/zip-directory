@@ -102,10 +102,23 @@ const messageThreadSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-// ⚡ CRITICAL INDEX: One thread per visitor-business/owner pair
-// Supports dual-identity: businessId + visitorId + threadType
-messageThreadSchema.index({ businessId: 1, visitorId: 1, threadType: 1 }, { unique: true, sparse: true });
-messageThreadSchema.index({ ownerId: 1, visitorId: 1, threadType: 1 }); // For owner personal threads
+// ⚡ CRITICAL INDEX: One thread per visitor-business pair (ONLY for business threads)
+// Using partialFilterExpression to only apply uniqueness to business threads
+messageThreadSchema.index(
+  { businessId: 1, visitorId: 1, threadType: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { threadType: 'business', businessId: { $type: 'objectId' } }
+  }
+);
+// Unique index for owner personal threads (one thread per visitor-owner pair)
+messageThreadSchema.index(
+  { ownerId: 1, visitorId: 1, threadType: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { threadType: 'owner' }
+  }
+);
 
 // Compound indexes for fast inbox queries
 messageThreadSchema.index({ ownerId: 1, threadType: 1, lastMessageAt: -1 }); // Owner inbox with tabs

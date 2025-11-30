@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 import BusinessCardSoft from '../../components/shared/BusinessCardSoft';
 import { useAuth } from '../../context/AuthContext';
-import LoginModal from '../../components/shared/LoginModal';
 import './DirectorySearchResults.css';
 
 /**
@@ -14,14 +13,14 @@ import './DirectorySearchResults.css';
  */
 const DirectorySearchResults = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [redirectBusinessId, setRedirectBusinessId] = useState(null);
 
   // Extract search parameters
+  const q = searchParams.get('q');
   const city = searchParams.get('city');
   const zip = searchParams.get('zip');
   const category = searchParams.get('category');
@@ -33,6 +32,7 @@ const DirectorySearchResults = () => {
         setError(null);
 
         const params = new URLSearchParams();
+        if (q) params.append('q', q);
         if (city) params.append('city', city);
         if (zip) params.append('zip', zip);
         if (category) params.append('category', category);
@@ -53,23 +53,19 @@ const DirectorySearchResults = () => {
       }
     };
 
-    if (city) {
-      fetchBusinesses();
-    } else {
-      setError('City is required for search');
-      setLoading(false);
-    }
-  }, [city, zip, category]);
+    // Always fetch - backend handles empty search (shows all businesses)
+    fetchBusinesses();
+  }, [q, city, zip, category]);
 
   const handleViewProfile = (businessId) => {
     // Check if user is authenticated
     if (user && user.role === 'visitor') {
       // Authenticated visitor - go directly to full profile
-      window.location.href = `/visitor/business/${businessId}`;
+      navigate(`/visitor/business/${businessId}`);
     } else {
-      // Not authenticated - show login modal
-      setRedirectBusinessId(businessId);
-      setShowLoginModal(true);
+      // Not authenticated - store redirect URL and navigate to login
+      sessionStorage.setItem('redirectAfterAuth', `/visitor/business/${businessId}`);
+      navigate('/login');
     }
   };
 
@@ -99,10 +95,11 @@ const DirectorySearchResults = () => {
   return (
     <div className="directory-results">
       <div className="directory-results__header">
-        <h1>Search Results</h1>
+        <h1>Search Results {q && `for "${q}"`}</h1>
         <p className="directory-results__info">
-          Found {businesses.length} {businesses.length === 1 ? 'business' : 'businesses'} 
+          Found {businesses.length} {businesses.length === 1 ? 'business' : 'businesses'}
           {city && ` in ${city}`}
+          {zip && ` near ${zip}`}
           {category && category !== 'All Categories' && ` (${category})`}
         </p>
       </div>
@@ -128,12 +125,6 @@ const DirectorySearchResults = () => {
         </div>
       )}
 
-      {showLoginModal && (
-        <LoginModal
-          onClose={() => setShowLoginModal(false)}
-          redirectUrl={`/visitor/business/${redirectBusinessId}`}
-        />
-      )}
     </div>
   );
 };

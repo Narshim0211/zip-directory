@@ -172,3 +172,79 @@ exports.getMine = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+/**
+ * Get trending surveys from the last 7 days
+ * Ranked by total votes (engagement)
+ */
+exports.getTrendingWeek = async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit || '5', 10), 20);
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const surveys = await Survey.find({
+      isActive: true,
+      createdAt: { $gte: sevenDaysAgo },
+      $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
+    })
+      .sort({ totalVotes: -1, createdAt: -1 })
+      .limit(limit)
+      .populate('author', 'name firstName lastName businessName avatarUrl role handle');
+
+    res.json({ success: true, data: surveys.map(buildSurveyPayload) });
+  } catch (error) {
+    console.error('getTrendingWeek error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Get trending surveys from today
+ * Ranked by total votes
+ */
+exports.getTrendingToday = async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit || '5', 10), 20);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const surveys = await Survey.find({
+      isActive: true,
+      createdAt: { $gte: todayStart },
+      $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
+    })
+      .sort({ totalVotes: -1, createdAt: -1 })
+      .limit(limit)
+      .populate('author', 'name firstName lastName businessName avatarUrl role handle');
+
+    res.json({ success: true, data: surveys.map(buildSurveyPayload) });
+  } catch (error) {
+    console.error('getTrendingToday error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Get Survey of the Day
+ * Returns the highest voted survey from the last 24 hours
+ */
+exports.getSurveyOfTheDay = async (req, res) => {
+  try {
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    const survey = await Survey.findOne({
+      isActive: true,
+      createdAt: { $gte: oneDayAgo },
+      $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
+    })
+      .sort({ totalVotes: -1 })
+      .populate('author', 'name firstName lastName businessName avatarUrl role handle');
+
+    res.json({ success: true, data: survey ? buildSurveyPayload(survey) : null });
+  } catch (error) {
+    console.error('getSurveyOfTheDay error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

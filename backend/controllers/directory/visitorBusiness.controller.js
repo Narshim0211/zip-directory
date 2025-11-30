@@ -45,45 +45,62 @@ exports.getFullProfile = catchAsync(async (req, res, next) => {
 
   // Transform to full profile format (safe for visitors)
   const fullProfile = {
+    _id: business._id,
     id: business._id,
     name: business.name,
     city: business.city,
     state: business.state,
     zip: business.zip,
+    zipCode: business.zipCode || business.zip,
     address: business.address,
     category: business.category,
     businessType: business.businessType,
     description: business.description,
+
+    // Photos and images
     images: business.images || [],
+    photos: business.photos || [],
+    googlePhotos: business.googlePhotos || [], // Google Places photos
+    hasGooglePhotos: business.hasGooglePhotos || false,
     logoUrl: business.logoUrl,
     coverPhotoUrl: business.coverPhotoUrl,
+
+    // Services and staff
     services: business.services || [],
+    staff: business.staff || [],
     specialties: business.specialties || [],
     location: business.location,
-    
+
     // Contact information
     phone: business.phone || '',
     email: business.email || '',
     website: business.website || '',
     socialLinks: business.socialLinks || {},
-    
+    socialMedia: business.socialMedia || {},
+
     // Business hours
     hours: business.hours || {},
-    
+
     // Ratings
     ratingAverage: business.ratingAverage || 0,
     ratingsCount: business.ratingsCount || 0,
-    
+
     // Booking info
-    bookingSlug: business.bookingSlug,
-    bookingEnabled: business.bookingEnabled || false,
-    
+    bookingSlug: business.bookingSlug || null,
+    bookingEnabled: business.isPublicProfileActive || false, // Use actual field
+    isPublicProfileActive: business.isPublicProfileActive || false,
+
+    // Verification and listing type (for UI display)
+    verificationStatus: business.verificationStatus || 'unverified',
+    listingType: business.listingType || 'free',
+    premiumSubscription: business.premiumSubscription || { active: false },
+
     // Owner info (limited)
     owner: business.owner ? {
       name: business.owner.name,
       email: business.owner.email,
     } : null,
-    
+
     createdAt: business.createdAt,
     updatedAt: business.updatedAt,
   };

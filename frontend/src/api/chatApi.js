@@ -95,3 +95,34 @@ export const markMessagesRead = async (threadId) => {
   const { data } = await api.put('/v1/messages/mark-read', { threadId });
   return data;
 };
+
+/**
+ * Send message in existing thread (for visitors continuing a conversation)
+ * Uses the /send endpoint with thread context
+ * @param {object} thread - Thread object with threadType, businessId, ownerId
+ * @param {string} text - Message text
+ * @param {string} photoUrl - Optional photo URL
+ */
+export const sendMessageInThread = async (thread, text, photoUrl = '') => {
+  const payload = {
+    threadType: thread.threadType,
+    text,
+    photoUrl
+  };
+
+  // Add the correct target ID based on thread type
+  // Handle both raw IDs and populated objects from different API responses
+  if (thread.threadType === 'business') {
+    // Could be: thread.businessId (raw), thread.businessId._id (populated), or thread.business._id (inbox format)
+    payload.businessId = thread.businessId?._id || thread.businessId || thread.business?._id || thread.business;
+  } else if (thread.threadType === 'owner') {
+    // Could be: thread.ownerId (raw), thread.ownerId._id (populated), or thread.owner._id (inbox format)
+    payload.ownerId = thread.ownerId?._id || thread.ownerId || thread.owner?._id || thread.owner;
+  } else if (thread.threadType === 'visitor') {
+    payload.visitorId = thread.targetUserId?._id || thread.targetUserId;
+  }
+
+  console.log('📤 [chatApi] sendMessageInThread:', payload);
+  const { data } = await api.post('/v1/messages/send', payload);
+  return data;
+};

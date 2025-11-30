@@ -17,7 +17,16 @@ const Login = () => {
     setLoading(true);
     try {
       const data = await login(email, password);
-      // Role-based redirect to dashboards
+
+      // Check for redirect URL stored in sessionStorage (e.g., from business profile)
+      const redirectAfterAuth = sessionStorage.getItem('redirectAfterAuth');
+      if (redirectAfterAuth) {
+        sessionStorage.removeItem('redirectAfterAuth');
+        navigate(redirectAfterAuth);
+        return;
+      }
+
+      // Role-based redirect to dashboards (default behavior)
       if (data.role === 'admin') navigate('/admin');
       else if (data.role === 'owner') navigate('/owner/dashboard');
       else if (data.role === 'visitor') navigate('/visitor/home');

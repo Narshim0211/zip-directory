@@ -34,6 +34,16 @@ const Register = () => {
       // eslint-disable-next-line no-console
       console.log('useAuth.register type', typeof register);
       const data = await register({ firstName, lastName, email, password, role, newsletterOptIn });
+
+      // Check for redirect URL stored in sessionStorage (e.g., from business profile)
+      const redirectAfterAuth = sessionStorage.getItem('redirectAfterAuth');
+      if (redirectAfterAuth) {
+        sessionStorage.removeItem('redirectAfterAuth');
+        navigate(redirectAfterAuth);
+        return;
+      }
+
+      // Role-based redirect to dashboards (default behavior)
       if (data.role === 'admin') navigate('/admin');
       else if (data.role === 'owner') navigate('/dashboard/owner');
       else navigate('/visitor/home');

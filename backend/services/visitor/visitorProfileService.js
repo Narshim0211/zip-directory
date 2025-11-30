@@ -1,4 +1,5 @@
 const VisitorProfile = require('../../models/VisitorProfile');
+const User = require('../../models/User');
 const slugify = require('../../utils/slugify');
 
 async function ensureProfileForUser(user) {
@@ -36,7 +37,7 @@ async function getBySlug(slug) {
     .select('userId firstName lastName avatarUrl bio handle slug followersCount followingCount');
 }
 
-async function updateProfile(userId, { firstName, lastName, bio, handle, avatarUrl }) {
+async function updateProfile(userId, { firstName, lastName, bio, handle, avatarUrl, bannerUrl, socialLinks, title }) {
   if (!firstName || !lastName) throw new Error('First and last name are required');
   const profile = await VisitorProfile.findOne({ userId });
   if (!profile) throw new Error('Profile not found');
@@ -52,8 +53,19 @@ async function updateProfile(userId, { firstName, lastName, bio, handle, avatarU
   profile.lastName = lastName;
   profile.bio = bio || '';
   if (avatarUrl) profile.avatarUrl = avatarUrl;
+  if (bannerUrl !== undefined) profile.bannerUrl = bannerUrl;
+  if (socialLinks !== undefined) profile.socialLinks = socialLinks;
+  if (title !== undefined) profile.title = title;
   profile.needsCompletion = false;
   await profile.save();
+
+  // Also sync name to User model so it shows correctly across the platform (chat, feed, etc.)
+  await User.findByIdAndUpdate(userId, {
+    firstName,
+    lastName,
+    name: `${firstName} ${lastName}`.trim()
+  });
+
   return profile;
 }
 

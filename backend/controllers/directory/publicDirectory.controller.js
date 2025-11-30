@@ -3,19 +3,19 @@
  * Handles public (unauthenticated) directory search and soft profile viewing
  * Returns ONLY non-sensitive business data
  * NO duplication with visitor/owner controllers
- * 
+ *
  * 🌍 UNIVERSAL BEHAVIOR:
  * The soft-profile browsing and login-gated full-profile access apply
  * universally to ALL business profiles in the directory. Every business
  * uses the same public soft-profile endpoint and the same authenticated
  * full-profile endpoint, unless explicitly flagged with custom access
  * rules in future versions.
- * 
- * This ensures:
- * - Consistent user experience across all businesses
- * - Predictable security model (no per-business exceptions)
- * - Clear separation of public vs authenticated data
- * - No routing conflicts or data leakage
+ *
+ * 🔥 WORLD-CLASS SEARCH (2025 Standard):
+ * - Never shows "No results" (auto-expands radius)
+ * - Sorts by rating DESC, then distance ASC
+ * - Supports geolocation for personalized results
+ * - Smart fallback messages for expanded searches
  */
 
 const Business = require('../../models/Business');
@@ -23,99 +23,182 @@ const { calculateDistance, getCoordinatesFromZip } = require('../../utils/calcul
 const { catchAsync } = require('../../core/errors/globalErrorHandler');
 const AppError = require('../../core/errors/globalErrorHandler').AppError;
 
+// Default center: DFW Metroplex (between Fort Worth and Dallas)
+const DEFAULT_CENTER = { lat: 32.85, lng: -97.15 };
+
+// Radius expansion tiers (in miles)
+const RADIUS_TIERS = [15, 30, 50, 100, 250];
+
 /**
  * @route   GET /api/public/directory/search
- * @desc    Search businesses with soft profile data (public, no auth required)
+ * @desc    World-class search with smart sorting and auto-radius expansion
  * @access  Public
- * @query   city (required), zip (optional), category (optional)
+ * @query   q (search term), lat, lng, sort (rating|distance), category, radius
  */
 exports.searchBusinesses = catchAsync(async (req, res, next) => {
-  const { city, zip, category } = req.query;
+  const {
+    q,
+    city,
+    zip,
+    category,
+    lat,
+    lng,
+    sort = 'rating', // Default: highest rated first
+    radius = 50 // Default radius in miles
+  } = req.query;
 
-  console.log('🔍 [PUBLIC SEARCH] Request received:', { city, zip, category });
+  console.log('🔍 [SMART SEARCH] Request:', { q, lat, lng, sort, category, radius });
 
-  // Validate required parameters
-  if (!city) {
-    return next(new AppError('City is required for search', 400));
+  // Step 1: Determine user location
+  let userCoords = null;
+
+  // Priority 1: Explicit lat/lng from browser geolocation
+  if (lat && lng) {
+    userCoords = { lat: parseFloat(lat), lng: parseFloat(lng) };
+  }
+  // Priority 2: ZIP code from search term
+  else if (q && /^\d{5}$/.test(q.trim())) {
+    userCoords = getCoordinatesFromZip(q.trim());
+  }
+  // Priority 3: Explicit zip parameter
+  else if (zip) {
+    userCoords = getCoordinatesFromZip(zip);
+  }
+  // Priority 4: Default to DFW center
+  else {
+    userCoords = DEFAULT_CENTER;
   }
 
-  // First, let's check if ANY businesses exist
-  const totalCount = await Business.countDocuments();
-  console.log('📊 [PUBLIC SEARCH] Total businesses in database:', totalCount);
-
-  // Build query
+  // Step 2: Build base query
   const query = {
-    city: new RegExp(city, 'i'), // Case-insensitive city search
+    status: 'approved',
+    // Only include businesses with valid coordinates
+    'location.coordinates': { $exists: true, $ne: null }
   };
 
-  // CRITICAL: Only show admin-approved businesses in public directory
-  query.status = 'approved';
+  // Search term filtering (name, city, category)
+  const searchTerm = q?.trim();
+  if (searchTerm && !/^\d{5}$/.test(searchTerm)) {
+    // Not a ZIP code - search by name, city, or category
+    const searchRegex = new RegExp(searchTerm, 'i');
+    query.$or = [
+      { name: searchRegex },
+      { city: searchRegex },
+      { category: searchRegex },
+    ];
+  }
 
+  // Category filter
   if (category && category !== 'All' && category !== 'All Categories') {
     query.category = category;
   }
 
-  console.log('🔎 [PUBLIC SEARCH] MongoDB query:', JSON.stringify(query));
+  console.log('🔎 [SMART SEARCH] Query:', JSON.stringify(query));
 
-  // Execute query with only public-safe fields
+  // Step 3: Fetch ALL matching businesses (we'll filter by radius in memory)
+  // Include googlePhotos for soft profile display (public teaser photos)
   const businesses = await Business.find(query)
-    .select('name city zip category logoUrl coverPhotoUrl location status')
-    .limit(50) // Limit results to prevent overload
+    .select('name city state zip category logoUrl coverPhotoUrl googlePhotos hasGooglePhotos location status ratingAverage ratingsCount verificationStatus listingType')
+    .limit(500) // Get more to ensure we have fallback results
     .lean();
 
-  console.log(`✅ [PUBLIC SEARCH] Found ${businesses.length} businesses`);
-  if (businesses.length > 0) {
-    console.log('📍 [PUBLIC SEARCH] Sample result:', {
-      name: businesses[0].name,
-      city: businesses[0].city,
-      status: businesses[0].status
+  console.log(`📦 [SMART SEARCH] Found ${businesses.length} total businesses`);
+
+  // Step 4: Calculate distance for each business and filter by radius
+  let radiusUsed = parseFloat(radius);
+  let expandedSearch = false;
+  let softProfiles = [];
+
+  // Try progressively larger radius until we get results
+  for (const tierRadius of RADIUS_TIERS) {
+    if (tierRadius < radiusUsed) continue;
+
+    softProfiles = businesses
+      .map((business) => {
+        if (!business.location?.coordinates) return null;
+
+        const [bizLng, bizLat] = business.location.coordinates;
+        const distance = calculateDistance(
+          userCoords.lat,
+          userCoords.lng,
+          bizLat,
+          bizLng,
+          'mi'
+        );
+
+        // Filter by current radius tier
+        if (distance > tierRadius) return null;
+
+        return {
+          id: business._id,
+          name: business.name,
+          city: business.city,
+          state: business.state,
+          zip: business.zip,
+          category: business.category,
+          heroImage: business.coverPhotoUrl || business.logoUrl || '',
+          // Include Google photos for soft profile gallery (public, entices sign-up)
+          photos: business.googlePhotos || [],
+          hasPhotos: (business.googlePhotos?.length > 0) || business.hasGooglePhotos,
+          location: business.location,
+          rating: business.ratingAverage || 0,
+          reviewCount: business.ratingsCount || 0,
+          distance: distance,
+          verificationStatus: business.verificationStatus,
+          listingType: business.listingType,
+        };
+      })
+      .filter(Boolean);
+
+    if (softProfiles.length > 0) {
+      radiusUsed = tierRadius;
+      expandedSearch = tierRadius > parseFloat(radius);
+      break;
+    }
+  }
+
+  // Step 5: Smart sorting based on user preference
+  if (sort === 'distance') {
+    // Sort by distance first, then rating
+    softProfiles.sort((a, b) => {
+      if (a.distance !== b.distance) return a.distance - b.distance;
+      return (b.rating || 0) - (a.rating || 0);
+    });
+  } else {
+    // Default: Sort by rating first, then distance
+    softProfiles.sort((a, b) => {
+      // Higher rating first
+      if ((b.rating || 0) !== (a.rating || 0)) {
+        return (b.rating || 0) - (a.rating || 0);
+      }
+      // Then closer distance
+      return (a.distance || Infinity) - (b.distance || Infinity);
     });
   }
 
-  // Calculate distances if user provided ZIP
-  let userCoords = null;
-  if (zip) {
-    userCoords = getCoordinatesFromZip(zip);
-  }
+  // Step 6: Limit results
+  const limitedResults = softProfiles.slice(0, 100);
 
-  // Transform to soft profile format
-  const softProfiles = businesses.map((business) => {
-    const softProfile = {
-      id: business._id,
-      name: business.name,
-      city: business.city,
-      zip: business.zip,
-      category: business.category,
-      heroImage: business.coverPhotoUrl || business.logoUrl || '',
-      location: business.location,
-    };
+  // Step 7: Build response with helpful metadata
+  const nearestCity = limitedResults[0]?.city || 'your area';
 
-    // Add distance if user ZIP provided and business has coordinates
-    if (userCoords && business.location && business.location.coordinates) {
-      const [lng, lat] = business.location.coordinates;
-      softProfile.distance = calculateDistance(
-        userCoords.lat,
-        userCoords.lng,
-        lat,
-        lng,
-        'mi'
-      );
-    }
-
-    return softProfile;
-  });
-
-  // Sort by distance if available
-  if (userCoords) {
-    softProfiles.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
-  }
-
-  console.log('📤 [PUBLIC SEARCH] Returning', softProfiles.length, 'soft profiles');
+  console.log(`✅ [SMART SEARCH] Returning ${limitedResults.length} results (radius: ${radiusUsed}mi, expanded: ${expandedSearch})`);
 
   res.status(200).json({
     success: true,
-    count: softProfiles.length,
-    data: softProfiles,
+    count: limitedResults.length,
+    data: limitedResults,
+    meta: {
+      userLocation: userCoords,
+      radiusUsed: radiusUsed,
+      expandedSearch: expandedSearch,
+      sortedBy: sort,
+      message: expandedSearch
+        ? `Showing nearest results in ${nearestCity} (expanded to ${radiusUsed} mi)`
+        : limitedResults.length > 0
+          ? `Found ${limitedResults.length} businesses near you`
+          : 'No businesses found in this area yet'
+    }
   });
 });
 
@@ -127,7 +210,7 @@ exports.searchBusinesses = catchAsync(async (req, res, next) => {
 exports.getCities = catchAsync(async (req, res, next) => {
   const cities = await Business.distinct('city');
   console.log('📍 [DEBUG] Cities in database:', cities);
-  
+
   res.status(200).json({
     success: true,
     count: cities.length,
@@ -142,7 +225,7 @@ exports.getCities = catchAsync(async (req, res, next) => {
  */
 exports.getSoftProfile = catchAsync(async (req, res, next) => {
   const business = await Business.findById(req.params.id)
-    .select('name city zip category logoUrl coverPhotoUrl location description status')
+    .select('name city state zip category logoUrl coverPhotoUrl googlePhotos hasGooglePhotos location description status ratingAverage ratingsCount verificationStatus listingType')
     .lean();
 
   if (!business) {
@@ -154,15 +237,27 @@ exports.getSoftProfile = catchAsync(async (req, res, next) => {
     return next(new AppError('Business not available', 404));
   }
 
+  // Build photos array from googlePhotos or heroImage
+  const photos = business.googlePhotos?.length > 0
+    ? business.googlePhotos
+    : (business.coverPhotoUrl ? [business.coverPhotoUrl] : []);
+
   const softProfile = {
     id: business._id,
     name: business.name,
     city: business.city,
+    state: business.state,
     zip: business.zip,
     category: business.category,
     heroImage: business.coverPhotoUrl || business.logoUrl || '',
+    photos: photos,
+    hasPhotos: photos.length > 0,
     description: business.description || '',
     location: business.location,
+    rating: business.ratingAverage || 0,
+    reviewCount: business.ratingsCount || 0,
+    verificationStatus: business.verificationStatus,
+    listingType: business.listingType,
   };
 
   res.status(200).json({

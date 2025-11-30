@@ -231,7 +231,7 @@ const FeedSurveyCard = React.memo(function FeedSurveyCard({ survey }) {
             {localSurvey.authorNote && (
               <div className="author-note">
                 <p className="author-note__text">"{localSurvey.authorNote}"</p>
-                <p className="author-note__author">— {survey.author?.firstName || 'Author'}</p>
+                <p className="author-note__author">— {survey.author?.displayName || survey.author?.name || survey.author?.firstName || 'Author'}</p>
               </div>
             )}
           </div>

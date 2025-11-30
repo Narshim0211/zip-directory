@@ -9,7 +9,7 @@ const BOOKING_SERVICE_URL = process.env.BOOKING_SERVICE_URL || 'http://localhost
 
 /**
  * @route   POST /api/reviews
- * @desc    Submit a review for a completed booking
+ * @desc    Submit a review for a business (booking optional)
  * @access  Private (requires authentication)
  */
 exports.createReview = async (req, res, next) => {
@@ -26,8 +26,8 @@ exports.createReview = async (req, res, next) => {
     // 1. VALIDATE INPUTS
     // ===========================
 
-    if (!businessId || !bookingId) {
-      throw new AppError('VALIDATION_ERROR', 'businessId and bookingId are required', 400);
+    if (!businessId) {
+      throw new AppError('VALIDATION_ERROR', 'businessId is required', 400);
     }
 
     if (!rating || rating < 1 || rating > 5) {
@@ -52,68 +52,80 @@ exports.createReview = async (req, res, next) => {
     }
 
     // ===========================
-    // 3. VERIFY BOOKING VIA BOOKING MICROSERVICE
+    // 3. CHECK FOR DUPLICATE REVIEW (if no booking)
     // ===========================
 
-    let booking;
-    try {
-      const bookingResponse = await axios.get(
-        `${BOOKING_SERVICE_URL}/api/bookings/${bookingId}`,
-        {
-          headers: {
-            'x-internal-key': process.env.INTERNAL_API_KEY || '',
-          },
-          timeout: 5000,
-        }
-      );
+    if (!bookingId) {
+      // Check if user already reviewed this business without a booking
+      const existingReview = await Review.findOne({
+        businessId,
+        userId,
+        bookingId: null,
+      });
 
-      booking = bookingResponse.data;
-    } catch (error) {
-      if (error.response?.status === 404) {
-        throw new AppError('BOOKING_NOT_FOUND', 'Booking not found', 404);
+      if (existingReview) {
+        throw new AppError('DUPLICATE_REVIEW', 'You have already reviewed this business', 409);
       }
-      logger.error(`Booking service error: ${error.message}`);
-      throw new AppError('BOOKING_SERVICE_ERROR', 'Unable to verify booking at this time', 503);
     }
 
     // ===========================
-    // 4. VERIFY BOOKING OWNERSHIP
+    // 4. VERIFY BOOKING (IF PROVIDED)
     // ===========================
 
-    const bookingUserId = booking.userId || booking.customer?.userId;
-    if (String(bookingUserId) !== String(userId)) {
-      throw new AppError('FORBIDDEN', 'You can only review your own bookings', 403);
+    let booking = null;
+    if (bookingId) {
+      try {
+        const bookingResponse = await axios.get(
+          `${BOOKING_SERVICE_URL}/api/bookings/${bookingId}`,
+          {
+            headers: {
+              'x-internal-key': process.env.INTERNAL_API_KEY || '',
+            },
+            timeout: 5000,
+          }
+        );
+
+        booking = bookingResponse.data;
+
+        // Verify booking ownership and completion
+        const bookingUserId = booking.userId || booking.customer?.userId;
+        if (String(bookingUserId) !== String(userId)) {
+          throw new AppError('FORBIDDEN', 'You can only review your own bookings', 403);
+        }
+
+        const bookingBusinessId = booking.businessId || booking.business;
+        if (String(bookingBusinessId) !== String(businessId)) {
+          throw new AppError('BUSINESS_MISMATCH', 'Booking does not match business', 400);
+        }
+
+        if (booking.status !== 'completed' && booking.status !== 'COMPLETED') {
+          throw new AppError(
+            'BOOKING_NOT_COMPLETED',
+            'Reviews are only allowed for completed bookings',
+            400
+          );
+        }
+      } catch (error) {
+        if (error.code === 'FORBIDDEN' || error.code === 'BUSINESS_MISMATCH' || error.code === 'BOOKING_NOT_COMPLETED') {
+          throw error; // Re-throw validation errors
+        }
+        if (error.response?.status === 404) {
+          throw new AppError('BOOKING_NOT_FOUND', 'Booking not found', 404);
+        }
+        logger.error(`Booking service error: ${error.message}`);
+        // If booking service fails, allow review without booking
+        logger.warn(`Allowing review without booking verification for business ${businessId}`);
+      }
     }
 
     // ===========================
-    // 5. VERIFY BOOKING IS FOR THIS BUSINESS
-    // ===========================
-
-    const bookingBusinessId = booking.businessId || booking.business;
-    if (String(bookingBusinessId) !== String(businessId)) {
-      throw new AppError('BUSINESS_MISMATCH', 'Booking does not match business', 400);
-    }
-
-    // ===========================
-    // 6. VERIFY BOOKING IS COMPLETED
-    // ===========================
-
-    if (booking.status !== 'completed' && booking.status !== 'COMPLETED') {
-      throw new AppError(
-        'BOOKING_NOT_COMPLETED',
-        'Reviews are only allowed for completed bookings',
-        400
-      );
-    }
-
-    // ===========================
-    // 7. CREATE REVIEW (Auto-approved, no moderation)
+    // 5. CREATE REVIEW (Auto-approved, no moderation)
     // ===========================
 
     const review = await Review.create({
       businessId,
       userId,
-      bookingId,
+      bookingId: bookingId || null, // Allow null for reviews without bookings
       rating,
       message: message.trim(),
       photoUrl: photoUrl || null,

@@ -1,0 +1,194 @@
+/**
+ * Hair Twin Insights Card Styles
+ * Motivational community comparison card
+ */
+
+/* Base card styling */
+.twin-insights-card {
+  background: linear-gradient(135deg, #fff5f8 0%, #ffffff 100%);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 16px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(236, 72, 153, 0.15);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Above average styling - subtle glow */
+.twin-insights-card.above-average {
+  background: linear-gradient(135deg, #fff0f5 0%, #ffffff 100%);
+  border-color: rgba(236, 72, 153, 0.25);
+}
+
+/* Crushing it styling - celebratory */
+.twin-insights-card.crushing {
+  background: linear-gradient(135deg, #ffe4f0 0%, #fff5f8 50%, #ffffff 100%);
+  border-color: rgba(236, 72, 153, 0.35);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.15);
+}
+
+/* Sparkle animation for top performers */
+.twin-insights-sparkles {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  display: flex;
+  gap: 4px;
+}
+
+.sparkle {
+  font-size: 14px;
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+.sparkle:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.sparkle:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* Main headline */
+.twin-insights-headline {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.3;
+}
+
+.star-icon {
+  font-size: 20px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+/* Subtext */
+.twin-insights-subtext {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Divider */
+.twin-insights-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(236, 72, 153, 0.2) 50%, transparent 100%);
+  margin: 16px 0;
+}
+
+/* Tip section */
+.twin-insights-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.tip-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.tip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tip-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tip-text {
+  font-size: 14px;
+  color: #333;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .twin-insights-card {
+    padding: 16px;
+    margin: 12px 0;
+    border-radius: 12px;
+  }
+
+  .twin-insights-headline {
+    font-size: 16px;
+  }
+
+  .twin-insights-subtext {
+    font-size: 13px;
+  }
+
+  .tip-text {
+    font-size: 13px;
+  }
+}
+
+/* Dark mode support (if implemented) */
+@media (prefers-color-scheme: dark) {
+  .twin-insights-card {
+    background: linear-gradient(135deg, #2d1f2d 0%, #1a1a2e 100%);
+    border-color: rgba(236, 72, 153, 0.3);
+  }
+
+  .twin-insights-headline {
+    color: #fff;
+  }
+
+  .twin-insights-subtext {
+    color: #aaa;
+  }
+
+  .tip-label {
+    color: #999;
+  }
+
+  .tip-text {
+    color: #ddd;
+  }
+}

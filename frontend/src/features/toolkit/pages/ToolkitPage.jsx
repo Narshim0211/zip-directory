@@ -27,20 +27,19 @@ export default function ToolkitPage() {
 
 			<div className="toolkit-grid">
 				<ToolkitCard
+					title="Hair Glow-Up Diary"
+					description="Track your hair transformation with photos, routines, and weekly progress."
+					badge="Free"
+					ctaText="Start Journey"
+					onClick={() => openCard("/visitor/toolkit/goals", false)}
+				/>
+
+				<ToolkitCard
 					title="Time Manager"
 					description="Plan your day and week with a drag-and-drop timeline."
 					badge="Free"
 					ctaText="Open Planner"
 					onClick={() => openCard("/visitor/toolkit/time/daily", false)}
-				/>
-
-				<ToolkitCard
-					title="Hair Goals AI"
-					description="Set futuristic hair goals with reminders and AI inspiration."
-					badge="Premium"
-					onClick={() => openCard("/visitor/toolkit/goals", true)}
-					locked={!isSubscribed}
-					disabled={loading}
 				/>
 			</div>
 		</PageShell>

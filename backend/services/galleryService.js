@@ -28,9 +28,11 @@ const uploadGalleryMedia = async ({ buffer, originalName, folder = "" }) => {
   await fs.writeFile(destPath, buffer);
 
   // Use absolute URL with backend port so frontend can load images
+  // Use PORT env variable or default to 5000 (matching server.js)
+  const port = process.env.PORT || 5000;
   const baseUrl = process.env.NODE_ENV === 'production'
     ? process.env.API_URL || 'https://api.salonhub.com'
-    : 'http://localhost:5001';
+    : `http://localhost:${port}`;
 
   return {
     url: `${baseUrl}/uploads/gallery/${folder ? `${folder}/` : ""}${fileName}`,

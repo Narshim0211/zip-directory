@@ -85,6 +85,27 @@ const businessSchema = new mongoose.Schema(
         type: Date,
         default: null,
       },
+      // Google Places ID for seeded businesses
+      placeId: {
+        type: String,
+        default: null,
+        sparse: true,
+      },
+      // Google photo reference for building photo URLs
+      photoRef: {
+        type: String,
+        default: null,
+      },
+      // Source of the business data
+      source: {
+        type: String,
+        enum: ['manual', 'google_places', 'import'],
+        default: 'manual',
+      },
+      seededAt: {
+        type: Date,
+        default: null,
+      },
     },
 
     // 🚨 AUTO-FLAGGING FIELDS (Phase 2: Reporting System)

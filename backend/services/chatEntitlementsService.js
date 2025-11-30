@@ -9,13 +9,20 @@ const User = require('../models/User');
 const Business = require('../models/Business');
 const MessageThread = require('../models/MessageThread');
 const Message = require('../models/Message');
-const { isCommentPaywallEnabled } = require('./configService');
+const { isCommentPaywallEnabled, isMessagingPaywallEnabled } = require('./configService');
 
 /**
  * Check if visitor can send a message
  * Rule: First message free OR has active chat pass OR within grace period
+ * GLOBAL OVERRIDE: If messaging paywall is disabled, everyone can send
  */
 const canVisitorSend = async (visitorId, threadId) => {
+  // 🌐 GLOBAL ADMIN OVERRIDE - Check if messaging paywall is disabled
+  const paywallEnabled = await isMessagingPaywallEnabled();
+  if (!paywallEnabled) {
+    return { allowed: true, reason: 'Messaging paywall disabled by admin' };
+  }
+
   const visitor = await User.findById(visitorId);
   if (!visitor) return { allowed: false, reason: 'User not found' };
 
@@ -55,8 +62,15 @@ const canVisitorSend = async (visitorId, threadId) => {
 /**
  * Check if owner can reply
  * Rule: Business must have active premium subscription
+ * GLOBAL OVERRIDE: If messaging paywall is disabled, all owners can reply
  */
 const canOwnerReply = async (businessId) => {
+  // 🌐 GLOBAL ADMIN OVERRIDE - Check if messaging paywall is disabled
+  const paywallEnabled = await isMessagingPaywallEnabled();
+  if (!paywallEnabled) {
+    return { allowed: true, reason: 'Messaging paywall disabled by admin' };
+  }
+
   const business = await Business.findById(businessId);
   if (!business) return { allowed: false, reason: 'Business not found' };
 

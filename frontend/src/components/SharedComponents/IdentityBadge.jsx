@@ -6,7 +6,17 @@ const IdentityBadge = ({ identity, author }) => {
   // fall back to author (populated User) if identity missing
   const id = identity || {};
   const fall = author || {};
-  const fullName = id.fullName || fall.name || 'Guest';
+
+  // Build full name with multiple fallbacks:
+  // 1. identity.fullName (from profile firstName + lastName or profile fullName)
+  // 2. author's firstName + lastName
+  // 3. author's name field (from User model)
+  // 4. 'User' as last resort
+  const authorFullName = fall.firstName && fall.lastName
+    ? `${fall.firstName} ${fall.lastName}`.trim()
+    : '';
+  const fullName = id.fullName || authorFullName || fall.name || 'User';
+
   const avatar = id.avatarUrl || fall.avatarUrl || '';
   const handle = id.handle || (fall.handle ? `@${fall.handle}` : undefined);
   const slug = id.slug || undefined;

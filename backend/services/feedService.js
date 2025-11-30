@@ -40,39 +40,59 @@ async function attachIdentities(items) {
   for (const it of items) {
     const a = it.data.author || it.data.ownerId || null;
     const id = a ? (a._id ? String(a._id) : String(a)) : null;
+    // Get author's name from User model as fallback
+    const authorName = a && a.name ? a.name : '';
+    const authorAvatarUrl = a && a.avatarUrl ? a.avatarUrl : '';
+    const authorRole = a && a.role ? a.role : 'visitor';
+    const authorHandle = a && a.handle ? `@${a.handle}` : undefined;
+
     let identity = null;
     if (id && ownerByUser[id]) {
       const o = ownerByUser[id];
+      // Build full name from profile, fall back to User.name
+      const profileFullName = o.firstName && o.lastName
+        ? `${o.firstName} ${o.lastName}`.trim()
+        : (o.fullName || '');
       identity = {
         role: 'owner',
-        fullName: o.firstName && o.lastName ? `${o.firstName} ${o.lastName}`.trim() : (o.fullName || ''),
-        handle: o.handle ? `@${o.handle}` : undefined,
+        fullName: profileFullName || authorName || 'User',
+        handle: o.handle ? `@${o.handle}` : authorHandle,
         slug: o.slug || `u-${String(o.userId).slice(-6)}`,
-        avatarUrl: o.avatarUrl,
+        avatarUrl: o.avatarUrl || authorAvatarUrl,
         profileId: o._id,
       };
     } else if (id && visitorByUser[id]) {
       const v = visitorByUser[id];
+      // Build full name from profile, fall back to User.name
+      const profileFullName = v.firstName && v.lastName
+        ? `${v.firstName} ${v.lastName}`.trim()
+        : (v.fullName || '');
       identity = {
         role: 'visitor',
-        fullName: v.firstName && v.lastName ? `${v.firstName} ${v.lastName}`.trim() : (v.fullName || ''),
-        handle: v.handle ? `@${v.handle}` : undefined,
+        fullName: profileFullName || authorName || 'User',
+        handle: v.handle ? `@${v.handle}` : authorHandle,
         slug: v.slug || `u-${String(v.userId).slice(-6)}`,
-        avatarUrl: v.avatarUrl,
-  profileId: v._id,
+        avatarUrl: v.avatarUrl || authorAvatarUrl,
+        profileId: v._id,
       };
     } else if (it.data.author && it.data.author.name) {
-      // fallback to populated User
-      const roleFromUser = it.data.author.role || 'visitor';
+      // fallback to populated User when no profile exists
       identity = {
-        role: roleFromUser,
-        fullName: it.data.author.name || '',
-        handle: it.data.author.handle ? `@${it.data.author.handle}` : undefined,
+        role: authorRole,
+        fullName: it.data.author.name || 'User',
+        handle: authorHandle,
         slug: `u-${String(it.data.author._id).slice(-6)}`,
-        avatarUrl: it.data.author.avatarUrl || '',
+        avatarUrl: authorAvatarUrl,
+        profileId: it.data.author._id,
       };
     } else {
-      identity = { role: 'visitor', fullName: '', avatarUrl: '' };
+      // Last resort fallback
+      identity = {
+        role: authorRole || 'visitor',
+        fullName: authorName || 'User',
+        avatarUrl: authorAvatarUrl,
+        profileId: id || undefined,
+      };
     }
     it.identity = identity;
   }

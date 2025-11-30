@@ -17,8 +17,9 @@ const reviewSchema = new mongoose.Schema(
     bookingId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Booking',
-      required: [true, 'Booking is required'],
+      required: false, // Optional - allows reviews without bookings
       index: true,
+      sparse: true, // Only index non-null values
     },
     rating: {
       type: Number,
@@ -95,7 +96,12 @@ const reviewSchema = new mongoose.Schema(
 
 // ✅ FIX #1: Prevent review spam exploit
 // Each booking can only have ONE review (prevents same user leaving 20 five-star reviews from one booking)
-reviewSchema.index({ bookingId: 1 }, { unique: true });
+// sparse: true allows null bookingId values (reviews without bookings)
+reviewSchema.index({ bookingId: 1 }, { unique: true, sparse: true });
+
+// Prevent duplicate reviews from same user for same business (when no booking)
+// This allows max 1 non-booking review per user per business
+reviewSchema.index({ businessId: 1, userId: 1, bookingId: 1 }, { unique: true });
 
 // 📊 Composite index for efficient queries (business reviews list with filtering)
 // This index optimizes the most common query: "Get all approved reviews for a business, sorted by date"

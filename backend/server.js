@@ -179,6 +179,8 @@ app.use('/api/surveys/trending', trendingSurveyRoutes);
 
 require('./cron/newsCron');
 require('./cron/promotionCron');
+require('./cron/hairGoalsStatsCron');
+require('./cron/reportCardCron');
 
 // 🌟 Start Survey of the Day cron job (Phase 4: Daily Rotation)
 const { startSurveyOfTheDayCron } = require('./cron/surveyOfTheDayCron');
@@ -344,6 +346,14 @@ app.use('/api/owner/time-manager', ownerTimeRoutes);
 // Hair Goals: Weekly reports
 const weeklyReportRoutes = require('./routes/weeklyReportRoutes');
 app.use('/api/hair-goals/reports', weeklyReportRoutes);
+
+// Hair Goals: Community Stats (anonymous insights)
+const communityStatsRoutes = require('./routes/communityStatsRoutes');
+app.use('/api/hair-goals/community-stats', communityStatsRoutes);
+
+// Hair Goals: Report Card (lifetime intelligence dashboard)
+const reportCardRoutes = require('./routes/reportCardRoutes');
+app.use('/api/hair-goals/report-card', reportCardRoutes);
 
 // Public Booking Routes (no authentication required)
 const publicBookingRoutes = require('./routes/publicBookingRoutes');

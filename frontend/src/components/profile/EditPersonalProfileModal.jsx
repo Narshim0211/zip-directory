@@ -143,10 +143,10 @@ export default function EditPersonalProfileModal({ isOpen, onClose, onSave }) {
             <div className="profile-edit-cards">
               {/* Card 1: Avatar */}
               <div className="profile-edit-card">
-                {/* Always use visitor style (round avatar) for personal */}
+                {/* Use actual isOwner to determine correct upload endpoint */}
                 <AvatarUploader
                   profile={profile}
-                  isOwner={false}
+                  isOwner={isOwner}
                   onUpload={(url) => {
                     console.log('[EditPersonalProfileModal] Avatar uploaded:', url);
                     // Update local profile state

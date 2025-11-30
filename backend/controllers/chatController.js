@@ -93,7 +93,8 @@ const sendMessage = async (req, res) => {
 
         thread = await MessageThread.create({
           threadType: 'owner',
-          businessId: null,
+          // Note: Do NOT set businessId at all (not even null) for owner threads
+          // This allows the sparse unique index to skip these documents
           visitorId,
           ownerId: targetOwnerId,
           status: 'OPEN',
@@ -124,7 +125,8 @@ const sendMessage = async (req, res) => {
 
         thread = await MessageThread.create({
           threadType: 'visitor',
-          businessId: null,
+          // Note: Do NOT set businessId at all (not even null) for visitor threads
+          // This allows the sparse unique index to skip these documents
           visitorId: senderId,
           ownerId: senderId, // Set to sender for indexing purposes
           targetUserId: targetVisitorId,
@@ -147,8 +149,13 @@ const sendMessage = async (req, res) => {
 
     // Update thread
     thread.lastMessageAt = new Date();
-    thread.unreadByOwner = senderId.toString() !== thread.ownerId.toString();
-    thread.unreadByVisitor = senderId.toString() !== thread.visitorId.toString();
+    // Safe null checks for unread flags
+    if (thread.ownerId) {
+      thread.unreadByOwner = senderId.toString() !== thread.ownerId.toString();
+    }
+    if (thread.visitorId) {
+      thread.unreadByVisitor = senderId.toString() !== thread.visitorId.toString();
+    }
     await thread.save();
 
     logger.info('Message sent', { messageId: message._id, threadId: thread._id, threadType });
@@ -160,8 +167,16 @@ const sendMessage = async (req, res) => {
       messageId: message._id,
     });
   } catch (error) {
-    logger.error('Send message failed', { error: error.message });
-    res.status(500).json({ success: false, message: 'Failed to send message' });
+    logger.error('Send message failed', {
+      error: error.message,
+      stack: error.stack,
+      senderId,
+      threadType,
+      businessId,
+      ownerId,
+      visitorId: targetVisitorId
+    });
+    res.status(500).json({ success: false, message: 'Failed to send message', error: error.message });
   }
 };
 
@@ -226,8 +241,8 @@ const getVisitorInbox = async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
 
     const threads = await MessageThread.find({ visitorId })
-      .populate('businessId', 'name logoUrl city')
-      .populate('ownerId', 'firstName lastName avatarUrl')
+      .populate('businessId', 'name businessName logoUrl city location')
+      .populate('ownerId', 'name firstName lastName avatarUrl handle')
       .sort({ lastMessageAt: -1 })
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
@@ -249,6 +264,9 @@ const getVisitorInbox = async (req, res) => {
           threadType: thread.threadType,
           business: thread.businessId,
           owner: thread.ownerId,
+          // Include raw IDs for sending messages
+          businessId: thread.businessId?._id || thread.businessId,
+          ownerId: thread.ownerId?._id || thread.ownerId,
           lastMessageAt: thread.lastMessageAt,
           status: thread.status,
           unreadCount,
@@ -295,8 +313,8 @@ const getOwnerInbox = async (req, res) => {
     }
 
     const threads = await MessageThread.find(query)
-      .populate('visitorId', 'firstName lastName avatarUrl')
-      .populate('businessId', 'name logoUrl')
+      .populate('visitorId', 'name firstName lastName avatarUrl handle')
+      .populate('businessId', 'name businessName logoUrl')
       .sort({ lastMessageAt: -1 })
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
@@ -351,18 +369,23 @@ const getThreadMessages = async (req, res) => {
     const { threadId } = req.params;
     const { page = 1, limit = 50 } = req.query;
 
-    const thread = await MessageThread.findById(threadId);
+    const thread = await MessageThread.findById(threadId)
+      .populate('visitorId', 'name firstName lastName avatarUrl handle')
+      .populate('ownerId', 'name firstName lastName avatarUrl handle')
+      .populate('businessId', 'name businessName logoUrl city location');
     if (!thread) {
       return res.status(404).json({ success: false, message: 'Thread not found' });
     }
 
-    // Verify user is part of this thread
-    if (thread.visitorId.toString() !== userId && thread.ownerId.toString() !== userId) {
+    // Verify user is part of this thread (use _id for populated objects)
+    const threadVisitorId = thread.visitorId?._id?.toString() || thread.visitorId?.toString();
+    const threadOwnerId = thread.ownerId?._id?.toString() || thread.ownerId?.toString();
+    if (threadVisitorId !== userId && threadOwnerId !== userId) {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
     const messages = await Message.find({ threadId, isDeleted: false })
-      .populate('senderId', 'firstName lastName avatarUrl role')
+      .populate('senderId', 'name firstName lastName avatarUrl role')
       .sort({ createdAt: 1 })
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
@@ -376,6 +399,15 @@ const getThreadMessages = async (req, res) => {
         _id: thread._id,
         threadType: thread.threadType,
         status: thread.status,
+        // Include populated user/business info for header display
+        visitor: thread.visitorId,
+        owner: thread.ownerId,
+        business: thread.businessId,
+        // Include raw IDs needed for sending messages in this thread
+        businessId: thread.businessId?._id || thread.businessId,
+        ownerId: thread.ownerId?._id || thread.ownerId,
+        visitorId: thread.visitorId?._id || thread.visitorId,
+        targetUserId: thread.targetUserId,
       },
       pagination: {
         page: parseInt(page),

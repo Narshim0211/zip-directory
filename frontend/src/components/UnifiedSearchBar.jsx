@@ -136,8 +136,11 @@ const UnifiedSearchBar = ({
         navigate(`/directory/search?q=${encodeURIComponent(suggestion.value)}`);
       }, 100);
     } else if (suggestion.type === 'business') {
-      // Navigate to business detail
-      navigate(`/directory/business/${suggestion._id}`);
+      // Navigate to business detail - use id or _id (API may return either)
+      const businessId = suggestion.id || suggestion._id;
+      if (businessId) {
+        navigate(`/visitor/business/${businessId}`);
+      }
     } else if (suggestion.type === 'city') {
       setQuery(suggestion.value);
       setShowSuggestions(false);

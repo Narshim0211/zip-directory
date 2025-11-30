@@ -43,23 +43,39 @@ function calculateDistance(lat1, lon1, lat2, lon2, unit = 'mi') {
 }
 
 /**
- * Get user coordinates from ZIP code (simplified version)
- * In production, integrate with a geocoding API like Google Maps or Mapbox
- * @param {String} zip - ZIP code
+ * Tarrant County ZIP codes and city coordinates
+ * Loaded from data/tarrant-zips.json
+ */
+const tarrantZips = require('../data/tarrant-zips.json');
+
+/**
+ * Get user coordinates from ZIP code or city name
+ * Supports all Tarrant County ZIP codes and major cities
+ * @param {String} zipOrCity - ZIP code or city name
  * @returns {Object|null} { lat, lng } or null if not found
  */
-function getCoordinatesFromZip(zip) {
-  // Simplified hardcoded coordinates for major US cities
-  // In production, use a real geocoding service
-  const zipDatabase = {
-    '10001': { lat: 40.7506, lng: -73.9971 }, // NYC
-    '90001': { lat: 33.9731, lng: -118.2479 }, // LA
-    '60601': { lat: 41.8858, lng: -87.6229 }, // Chicago
-    '77001': { lat: 29.7499, lng: -95.3588 }, // Houston
-    '19019': { lat: 39.9496, lng: -75.1503 }, // Philadelphia
-  };
+function getCoordinatesFromZip(zipOrCity) {
+  if (!zipOrCity) return null;
 
-  return zipDatabase[zip] || null;
+  // Clean input
+  const input = zipOrCity.toString().trim();
+
+  // Try direct lookup (works for both ZIP codes and city names)
+  const coords = tarrantZips[input];
+  if (coords) {
+    return { lat: coords.lat, lng: coords.lng };
+  }
+
+  // Try case-insensitive city name match
+  const lowerInput = input.toLowerCase();
+  for (const [key, value] of Object.entries(tarrantZips)) {
+    if (key.toLowerCase() === lowerInput) {
+      return { lat: value.lat, lng: value.lng };
+    }
+  }
+
+  // Default to Fort Worth center if not found
+  return { lat: 32.7555, lng: -97.3308 };
 }
 
 module.exports = {
